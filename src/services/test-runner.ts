@@ -144,19 +144,40 @@ local function _deepDiff(a, b, prefix, tolerance)
   return diffs
 end
 
+-- Helper to handle both dot and colon syntax: expect(1).toBe(1) and expect(1):toBe(1)
+-- When using dot syntax (expect(1).toBe(1)), self becomes the first argument instead of the table
+local function _getArgs(self, expected)
+  -- If using dot syntax like expect(1).toBe(1), self is the value and expected is not passed
+  -- We can detect this because expected is nil and self is not the expect table
+  if expected == nil and type(self) ~= "table" then
+    -- self is actually the expected value
+    return nil, self
+  end
+  -- Otherwise (colon syntax or no args), use normal behavior
+  return self, expected
+end
+
 function expect(val)
   return {
     toBe = function(self, expected)
-      if val ~= expected then
-        error("Expected " .. tostring(expected) .. " but got " .. tostring(val))
+      local actualSelf, exp = _getArgs(self, expected)
+      if exp ~= nil and val ~= exp then
+        error("Expected " .. tostring(exp) .. " but got " .. tostring(val))
+      elseif exp == nil and val ~= nil then
+        -- No expected value provided, but value is not nil - this is an error
+        error("Expected nil but got " .. tostring(val))
       end
     end,
     toEqual = function(self, expected)
-      if val ~= expected then
-        error("Expected " .. tostring(expected) .. " but got " .. tostring(val))
+      local actualSelf, exp = _getArgs(self, expected)
+      if exp ~= nil and val ~= exp then
+        error("Expected " .. tostring(exp) .. " but got " .. tostring(val))
+      elseif exp == nil and val ~= nil then
+        error("Expected nil but got " .. tostring(val))
       end
     end,
     toBeNil = function(self)
+      local actualSelf, exp = _getArgs(self, nil)
       if val ~= nil then
         error("Expected nil but got " .. tostring(val))
       end
@@ -167,21 +188,31 @@ function expect(val)
       end
     end,
     toBeGreaterThan = function(self, n)
-      if not (val > n) then
-        error("Expected " .. tostring(val) .. " to be greater than " .. tostring(n))
+      local _, num = _getArgs(self, n)
+      if num == nil then
+        error("toBeGreaterThan requires a value")
+      elseif not (val > num) then
+        error("Expected " .. tostring(val) .. " to be greater than " .. tostring(num))
       end
     end,
     toBeLessThan = function(self, n)
-      if not (val < n) then
-        error("Expected " .. tostring(val) .. " to be less than " .. tostring(n))
+      local _, num = _getArgs(self, n)
+      if num == nil then
+        error("toBeLessThan requires a value")
+      elseif not (val < num) then
+        error("Expected " .. tostring(val) .. " to be less than " .. tostring(num))
       end
     end,
     toBeCloseTo = function(self, expected, precision)
-      precision = precision or 2
-      local factor = 10^precision
-      local diff = math.abs(val - expected)
+      local _, exp, prec = _getArgs(self, expected)
+      if exp == nil then
+        error("toBeCloseTo requires a value")
+      end
+      prec = prec or 2
+      local factor = 10^prec
+      local diff = math.abs(val - exp)
       if diff >= (0.5 / factor) then
-        error("Expected " .. tostring(val) .. " to be close to " .. tostring(expected) .. " (precision " .. tostring(precision) .. ")")
+        error("Expected " .. tostring(val) .. " to be close to " .. tostring(exp) .. " (precision " .. tostring(prec) .. ")")
       end
     end,
     toBeNaN = function(self)
@@ -205,22 +236,24 @@ function expect(val)
       end
     end,
     toMatch = function(self, pattern)
-      if type(val) ~= "string" or not val:match(pattern) then
-        error("Expected " .. tostring(val) .. " to match pattern " .. tostring(pattern))
+      local _, pat = _getArgs(self, pattern)
+      if type(val) ~= "string" or not val:match(pat) then
+        error("Expected " .. tostring(val) .. " to match pattern " .. tostring(pat))
       end
     end,
     toContain = function(self, item)
+      local _, itm = _getArgs(self, item)
       if type(val) == "string" then
-        if not val:find(item, 1, true) then
-          error("Expected string to contain: " .. tostring(item))
+        if not val:find(itm, 1, true) then
+          error("Expected string to contain: " .. tostring(itm))
         end
       elseif type(val) == "table" then
         local found = false
         for _, v in ipairs(val) do
-          if v == item then found = true; break end
+          if v == itm then found = true; break end
         end
         if not found then
-          error("Expected table to contain: " .. tostring(item))
+          error("Expected table to contain: " .. tostring(itm))
         end
       end
     end,
