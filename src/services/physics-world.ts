@@ -64,6 +64,8 @@ export class PhysicsWorld {
   /**
    * Register a Part instance in the physics world.
    * Creates a cannon-es Body with Box shape at Part's Position/Size.
+   * Anchored Parts become STATIC bodies (mass=0).
+   * Non-Anchored Parts become DYNAMIC bodies (mass>0).
    */
   registerPart(instance: InstanceRecord): void {
     if (this.bodies.has(instance.id)) {
@@ -74,6 +76,11 @@ export class PhysicsWorld {
 
     const pos = this.extractVector3(instance.properties['Position']) ?? { x: 0, y: 0, z: 0 };
     const size = this.extractVector3(instance.properties['Size']) ?? { x: 4, y: 1, z: 4 };
+    // Check Anchored property: true/undefined = STATIC, false = DYNAMIC
+    // In Roblox, Parts are anchored by default (Anchored = true)
+    const anchored = instance.properties['Anchored'];
+    const isAnchored = anchored !== false; // STATIC unless explicitly set to false
+    const mass = isAnchored ? 0 : 1; // STATIC if Anchored, DYNAMIC otherwise
 
     // Store size for later AABB queries
     this.sizes.set(instance.id, size);
@@ -84,10 +91,13 @@ export class PhysicsWorld {
     const shape = new CANNON.Box(halfExtents);
 
     const body = new CANNON.Body({
-      mass: 0, // Static by default (Anchored = true in Roblox default)
+      mass,
       position: new CANNON.Vec3(pos.x, pos.y, pos.z),
       shape,
     });
+
+    // Set body type for cannon-es
+    body.type = isAnchored ? CANNON.Body.STATIC : CANNON.Body.DYNAMIC;
 
     this.world.addBody(body);
     this.bodies.set(instance.id, body);
@@ -234,6 +244,26 @@ export class PhysicsWorld {
   step(dt: number = 1 / 60): void {
     const effectiveDt = this._deterministic ? this.FIXED_DT : dt;
     this.world.step(effectiveDt);
+  }
+
+  /**
+   * Sync all dynamic body positions back to their instance records.
+   * Call this after each physics step to update Part positions in the registry.
+   */
+  syncAllPositions(): void {
+    for (const [id, body] of this.bodies) {
+      // Only sync dynamic bodies (Anchored = false)
+      if (body.type === CANNON.Body.DYNAMIC) {
+        const instance = this.instances.get(id);
+        if (instance) {
+          instance.properties['Position'] = {
+            X: body.position.x,
+            Y: body.position.y,
+            Z: body.position.z,
+          };
+        }
+      }
+    }
   }
 
   /**

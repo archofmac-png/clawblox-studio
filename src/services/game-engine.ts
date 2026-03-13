@@ -554,6 +554,12 @@ local function newInstance(className, name)
   local _props = { Name = instName, ClassName = className }
   setmetatable(inst, {
     __newindex = function(t, k, v)
+      -- Don't store Position/Size/CFrame in Lua table - fetch from registry instead
+      if k == "Position" or k == "Size" or k == "CFrame" then
+        -- Pass Vector3/CFrame tables directly (not stringified) for physics sync
+        _cb_setprop(id, k, v)
+        return -- Don't rawset - let __index fetch from registry
+      end
       rawset(t, k, v)
       if k == "Name" then
         _cb_setprop(id, "Name", v)
@@ -564,9 +570,6 @@ local function newInstance(className, name)
         if v and v._children then
           table.insert(v._children, t)
         end
-      elseif k == "Position" or k == "Size" or k == "CFrame" then
-        -- Pass Vector3/CFrame tables directly (not stringified) for physics sync
-        _cb_setprop(id, k, v)
       else
         -- Serialize known value types instead of using raw tostring
         local serialized
@@ -580,7 +583,7 @@ local function newInstance(className, name)
             serialized = "Color3(" .. tostring(v.R) .. "," .. tostring(v.G) .. "," .. tostring(v.B) .. ")"
           -- Enum value: {Name=string, Value=number, EnumType=string} — check before BrickColor
           elseif v.EnumType ~= nil and v.Name ~= nil then
-            serialized = "Enum." .. tostring(v.EnumType) .. "." .. tostring(v.Name)
+            serialized = "Enum." .. v.EnumType .. "." .. v.Name
           -- BrickColor: {Name=string} with no EnumType/Value
           elseif v.Name ~= nil and type(v.Name) == "string" and #v.Name > 0 then
             serialized = "BrickColor(" .. v.Name .. ")"
@@ -592,6 +595,14 @@ local function newInstance(className, name)
         end
         _cb_setprop(id, k, serialized)
       end
+    end,
+    -- Fetch Position from JS registry when read (for physics sync)
+    __index = function(t, k)
+      if k == "Position" then
+        local pos = _cb_getprop(id, "Position")
+        if pos then return Vector3.new(pos.X or pos.x or 0, pos.Y or pos.y or 0, pos.Z or pos.z or 0) end
+      end
+      return nil
     end
   })
 
@@ -730,6 +741,15 @@ RunService.Stepped = newEvent()
 function RunService:IsServer() return true end
 function RunService:IsClient() return false end
 function RunService:IsRunning() return true end
+
+-- Wave 4: Physics step — advance simulation and sync positions back
+function RunService:Step(dt)
+  dt = dt or (1/60)
+  -- Call JS physics step
+  if _cb_physics_step then
+    _cb_physics_step(dt)
+  end
+end
 
 local DataStoreService = makeService("DataStoreService")
 local _datastores = {}
@@ -1313,6 +1333,11 @@ export class GameEngine {
         if (key === 'Position' || key === 'Size' || key === 'CFrame') {
           physicsWorld.syncPartPosition(inst);
         }
+        // Handle Anchored property change - need to re-register body with correct type
+        if (key === 'Anchored') {
+          physicsWorld.removePart(id);
+          physicsWorld.registerPart(inst);
+        }
         // Auto-register if not yet in physics world (e.g. class was set after creation)
         physicsWorld.registerPart(inst);
       }
@@ -1387,6 +1412,14 @@ export class GameEngine {
         }
       }
     });
+
+    // Wave 4: Get property from registry (for physics sync)
+    this.engine.global.set('_cb_getprop', (id: string, key: string): any => {
+      const inst = this.registry.get(id);
+      if (!inst) return null;
+      return inst.properties[key] ?? null;
+    });
+
     this.engine.global.set('_cb_out', (type: string, msg: string) => {
       broadcast(type, msg);
       // Wave A: Also emit structured console event
@@ -1457,6 +1490,16 @@ export class GameEngine {
         { x: tx, y: ty, z: tz },
         speed
       );
+    });
+
+    // Wave 4: Physics step callback — advances simulation and syncs positions back
+    this.engine.global.set('_cb_physics_step', (dt: number) => {
+      try {
+        physicsWorld.step(dt);
+        physicsWorld.syncAllPositions();
+      } catch (e) {
+        console.error('[Physics] Error in step:', e);
+      }
     });
 
     // Wave 4: NetworkBridge callbacks
