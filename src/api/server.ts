@@ -22,6 +22,9 @@ import { pathfindingService } from '../services/pathfinding.js';
 // Wave 5.5 imports
 import { scenePersistence } from '../services/scene-persistence.js';
 
+// Wave C: Multi-Agent Session Orchestration
+import { sessionManager, type Session } from '../services/session-manager.js';
+
 // Wave 6: xml2js for rbxlx import
 import { parseStringPromise } from 'xml2js';
 import type { InstanceRecord } from '../services/game-engine.js';
@@ -40,15 +43,38 @@ const wsClients: Set<WebSocket> = new Set();
 wss.on('connection', (ws) => {
   wsClients.add(ws);
   console.log(`[WS] Client connected. Total: ${wsClients.size}`);
-  
+
+  // Wave C: Support session-scoped subscriptions
+  // Clients send { "subscribe": "session_id" } to scope their stream.
+  // Unsubscribed clients stay in the global wsClients set (legacy stream).
+  ws.on('message', (rawData) => {
+    try {
+      const msg = JSON.parse(rawData.toString());
+      if (msg && typeof msg.subscribe === 'string') {
+        const sessionId = msg.subscribe;
+        // Remove from global stream
+        wsClients.delete(ws);
+        // Subscribe to the named session
+        sessionManager.subscribeClient(sessionId, ws);
+        ws.send(JSON.stringify({ type: 'subscribed', session_id: sessionId }));
+        console.log(`[WS] Client subscribed to session ${sessionId}`);
+      }
+    } catch (_) {
+      // Not JSON or unknown message — ignore
+    }
+  });
+
   ws.on('close', () => {
     wsClients.delete(ws);
+    // Wave C: Also remove from any session subscriptions
+    sessionManager.unsubscribeClient(ws);
     console.log(`[WS] Client disconnected. Total: ${wsClients.size}`);
   });
   
   ws.on('error', (err) => {
     console.error('[WS] Error:', err.message);
     wsClients.delete(ws);
+    sessionManager.unsubscribeClient(ws);
   });
 });
 
@@ -2176,6 +2202,227 @@ app.post('/api/simulation/replay', async (req, res) => {
 
 // ============================================================
 // End Wave B
+// ============================================================
+
+// ============================================================
+// Wave C: Multi-Agent Session Orchestration
+// ============================================================
+
+/**
+ * POST /api/session/create
+ * Body (optional): { label?, seed?, deterministic? }
+ * Returns { session_id, seed, label, createdAt }
+ */
+app.post('/api/session/create', async (req, res) => {
+  try {
+    const { label, seed, deterministic } = req.body ?? {};
+    const result = sessionManager.createSession({
+      label: label as string | undefined,
+      seed: seed !== undefined ? Number(seed) : undefined,
+      deterministic: Boolean(deterministic),
+    });
+
+    if ('code' in result) {
+      return res.status(429).json({ error: result.error });
+    }
+
+    const session = result as Session;
+    // Ensure engine is initialized before returning
+    await sessionManager.ensureInit(session);
+
+    return res.json({
+      session_id: session.id,
+      seed: session.seed,
+      label: session.label ?? null,
+      createdAt: session.createdAt,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * GET /api/session/list
+ * Returns [{ session_id, label, createdAt, running, instanceCount }]
+ */
+app.get('/api/session/list', (_req, res) => {
+  try {
+    res.json(sessionManager.listSessions());
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * DELETE /api/session/all
+ * Destroys all sessions. Returns { destroyed: N }
+ * Must be declared before /api/session/:id to avoid route shadowing.
+ */
+app.delete('/api/session/all', (_req, res) => {
+  try {
+    const destroyed = sessionManager.destroyAllSessions();
+    res.json({ destroyed });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * DELETE /api/session/:id
+ * Destroys a specific session. Returns { destroyed: true }
+ */
+app.delete('/api/session/:id', (req, res) => {
+  const { id } = req.params;
+  const ok = sessionManager.destroySession(id);
+  if (!ok) return res.status(404).json({ error: 'Session not found' });
+  res.json({ destroyed: true });
+});
+
+/**
+ * GET /api/session/:id/state
+ * Returns the observability state for this session's VM.
+ */
+app.get('/api/session/:id/state', (req, res) => {
+  const session = sessionManager.getSession(req.params.id);
+  if (!session) return res.status(404).json({ error: 'Session not found' });
+
+  try {
+    const state = session.engine.getObserveState();
+    res.json({
+      session_id: session.id,
+      label: session.label,
+      running: session.running,
+      seed: session.seed,
+      deterministic: session.deterministic,
+      instanceCount: session.engine.getInstanceCount(),
+      ...state,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/session/:id/execute
+ * Body: { script: string }
+ * Executes Lua code inside this session's VM.
+ */
+app.post('/api/session/:id/execute', async (req, res) => {
+  const session = sessionManager.getSession(req.params.id);
+  if (!session) return res.status(404).json({ error: 'Session not found' });
+
+  const { script } = req.body ?? {};
+  if (!script) return res.status(400).json({ error: 'script is required' });
+
+  try {
+    await sessionManager.ensureInit(session);
+    const result = await session.engine.execute(script);
+    res.json({ session_id: session.id, ...result });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/session/:id/reset
+ * Clears VM, trajectory, messages — keeps same id/seed/label.
+ */
+app.post('/api/session/:id/reset', async (req, res) => {
+  const session = sessionManager.getSession(req.params.id);
+  if (!session) return res.status(404).json({ error: 'Session not found' });
+
+  try {
+    await sessionManager.resetSession(session);
+    res.json({ session_id: session.id, reset: true, seed: session.seed });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/session/:id/start
+ * Marks this session as running and (re)initializes the engine.
+ */
+app.post('/api/session/:id/start', async (req, res) => {
+  const session = sessionManager.getSession(req.params.id);
+  if (!session) return res.status(404).json({ error: 'Session not found' });
+
+  try {
+    await sessionManager.ensureInit(session);
+    session.running = true;
+    res.json({ session_id: session.id, running: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/session/:id/stop
+ * Marks this session as stopped.
+ */
+app.post('/api/session/:id/stop', (req, res) => {
+  const session = sessionManager.getSession(req.params.id);
+  if (!session) return res.status(404).json({ error: 'Session not found' });
+  session.running = false;
+  res.json({ session_id: session.id, running: false });
+});
+
+/**
+ * GET /api/session/:id/messages
+ * Returns the last 100 cross-session messages received by this session.
+ */
+app.get('/api/session/:id/messages', (req, res) => {
+  const session = sessionManager.getSession(req.params.id);
+  if (!session) return res.status(404).json({ error: 'Session not found' });
+  res.json(session.messages);
+});
+
+// ============================================================
+// Wave C: Cross-Session Messaging Bridge
+// ============================================================
+
+/**
+ * POST /api/messaging/bridge
+ * Body: { from_session, to_session, event, data }
+ * Delivers event to target session's Lua VM and WS clients.
+ * Returns { delivered: true, timestamp }
+ */
+app.post('/api/messaging/bridge', async (req, res) => {
+  const { from_session, to_session, event, data } = req.body ?? {};
+
+  if (!from_session || !to_session || !event) {
+    return res.status(400).json({ error: 'from_session, to_session, and event are required' });
+  }
+
+  const target = sessionManager.getSession(String(to_session));
+  if (!target) return res.status(404).json({ error: `Target session '${to_session}' not found` });
+
+  try {
+    await sessionManager.ensureInit(target);
+
+    // Store message in queue
+    const record = {
+      from: String(from_session),
+      event: String(event),
+      data: data ?? null,
+      timestamp: Date.now(),
+    };
+    sessionManager.enqueueMessage(target, record);
+
+    // Deliver into Lua VM
+    await target.engine.deliverMessageWithData(String(event), data ?? null);
+
+    // Broadcast over the session's WS namespace
+    sessionManager.broadcastToSession(String(to_session), 'session_message', JSON.stringify(record));
+
+    res.json({ delivered: true, timestamp: record.timestamp });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============================================================
+// End Wave C
 // ============================================================
 
 app.listen(PORT, () => {
