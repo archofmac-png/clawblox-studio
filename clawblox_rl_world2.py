@@ -218,18 +218,18 @@ char.Parent = workspace
         moves = {
             # forward/back move along Z axis - but goal is also at Z=60 so mostly vertical
             # Preserve Y velocity for gravity!
-            "forward": "workspace.Character.AssemblyLinearVelocity = Vector3.new(workspace.Character.AssemblyLinearVelocity.X, workspace.Character.AssemblyLinearVelocity.Y, -10)",
-            "back": "workspace.Character.AssemblyLinearVelocity = Vector3.new(workspace.Character.AssemblyLinearVelocity.X, workspace.Character.AssemblyLinearVelocity.Y, 10)",
-            # Jump: ApplyImpulse (Roblox-style, mass-aware) — does not overwrite Y velocity
-            "jump": "workspace.Character:ApplyImpulse(Vector3.new(0, 520, 0))",
-            # Lateral movement: AssemblyLinearVelocity preserves Y (Roblox API)
-            "left": "workspace.Character.AssemblyLinearVelocity = Vector3.new(-10, workspace.Character.AssemblyLinearVelocity.Y, workspace.Character.AssemblyLinearVelocity.Z)",
-            "right": "workspace.Character.AssemblyLinearVelocity = Vector3.new(10, workspace.Character.AssemblyLinearVelocity.Y, workspace.Character.AssemblyLinearVelocity.Z)",
+            # All actions: apply movement then step physics inline (HTTP physics/step has session sync issues)
+            "forward": "workspace.Character.AssemblyLinearVelocity = Vector3.new(workspace.Character.AssemblyLinearVelocity.X, workspace.Character.AssemblyLinearVelocity.Y, -10); _cb_physics_step(0.05)",
+            "back": "workspace.Character.AssemblyLinearVelocity = Vector3.new(workspace.Character.AssemblyLinearVelocity.X, workspace.Character.AssemblyLinearVelocity.Y, 10); _cb_physics_step(0.05)",
+            # Jump: ApplyImpulse then step physics immediately
+            "jump": "workspace.Character:ApplyImpulse(Vector3.new(0, 520, 0)); _cb_physics_step(0.05)",
+            # Lateral movement: AssemblyLinearVelocity preserves Y
+            "left": "workspace.Character.AssemblyLinearVelocity = Vector3.new(-10, workspace.Character.AssemblyLinearVelocity.Y, workspace.Character.AssemblyLinearVelocity.Z); _cb_physics_step(0.05)",
+            "right": "workspace.Character.AssemblyLinearVelocity = Vector3.new(10, workspace.Character.AssemblyLinearVelocity.Y, workspace.Character.AssemblyLinearVelocity.Z); _cb_physics_step(0.05)",
         }
         def _step():
+            # physics is stepped inline in each Lua action string
             result = self.agent.step(moves.get(action, moves["forward"]))
-            # Step physics after each action
-            self.agent.session.physics_step(0.033)
             return result
         try:
             with_retry(_step)

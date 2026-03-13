@@ -590,6 +590,16 @@ export class SessionEngine {
       }
     });
 
+    // Roblox BasePart:ApplyImpulse(Vector3) shim — per-session
+    this.luaEngine.global.set('_cb_impulse', (id: string, ix: number, iy: number, iz: number) => {
+      this.physics.applyImpulse(id, { x: ix, y: iy, z: iz });
+    });
+
+    // Roblox BasePart:GetMass() shim — per-session
+    this.luaEngine.global.set('_cb_getmass', (id: string): number => {
+      return this.physics.getMass(id);
+    });
+
     await this.luaEngine.doString(buildSessionLuaSetup());
 
     if (seed !== undefined) {
