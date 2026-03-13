@@ -7,6 +7,7 @@
 import { randomUUID } from 'crypto';
 import { LuaFactory, LuaEngine } from 'wasmoon';
 import { WebSocket } from 'ws';
+import { PhysicsWorld } from './physics-world.js';
 
 // ---------------------------------------------------------------------------
 // Re-export / inline minimal types we need without circular import
@@ -149,19 +150,23 @@ end
 local function newInstance(className, name)
   local instName = name or className
   local id = _cb_create(className, instName)
+  -- Use a proxy: _data holds actual values, inst is always empty so __newindex always fires
+  local _data = {
+    _id = id,
+    Name = instName,
+    ClassName = className,
+    Parent = nil,
+    _children = {},
+  }
   local inst = {}
-  inst._id = id
-  inst.Name = instName
-  inst.ClassName = className
-  inst.Parent = nil
-  inst._children = {}
   setmetatable(inst, {
+    __index = function(t, k) return _data[k] end,
     __newindex = function(t, k, v)
-      rawset(t, k, v)
+      _data[k] = v
       if k == "Name" then
         _cb_setprop(id, "Name", v)
       elseif k == "Parent" then
-        local pid = v and rawget(v, "_id") or nil
+        local pid = v and v._id or nil
         _cb_setparent(id, pid)
         if v and v._children then
           table.insert(v._children, t)
@@ -173,7 +178,10 @@ local function newInstance(className, name)
         elseif type(v) == "number" then
           serialized = v
         elseif type(v) == "table" then
-          if v.R ~= nil and v.G ~= nil and v.B ~= nil then
+          if v.X ~= nil and v.Y ~= nil and v.Z ~= nil then
+            -- Vector3 — pass as table so physics callbacks get X/Y/Z numbers
+            serialized = v
+          elseif v.R ~= nil and v.G ~= nil and v.B ~= nil then
             serialized = "Color3(" .. tostring(v.R) .. "," .. tostring(v.G) .. "," .. tostring(v.B) .. ")"
           elseif v.EnumType ~= nil and v.Name ~= nil then
             serialized = "Enum." .. tostring(v.EnumType) .. "." .. tostring(v.Name)
@@ -216,13 +224,13 @@ local function newInstance(className, name)
   end
   function inst:IsA(cn) return self.ClassName == cn end
   function inst:Destroy()
-    rawset(self, "Parent", nil)
+    _data["Parent"] = nil
     _cb_setparent(id, nil)
-    self._children = {}
+    _data["_children"] = {}
   end
   function inst:Clone() return newInstance(self.ClassName, self.Name) end
   function inst:_addChild(child)
-    rawset(child, "Parent", self)
+    _data["Parent"] = self
     _cb_setparent(child._id, id)
     table.insert(self._children, child)
   end
@@ -472,6 +480,7 @@ export class SessionEngine {
   private factory: LuaFactory | null = null;
   private registry = new SessionInstanceRegistry();
   private _broadcast: ((type: string, msg: string) => void) | null = null;
+  private physics = new PhysicsWorld();
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   constructor(_sessionId: string) {
@@ -492,7 +501,13 @@ export class SessionEngine {
     this.luaEngine = await this.factory.createEngine();
 
     this.luaEngine.global.set('_cb_create', (className: string, name: string): string => {
-      return this.registry.create(className, name);
+      const id = this.registry.create(className, name);
+      // Register Parts in per-session physics world
+      if (className === 'Part' || className === 'BasePart' || className === 'WedgePart' || className === 'MeshPart') {
+        const inst = this.registry.get(id);
+        if (inst) this.physics.registerPart(inst);
+      }
+      return id;
     });
 
     this.luaEngine.global.set('_cb_setparent', (id: string, parentId: string | null) => {
@@ -513,11 +528,40 @@ export class SessionEngine {
         } catch (_) {}
       }
       this.registry.setProperty(id, key, storedValue);
+
+      // Sync physics for Part instances
+      const inst = this.registry.get(id);
+      if (inst && (inst.ClassName === 'Part' || inst.ClassName === 'BasePart' || inst.ClassName === 'WedgePart')) {
+        if (key === 'Position' || key === 'Size') {
+          this.physics.registerPart(inst); // registerPart is idempotent — syncs if already registered
+          this.physics.syncPartPosition(inst);
+        } else if (key === 'Velocity' && storedValue && typeof storedValue === 'object') {
+          const sv = storedValue as Record<string, unknown>;
+          this.physics.setVelocity(id, {
+            x: Number(sv['X'] ?? 0),
+            y: Number(sv['Y'] ?? 0),
+            z: Number(sv['Z'] ?? 0),
+          });
+        } else if (key === 'Anchored') {
+          this.physics.removePart(id);
+          this.physics.registerPart(inst);
+        }
+      }
     });
 
     this.luaEngine.global.set('_cb_out', (type: string, msg: string) => {
       // Broadcast to subscribed WS clients for this session
       this.broadcast(type, msg);
+    });
+
+    // Wire per-session physics step
+    this.luaEngine.global.set('_cb_physics_step', (dt: number) => {
+      try {
+        this.physics.step(dt);
+        this.physics.syncAllPositions();
+      } catch (e) {
+        console.error('[SessionEngine] Physics step error:', e);
+      }
     });
 
     await this.luaEngine.doString(buildSessionLuaSetup());
@@ -569,6 +613,12 @@ return __out
     }
   }
 
+  /** Step the per-session physics world by dt seconds and sync positions back to registry. */
+  physicsStep(dt: number): void {
+    this.physics.step(dt);
+    this.physics.syncAllPositions();
+  }
+
   /** Deliver a cross-session message — sets a global then calls receive */
   async deliverMessageWithData(event: string, data: unknown): Promise<void> {
     if (!this.luaEngine) return;
@@ -610,6 +660,7 @@ return __out
       this.luaEngine = null;
     }
     this.registry.reset();
+    this.physics = new PhysicsWorld();
   }
 
   destroy(): void {

@@ -1369,7 +1369,16 @@ app.post('/api/physics/spherecast', (req, res) => {
 app.post('/api/physics/step', (req, res) => {
   try {
     const dt = (req.body && req.body.dt) ? Number(req.body.dt) : 1 / 60;
-    physicsWorld.step(dt);
+    // If session_id is provided (query param or body), step that session's physics
+    const sessionId = (req.query.session_id as string) || (req.body && req.body.session_id);
+    if (sessionId) {
+      const session = sessionManager.getSession(sessionId);
+      if (!session) return res.status(404).json({ error: 'Session not found' });
+      session.engine.physicsStep(dt);
+    } else {
+      // Fallback: global physics world (legacy)
+      physicsWorld.step(dt);
+    }
     res.json({ ok: true, dt });
   } catch (err: any) {
     res.status(500).json({ error: err.message });

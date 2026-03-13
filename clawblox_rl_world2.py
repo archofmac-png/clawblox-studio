@@ -93,7 +93,7 @@ class ClawBloxRLTrainer:
         
         self.agent = ClawBloxAgent(self.client, seed=seed, deterministic=True)
         self.agent.reset()
-                self.spawn_world()
+        self.spawn_world()
         
         self.episode_results: List[EpisodeResult] = []
         self.last_y = SPAWN_POSITION["Y"]  # Track for upward progress reward
