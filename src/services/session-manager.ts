@@ -160,7 +160,17 @@ local function newInstance(className, name)
   }
   local inst = {}
   setmetatable(inst, {
-    __index = function(t, k) return _data[k] end,
+    __index = function(t, k)
+      -- For physics-owned properties, read back from CANNON via JS bridge
+      if k == "Velocity" or k == "Position" then
+        local raw = _cb_getprop(id, k)
+        if raw ~= nil then
+          -- Convert JS object to a proper Lua table with X/Y/Z fields
+          return Vector3.new(raw.X or 0, raw.Y or 0, raw.Z or 0)
+        end
+      end
+      return _data[k]
+    end,
     __newindex = function(t, k, v)
       _data[k] = v
       if k == "Name" then
@@ -552,6 +562,22 @@ export class SessionEngine {
     this.luaEngine.global.set('_cb_out', (type: string, msg: string) => {
       // Broadcast to subscribed WS clients for this session
       this.broadcast(type, msg);
+    });
+
+    // Read back physics-owned properties (Velocity, Position) from CANNON body
+    // Returns a wasmoon-compatible table {X, Y, Z} or nil if not found.
+    this.luaEngine.global.set('_cb_getprop', (id: string, key: string): unknown => {
+      if (key === 'Velocity') {
+        const v = this.physics.getVelocity(id);
+        if (!v) return null;
+        return { X: v.x, Y: v.y, Z: v.z };
+      }
+      if (key === 'Position') {
+        const v = this.physics.getPosition(id);
+        if (!v) return null;
+        return { X: v.x, Y: v.y, Z: v.z };
+      }
+      return null;
     });
 
     // Wire per-session physics step

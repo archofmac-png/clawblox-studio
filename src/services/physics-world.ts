@@ -199,6 +199,16 @@ export class PhysicsWorld {
   }
 
   /**
+   * Get position of a body for reading back to Lua.
+   * Returns the CANNON body's live position (post-physics), not the registry snapshot.
+   */
+  getPosition(id: string): Vector3 | null {
+    const body = this.bodies.get(id);
+    if (!body) return null;
+    return { x: body.position.x, y: body.position.y, z: body.position.z };
+  }
+
+  /**
    * SphereCast: returns all Part instances whose AABB overlaps a sphere
    * swept along direction * distance from origin with the given radius.
    *

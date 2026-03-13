@@ -213,18 +213,23 @@ char.Parent = workspace
     
     def move(self, action: str):
         """Execute action with retry and session recovery - using Velocity API"""
-        # Velocity-based movement - use explicit values instead of trying to preserve
-        # because Velocity property isn't stored in state (can't read back)
-        # For World 2 climbing, adjust directions for the Z-axis layout
+        # Velocity-based movement - preserve Y velocity (gravity), set X/Z
+        # Same approach as World 1 which was confirmed working
         moves = {
-            # forward/back move along Z axis (toward/away from goal at Z=60)
-            "forward": "workspace.Character.Velocity = Vector3.new(0, 0, -15)",
-            "back": "workspace.Character.Velocity = Vector3.new(0, 0, 15)",
-            # Jump: apply upward velocity - always apply, let physics handle air control
-            "jump": "workspace.Character.Velocity = Vector3.new(0, 15, 0)",
-            # Left/right move along X axis
-            "left": "workspace.Character.Velocity = Vector3.new(-15, 0, 0)",
-            "right": "workspace.Character.Velocity = Vector3.new(15, 0, 0)",
+            # forward/back move along Z axis - but goal is also at Z=60 so mostly vertical
+            # Preserve Y velocity for gravity!
+            "forward": "workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, workspace.Character.Velocity.Y, -10)",
+            "back": "workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, workspace.Character.Velocity.Y, 10)",
+            # Jump: apply upward velocity impulse only if near ground (same as World 1)
+            "jump": """
+local pos = workspace.Character.Position
+if pos.Y < 3 then
+    workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, 15, workspace.Character.Velocity.Z)
+end
+""",
+            # Left/right move along X axis - preserve Y velocity
+            "left": "workspace.Character.Velocity = Vector3.new(-10, workspace.Character.Velocity.Y, workspace.Character.Velocity.Z)",
+            "right": "workspace.Character.Velocity = Vector3.new(10, workspace.Character.Velocity.Y, workspace.Character.Velocity.Z)",
         }
         def _step():
             result = self.agent.step(moves.get(action, moves["forward"]))
@@ -243,11 +248,17 @@ char.Parent = workspace
                 with_retry(_step)
         
     def reset_agent(self):
-        """Reset to spawn"""
-        def _reset():
-            return self.agent.step("workspace.Character.Position = Vector3.new(0, 4, 60)")
+        """Reset to spawn using reset_part (preserves velocity properly)"""
+        # Find the Character instance
         try:
-            with_retry(_reset)
+            result = self.agent.step("return workspace.Character")
+            if result and result.state:
+                for inst in result.state.instances:
+                    if inst.get('Name') == 'Character':
+                        instance_id = inst.get('instance_id')
+                        if instance_id:
+                            self.agent.session.reset_part(instance_id, 0, 4, 60)
+                            break
         except:
             pass  # Best effort
         self.last_y = SPAWN_POSITION["Y"]
