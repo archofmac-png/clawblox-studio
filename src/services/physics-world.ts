@@ -119,6 +119,7 @@ export class PhysicsWorld {
   /**
    * Sync a Part's Position to its cannon-es body.
    * Called when Part.Position is set in Lua.
+   * For non-anchored (dynamic) parts, we also zero velocity to implement teleport behavior.
    */
   syncPartPosition(instance: InstanceRecord): void {
     const body = this.bodies.get(instance.id);
@@ -127,6 +128,12 @@ export class PhysicsWorld {
     const pos = this.extractVector3(instance.properties['Position']);
     if (pos) {
       body.position.set(pos.x, pos.y, pos.z);
+      // For non-anchored (dynamic) parts, zero velocity to implement teleport behavior.
+      // This matches Roblox Studio where setting Position on a non-anchored part teleports it.
+      if (body.type === CANNON.Body.DYNAMIC) {
+        body.velocity.set(0, 0, 0);
+        body.angularVelocity.set(0, 0, 0);
+      }
       body.wakeUp();
     }
 
@@ -145,6 +152,27 @@ export class PhysicsWorld {
         this.sizes.set(instance.id, size);
       }
     }
+  }
+
+  /**
+   * Set velocity directly on a cannon-es body.
+   * Used by RL agents to move characters via Velocity (not Position).
+   * This is the primary movement API for RL agents.
+   */
+  setVelocity(id: string, velocity: Vector3): void {
+    const body = this.bodies.get(id);
+    if (!body) return;
+    body.velocity.set(velocity.x, velocity.y, velocity.z);
+    body.wakeUp();
+  }
+
+  /**
+   * Get velocity of a body for reading back to Lua.
+   */
+  getVelocity(id: string): Vector3 | null {
+    const body = this.bodies.get(id);
+    if (!body) return null;
+    return { x: body.velocity.x, y: body.velocity.y, z: body.velocity.z };
   }
 
   /**

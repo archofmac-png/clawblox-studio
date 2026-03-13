@@ -596,11 +596,14 @@ local function newInstance(className, name)
         _cb_setprop(id, k, serialized)
       end
     end,
-    -- Fetch Position from JS registry when read (for physics sync)
+    -- Fetch Position/Velocity from JS registry when read (for physics sync)
     __index = function(t, k)
       if k == "Position" then
         local pos = _cb_getprop(id, "Position")
         if pos then return Vector3.new(pos.X or pos.x or 0, pos.Y or pos.y or 0, pos.Z or pos.z or 0) end
+      elseif k == "Velocity" then
+        local vel = _cb_getprop(id, "Velocity")
+        if vel then return Vector3.new(vel.X or vel.x or 0, vel.Y or vel.y or 0, vel.Z or vel.z or 0) end
       end
       return nil
     end
@@ -1333,6 +1336,13 @@ export class GameEngine {
         if (key === 'Position' || key === 'Size' || key === 'CFrame') {
           physicsWorld.syncPartPosition(inst);
         }
+        // Handle Velocity property - set directly on cannon-es body (RL agent movement API)
+        if (key === 'Velocity' && storedValue && typeof storedValue === 'object') {
+          const vx = Number(storedValue['X'] ?? storedValue['x'] ?? 0);
+          const vy = Number(storedValue['Y'] ?? storedValue['y'] ?? 0);
+          const vz = Number(storedValue['Z'] ?? storedValue['z'] ?? 0);
+          physicsWorld.setVelocity(id, { x: vx, y: vy, z: vz });
+        }
         // Handle Anchored property change - need to re-register body with correct type
         if (key === 'Anchored') {
           physicsWorld.removePart(id);
@@ -1417,6 +1427,16 @@ export class GameEngine {
     this.engine.global.set('_cb_getprop', (id: string, key: string): any => {
       const inst = this.registry.get(id);
       if (!inst) return null;
+      
+      // Special case: Velocity is stored on cannon-es body, not in registry
+      if (key === 'Velocity') {
+        const vel = physicsWorld.getVelocity(id);
+        if (vel) {
+          return { X: vel.x, Y: vel.y, Z: vel.z };
+        }
+        return null;
+      }
+      
       return inst.properties[key] ?? null;
     });
 
