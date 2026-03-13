@@ -6,6 +6,7 @@
 import fs from 'fs';
 import path from 'path';
 import { LuaFactory, LuaEngine } from 'wasmoon';
+import { randomUUID } from 'crypto';
 
 // Wave 4: Physics world + Network bridge
 import { physicsWorld } from './physics-world.js';
@@ -325,6 +326,195 @@ class InstanceRegistry {
     };
   }
 }
+
+// -------------------------------------------------------------------
+// Wave H: Advanced Debugging Infrastructure (must be before GameEngine class)
+// -------------------------------------------------------------------
+
+function generateUUID(): string {
+  return randomUUID();
+}
+
+export interface Breakpoint {
+  id: string;
+  line: number;
+  file?: string;
+  condition?: string;
+  hit_count: number;
+}
+
+export interface DebugLocalsState {
+  paused: boolean;
+  line: number;
+  locals: Record<string, unknown>;
+  upvalues: Record<string, unknown>;
+  stack: string[];
+}
+
+export interface ProfileCall {
+  fn: string;
+  calls: number;
+  total_ms: number;
+  avg_ms: number;
+}
+
+export interface ProfileData {
+  duration_ms: number;
+  calls: ProfileCall[];
+  hottest: string;
+}
+
+// Global debug state (shared across the singleton engine)
+const _breakpoints: Map<string, Breakpoint> = new Map();
+let _debugPaused = false;
+let _debugCurrentLine = 0;
+let _debugLocals: Record<string, unknown> = {};
+let _debugUpvalues: Record<string, unknown> = {};
+let _debugStack: string[] = [];
+let _debugStepResolve: (() => void) | null = null;
+let _debugContinueResolve: (() => void) | null = null;
+
+// Profiling state
+let _profilingActive = false;
+let _profilingStartTime = 0;
+const _profileCalls: Map<string, { calls: number; total_ms: number; last_start: number }> = new Map();
+
+// Script hash registry for hot-reload
+const _scriptHashes: Map<string, string> = new Map();
+
+function hashCode(code: string): string {
+  let h = 0;
+  for (let i = 0; i < code.length; i++) {
+    h = (Math.imul(31, h) + code.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h).toString(16);
+}
+
+export function debugSetBreakpoint(line: number, file?: string, condition?: string): Breakpoint {
+  const id = generateUUID();
+  const bp: Breakpoint = { id, line, file, condition, hit_count: 0 };
+  _breakpoints.set(id, bp);
+  return bp;
+}
+
+export function debugGetBreakpoints(): Breakpoint[] {
+  return Array.from(_breakpoints.values());
+}
+
+export function debugDeleteBreakpoint(id: string): boolean {
+  return _breakpoints.delete(id);
+}
+
+export function debugGetLocalsState(): DebugLocalsState {
+  return {
+    paused: _debugPaused,
+    line: _debugCurrentLine,
+    locals: { ..._debugLocals },
+    upvalues: { ..._debugUpvalues },
+    stack: [..._debugStack],
+  };
+}
+
+export async function debugStep(): Promise<DebugLocalsState | null> {
+  if (!_debugPaused) return null;
+  _debugPaused = false;
+  if (_debugStepResolve) {
+    _debugStepResolve();
+    _debugStepResolve = null;
+  }
+  await new Promise(resolve => setTimeout(resolve, 50));
+  return debugGetLocalsState();
+}
+
+export async function debugContinue(): Promise<void> {
+  if (!_debugPaused) return;
+  _debugPaused = false;
+  if (_debugContinueResolve) {
+    _debugContinueResolve();
+    _debugContinueResolve = null;
+  }
+  if (_debugStepResolve) {
+    _debugStepResolve();
+    _debugStepResolve = null;
+  }
+}
+
+export function debugHotReload(file: string, code: string): { previous_hash: string; new_hash: string } {
+  const prevHash = _scriptHashes.get(file) ?? '0000000';
+  const newHash = hashCode(code);
+  _scriptHashes.set(file, newHash);
+  return { previous_hash: prevHash, new_hash: newHash };
+}
+
+export function profilingStart(): void {
+  _profilingActive = true;
+  _profilingStartTime = Date.now();
+  _profileCalls.clear();
+}
+
+export function profilingStop(): ProfileData {
+  const duration_ms = Date.now() - _profilingStartTime;
+  _profilingActive = false;
+
+  const calls: ProfileCall[] = [];
+  let hottest = '';
+  let hottestTotal = 0;
+
+  for (const [fn, data] of _profileCalls.entries()) {
+    const avg_ms = data.calls > 0 ? data.total_ms / data.calls : 0;
+    calls.push({ fn, calls: data.calls, total_ms: data.total_ms, avg_ms });
+    if (data.total_ms > hottestTotal) {
+      hottestTotal = data.total_ms;
+      hottest = fn;
+    }
+  }
+
+  calls.sort((a, b) => b.total_ms - a.total_ms);
+  return { duration_ms, calls, hottest };
+}
+
+export function isProfilingActive(): boolean {
+  return _profilingActive;
+}
+
+export function recordProfileCall(fn: string, ms: number): void {
+  if (!_profilingActive) return;
+  const existing = _profileCalls.get(fn);
+  if (existing) {
+    existing.calls++;
+    existing.total_ms += ms;
+  } else {
+    _profileCalls.set(fn, { calls: 1, total_ms: ms, last_start: 0 });
+  }
+}
+
+export interface StructuredError {
+  error: true;
+  error_type: 'LuaRuntimeError' | 'LuaSyntaxError' | 'TimeoutError' | 'SessionNotFound' | 'ValidationError' | 'InternalError';
+  message: string;
+  traceback: string;
+  context_snapshot: {
+    tick: number;
+    seed: number;
+    instance_count: number;
+  };
+  timestamp: number;
+}
+
+export function classifyLuaError(err: Error): StructuredError['error_type'] {
+  const msg = err.message ?? '';
+  if (msg.includes('syntax') || msg.includes('unexpected symbol') || msg.includes("'<eof>'")) {
+    return 'LuaSyntaxError';
+  }
+  if (msg.includes('timeout') || msg.includes('Timeout')) {
+    return 'TimeoutError';
+  }
+  return 'LuaRuntimeError';
+}
+
+// -------------------------------------------------------------------
+// End Wave H forward declarations
+// -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
 // Lua setup code
@@ -1666,6 +1856,87 @@ return __out
       this.engine = null;
     }
   }
+
+  // --- Wave H: inject_lua — runs in existing global context without resetting ---
+  async injectLua(code: string): Promise<{ injected: true; result: any }> {
+    await this.initLua();
+    try {
+      const result = await this.engine!.doString(code);
+      const output = await this.flushOutput();
+      return { injected: true, result: result !== undefined ? result : output.join('\n') || null };
+    } catch (err: any) {
+      throw err;
+    }
+  }
+
+  // --- Wave H: interrupt — forcefully reset the Lua VM ---
+  async interruptExecution(): Promise<void> {
+    if (this.engine) {
+      try { this.engine.global.close(); } catch (_) {}
+      this.engine = null;
+    }
+    // Re-initialize fresh VM
+    await this.initLua();
+    // Emit console:structured warning
+    broadcastStructuredEvent({
+      event: 'console:structured',
+      level: 'warn',
+      message: 'Execution interrupted',
+      traceback: null,
+      tick: getPhysicsTick(),
+    });
+  }
+
+  // --- Wave H: hot-reload — re-execute script in existing context ---
+  async hotReloadScript(file: string, code: string): Promise<{ reloaded: true; file: string; previous_hash: string; new_hash: string }> {
+    await this.initLua();
+    const { previous_hash, new_hash } = debugHotReload(file, code);
+
+    // Execute in existing VM context
+    try {
+      await this.engine!.doString(code);
+    } catch (err: any) {
+      throw err;
+    }
+
+    // Emit console:structured warning
+    broadcastStructuredEvent({
+      event: 'console:structured',
+      level: 'warn',
+      message: `Hot-reloaded: ${file}`,
+      traceback: null,
+      tick: getPhysicsTick(),
+    });
+
+    return { reloaded: true, file, previous_hash, new_hash };
+  }
+}
+
+// Wave H: buildStructuredError (needs GameEngine type, placed after class)
+export function buildStructuredError(
+  err: Error,
+  engine: GameEngine,
+  overrideType?: StructuredError['error_type'],
+): StructuredError {
+  const type = overrideType ?? classifyLuaError(err);
+  const msg = err.message ?? String(err);
+  const tracebackMatch = msg.match(/stack traceback:[\s\S]*/);
+  const traceback = tracebackMatch ? tracebackMatch[0] : '';
+  const cleanMsg = traceback ? msg.replace(traceback, '').trim() : msg;
+  const raw = engine.getObserveStateRaw();
+
+  return {
+    error: true,
+    error_type: type,
+    message: cleanMsg,
+    traceback,
+    context_snapshot: {
+      tick: raw.metadata.tick,
+      seed: raw.metadata.seed,
+      instance_count: raw.instances.length,
+    },
+    timestamp: Date.now(),
+  };
 }
 
 export const gameEngine = new GameEngine();

@@ -496,6 +496,133 @@ class ClawBloxClient:
             ]
         )
 
+    # ── Wave H: Advanced Debugging ────────────────────────────────────────────
+
+    def debug_set_breakpoint(
+        self,
+        line: int,
+        file: str | None = None,
+        condition: str | None = None,
+    ) -> dict:
+        """Set a breakpoint at a given line.
+
+        Args:
+            line: Line number to break on
+            file: Optional file name filter
+            condition: Optional Lua condition string
+
+        Returns:
+            dict with breakpoint_id, line, condition
+        """
+        payload: dict = {"line": line}
+        if file is not None:
+            payload["file"] = file
+        if condition is not None:
+            payload["condition"] = condition
+        return self._post("/api/debug/breakpoint/set", json=payload)
+
+    def debug_breakpoints(self) -> dict:
+        """List all breakpoints.
+
+        Returns:
+            dict with breakpoints list
+        """
+        return self._get("/api/debug/breakpoints")
+
+    def debug_delete_breakpoint(self, breakpoint_id: str) -> dict:
+        """Delete a breakpoint by ID.
+
+        Args:
+            breakpoint_id: Breakpoint UUID
+
+        Returns:
+            dict with deleted flag
+        """
+        return self._request("DELETE", f"/api/debug/breakpoint/{breakpoint_id}")
+
+    def debug_step(self) -> dict:
+        """Step one line forward when paused at a breakpoint.
+
+        Returns:
+            dict with stepped flag, line, locals, stack
+        """
+        return self._post("/api/debug/step")
+
+    def debug_continue(self) -> dict:
+        """Resume execution from a breakpoint.
+
+        Returns:
+            dict with resumed flag
+        """
+        return self._post("/api/debug/continue")
+
+    def debug_locals(self) -> dict:
+        """Get current local variables when paused at a breakpoint.
+
+        Returns:
+            dict with paused flag, locals, upvalues, line, stack
+        """
+        return self._get("/api/debug/locals")
+
+    def debug_hot_reload(self, file: str, code: str) -> dict:
+        """Hot-reload a script in the active session without restarting.
+
+        Args:
+            file: Script file path (e.g. 'ServerScriptService/GameService.lua')
+            code: New Lua source code
+
+        Returns:
+            dict with reloaded flag, file, previous_hash, new_hash
+        """
+        return self._post("/api/debug/hot-reload", json={"file": file, "code": code})
+
+    def debug_profile_start(self) -> dict:
+        """Start CPU profiling of Lua execution.
+
+        Returns:
+            dict with profiling flag and started_at timestamp
+        """
+        return self._post("/api/debug/profile/start")
+
+    def debug_profile_stop(self) -> dict:
+        """Stop profiling and return aggregated stats.
+
+        Returns:
+            dict with duration_ms, calls list, hottest function name
+        """
+        return self._post("/api/debug/profile/stop")
+
+    def agent_interrupt(self, session_id: str | None = None) -> dict:
+        """Forcefully interrupt a running Lua execution and reset the VM.
+
+        Args:
+            session_id: Optional session ID (defaults to global engine)
+
+        Returns:
+            dict with interrupted flag and session_id
+        """
+        payload: dict = {}
+        if session_id is not None:
+            payload["session_id"] = session_id
+        return self._post("/api/agent/interrupt", json=payload if payload else None)
+
+    def agent_inject_lua(self, code: str, session_id: str | None = None) -> dict:
+        """Inject Lua code into a running session without clearing state.
+
+        Args:
+            code: Lua code to inject
+            session_id: Optional session ID (defaults to global engine)
+
+        Returns:
+            dict with injected flag and result
+        """
+        payload: dict = {"code": code}
+        if session_id is not None:
+            payload["session_id"] = session_id
+        return self._post("/api/agent/inject_lua", json=payload)
+
+    # ── End Wave H ────────────────────────────────────────────────────────────
+
     # WebSocket
     @contextmanager
     def ws_connect(self, session_id: str | None = None) -> Iterator[dict]:

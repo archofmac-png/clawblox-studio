@@ -302,6 +302,63 @@ export class ClawBloxClient {
     return this.request<BridgeMessageResponse>('POST', '/api/messaging/bridge', request);
   }
 
+  // ── Wave H: Advanced Debugging ────────────────────────────────────────────
+
+  /** Set a breakpoint at a given line. */
+  async debugSetBreakpoint(line: number, options?: { file?: string; condition?: string }): Promise<{ breakpoint_id: string; line: number; condition?: string }> {
+    return this.request('POST', '/api/debug/breakpoint/set', { line, ...options });
+  }
+
+  /** List all breakpoints. */
+  async debugBreakpoints(): Promise<{ breakpoints: Array<{ id: string; line: number; condition?: string; hit_count: number }> }> {
+    return this.request('GET', '/api/debug/breakpoints');
+  }
+
+  /** Delete a breakpoint by ID. */
+  async debugDeleteBreakpoint(id: string): Promise<{ deleted: boolean; id: string }> {
+    return this.request('DELETE', `/api/debug/breakpoint/${id}`);
+  }
+
+  /** Step one line forward when paused at a breakpoint. */
+  async debugStep(): Promise<{ stepped: boolean; line: number; locals: Record<string, unknown>; stack: string[] }> {
+    return this.request('POST', '/api/debug/step');
+  }
+
+  /** Resume execution from a breakpoint. */
+  async debugContinue(): Promise<{ resumed: boolean }> {
+    return this.request('POST', '/api/debug/continue');
+  }
+
+  /** Get current local variables when paused at a breakpoint. */
+  async debugLocals(): Promise<{ paused: boolean; locals: Record<string, unknown>; upvalues: Record<string, unknown>; line: number; stack: string[] }> {
+    return this.request('GET', '/api/debug/locals');
+  }
+
+  /** Hot-reload a script in the active session without restarting. */
+  async debugHotReload(file: string, code: string): Promise<{ reloaded: boolean; file: string; previous_hash: string; new_hash: string }> {
+    return this.request('POST', '/api/debug/hot-reload', { file, code });
+  }
+
+  /** Start CPU profiling of Lua execution. */
+  async debugProfileStart(): Promise<{ profiling: boolean; started_at: number }> {
+    return this.request('POST', '/api/debug/profile/start');
+  }
+
+  /** Stop profiling and get aggregated stats. */
+  async debugProfileStop(): Promise<{ duration_ms: number; calls: Array<{ fn: string; calls: number; total_ms: number; avg_ms: number }>; hottest: string }> {
+    return this.request('POST', '/api/debug/profile/stop');
+  }
+
+  /** Forcefully interrupt a running Lua execution and reset the VM. */
+  async agentInterrupt(sessionId?: string): Promise<{ interrupted: boolean; session_id: string }> {
+    return this.request('POST', '/api/agent/interrupt', sessionId ? { session_id: sessionId } : {});
+  }
+
+  /** Inject Lua code into a running session without clearing existing state. */
+  async agentInjectLua(code: string, sessionId?: string): Promise<{ injected: boolean; result: unknown }> {
+    return this.request('POST', '/api/agent/inject_lua', { code, ...(sessionId ? { session_id: sessionId } : {}) });
+  }
+
   // Projects
   async projectsList(): Promise<ProjectsResponse> {
     return this.request<ProjectsResponse>('GET', '/api/projects');

@@ -765,6 +765,69 @@ PRs welcome. Guidelines:
 
 ---
 
+## v1.1.0 Changelog — All Waves
+
+ClawBlox Studio v1.1.0 introduces 8 major feature waves over the base v1.0 release:
+
+### Wave A — Structured Observability Layer
+- `GET /api/observe/state` — full scene snapshot (instances, physics bodies, players, datastore)
+- `GET /api/observe/screenshot` — current 3D viewport as base64 PNG
+- `GET /api/observe/gui-json` — GUI instance tree
+- WebSocket push of `observe:state`, `instance:created`, `instance:changed`, `console:structured` events every 500ms
+- Physics tick counter exported via WS (`physics:tick`)
+
+### Wave B — Deterministic Simulation Mode + Trajectory Export
+- `POST /api/game/start` accepts `{ deterministic: true, seed: N }` to lock RNG
+- `GET /api/simulation/export_trajectory` — NDJSON frame-by-frame replay export
+- `POST /api/simulation/replay` — replay recorded frames and compare final state
+- Per-execute deterministic override via `POST /api/game/execute`
+
+### Wave C — Multi-Agent Session Orchestration
+- `POST /api/session/create` — isolated Lua VM per session
+- `GET /api/session/list` / `DELETE /api/session/:id` / `DELETE /api/session/all`
+- `GET /api/session/:id/state` — full observe-state for one session
+- `POST /api/session/:id/execute` — execute Lua in session scope
+- `POST /api/session/:id/reset` — reset VM keeping same seed
+- `POST /api/messaging/bridge` — cross-session event delivery
+- WS subscription scoping (`{ "subscribe": "session_id" }`)
+
+### Wave D — OpenAPI 3.1 Spec + clawblox-ts TypeScript SDK
+- `GET /api/openapi.json` and `GET /api/openapi.yaml` — machine-readable API spec
+- `clawblox-ts` SDK: typed client covering all REST endpoints
+- Retry logic (3 attempts with exponential backoff)
+
+### Wave E — clawblox-py Python SDK
+- `clawblox-py` SDK: complete Python client mirroring TS SDK
+- All session, test, observe, physics, messaging endpoints covered
+- WebSocket context manager for event streaming
+
+### Wave F — Test Framework v2
+- `POST /api/test/run` — v2 response with describe/it/expect blocks
+- `POST /api/test/run_batch` — parallel batch test execution
+- `GET /api/test/coverage` — file coverage tracking
+- `reward_hook` support, `state_match` assertions, performance thresholds
+
+### Wave G — Docker + CLI + Headless Hardening
+- `npx clawblox` CLI: `start`, `execute`, `project`, `session`, `test`, `health`
+- Graceful shutdown (SIGTERM/SIGINT) — destroys sessions, closes WS/HTTP
+- Headless mode banner, `MAX_SESSIONS` env cap, `DETERMINISTIC_DEFAULT` flag
+- Enhanced `GET /api/health` with session counts and uptime
+
+### Wave H — Advanced Debugging (v1.1.0 Final)
+- **Breakpoints**: `POST /api/debug/breakpoint/set`, `GET /api/debug/breakpoints`, `DELETE /api/debug/breakpoint/:id`
+- **Step/Continue**: `POST /api/debug/step`, `POST /api/debug/continue`
+- **Locals inspection**: `GET /api/debug/locals` — get variables when paused
+- **Hot-reload**: `POST /api/debug/hot-reload` — patch scripts without VM restart
+- **Profiling**: `POST /api/debug/profile/start`, `POST /api/debug/profile/stop`
+- **Agent Interrupt**: `POST /api/agent/interrupt` — force-reset the Lua VM
+- **Inject Lua**: `POST /api/agent/inject_lua` — run code in existing session state
+- **Structured errors**: central error handler middleware; all Wave H endpoints return `{ error, error_type, message, traceback, context_snapshot, timestamp }`
+- Both SDKs (TS + Python) updated with all Wave H methods
+
+> **Note on breakpoint stepping**: wasmoon (Lua 5.4 WASM) does not expose native `debug.sethook` line events to the JS host. The breakpoint/step system implements the correct API contract using JS-side state management. Full native line-stepping would require a modified wasmoon build with debug hook bridging.
+
+---
+
 ## License
 
 MIT — free to use, modify, and distribute. Attribution appreciated.

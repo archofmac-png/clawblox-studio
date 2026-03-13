@@ -8,7 +8,12 @@ import archiver from 'archiver';
 import { WebSocketServer, WebSocket } from 'ws';
 
 // Import game engine
-import { gameEngine, setBroadcastFunction, broadcastStructuredEvent, incrementPhysicsTick, getTrajectory, resetCoverage, _coveredFiles, type TrajectoryFrame } from '../services/game-engine';
+import { gameEngine, setBroadcastFunction, broadcastStructuredEvent, incrementPhysicsTick, getTrajectory, resetCoverage, _coveredFiles, type TrajectoryFrame,
+  // Wave H debug exports
+  debugSetBreakpoint, debugGetBreakpoints, debugDeleteBreakpoint, debugGetLocalsState, debugStep, debugContinue,
+  profilingStart, profilingStop, isProfilingActive, buildStructuredError, classifyLuaError,
+  type Breakpoint, type StructuredError,
+} from '../services/game-engine';
 import { runTestFile, type TestSuiteV2 } from '../services/test-runner.js';
 
 // Wave A: Structured observability
@@ -2688,6 +2693,276 @@ app.post('/api/messaging/bridge', async (req, res) => {
 
 // ============================================================
 // End Wave C
+// ============================================================
+
+// ============================================================
+// Wave H: Advanced Debugging Endpoints
+// ============================================================
+
+// Helper: build structured error response
+function structuredError(
+  res: any,
+  err: Error,
+  status: number = 500,
+  overrideType?: StructuredError['error_type'],
+) {
+  const payload = buildStructuredError(err, gameEngine, overrideType);
+  return res.status(status).json(payload);
+}
+
+// Helper: build simple structured validation error
+function validationError(res: any, message: string) {
+  const raw = gameEngine.getObserveStateRaw();
+  return res.status(400).json({
+    error: true,
+    error_type: 'ValidationError',
+    message,
+    traceback: '',
+    context_snapshot: {
+      tick: raw.metadata.tick,
+      seed: raw.metadata.seed,
+      instance_count: raw.instances.length,
+    },
+    timestamp: Date.now(),
+  } satisfies StructuredError);
+}
+
+/**
+ * POST /api/debug/breakpoint/set
+ * Body: { line, file?, condition? }
+ */
+app.post('/api/debug/breakpoint/set', (req, res) => {
+  const { line, file, condition } = req.body ?? {};
+  if (typeof line !== 'number') {
+    return validationError(res, 'line (number) is required');
+  }
+  const bp = debugSetBreakpoint(line, file, condition);
+  res.json({ breakpoint_id: bp.id, line: bp.line, file: bp.file, condition: bp.condition });
+});
+
+/**
+ * GET /api/debug/breakpoints
+ */
+app.get('/api/debug/breakpoints', (_req, res) => {
+  res.json({ breakpoints: debugGetBreakpoints() });
+});
+
+/**
+ * DELETE /api/debug/breakpoint/:id
+ */
+app.delete('/api/debug/breakpoint/:id', (req, res) => {
+  const deleted = debugDeleteBreakpoint(req.params.id);
+  if (!deleted) {
+    const raw = gameEngine.getObserveStateRaw();
+    return res.status(404).json({
+      error: true,
+      error_type: 'ValidationError',
+      message: `Breakpoint ${req.params.id} not found`,
+      traceback: '',
+      context_snapshot: { tick: raw.metadata.tick, seed: raw.metadata.seed, instance_count: raw.instances.length },
+      timestamp: Date.now(),
+    });
+  }
+  res.json({ deleted: true, id: req.params.id });
+});
+
+/**
+ * POST /api/debug/step
+ * Steps one line forward when paused at a breakpoint.
+ * Note: wasmoon does not expose native line-level debug hooks; this implementation
+ * uses a JS-side simulation. Full native stepping requires debug.sethook integration.
+ */
+app.post('/api/debug/step', async (req, res) => {
+  try {
+    const state = await debugStep();
+    if (state === null) {
+      return res.json({
+        stepped: false,
+        message: 'Not currently paused at a breakpoint',
+        line: 0,
+        locals: {},
+        stack: [],
+      });
+    }
+    res.json({
+      stepped: true,
+      line: state.line,
+      locals: state.locals,
+      stack: state.stack,
+    });
+  } catch (err: any) {
+    return structuredError(res, err);
+  }
+});
+
+/**
+ * POST /api/debug/continue
+ * Resume execution from a breakpoint.
+ */
+app.post('/api/debug/continue', async (_req, res) => {
+  await debugContinue();
+  res.json({ resumed: true });
+});
+
+/**
+ * GET /api/debug/locals
+ * Get current local variables when paused.
+ */
+app.get('/api/debug/locals', (_req, res) => {
+  const state = debugGetLocalsState();
+  res.json({
+    paused: state.paused,
+    locals: state.locals,
+    upvalues: state.upvalues,
+    line: state.line,
+    stack: state.stack,
+  });
+});
+
+/**
+ * POST /api/debug/hot-reload
+ * Hot-reload a script in the active game session without restarting.
+ * Body: { file, code }
+ */
+app.post('/api/debug/hot-reload', async (req, res) => {
+  const { file, code } = req.body ?? {};
+  if (!file || typeof file !== 'string') return validationError(res, 'file (string) is required');
+  if (!code || typeof code !== 'string') return validationError(res, 'code (string) is required');
+
+  try {
+    const result = await gameEngine.hotReloadScript(file, code);
+    res.json(result);
+  } catch (err: any) {
+    return structuredError(res, err);
+  }
+});
+
+/**
+ * POST /api/debug/profile/start
+ * Start CPU profiling of Lua execution.
+ */
+app.post('/api/debug/profile/start', (_req, res) => {
+  profilingStart();
+  res.json({ profiling: true, started_at: Date.now() });
+});
+
+/**
+ * POST /api/debug/profile/stop
+ * Stop profiling and return aggregated stats.
+ */
+app.post('/api/debug/profile/stop', (_req, res) => {
+  if (!isProfilingActive()) {
+    return res.json({
+      duration_ms: 0,
+      calls: [],
+      hottest: null,
+      message: 'Profiling was not active',
+    });
+  }
+  const data = profilingStop();
+  res.json(data);
+});
+
+/**
+ * POST /api/agent/interrupt
+ * Forcefully interrupts and resets the Lua VM.
+ * Body: { session_id? }
+ */
+app.post('/api/agent/interrupt', async (req, res) => {
+  const { session_id } = req.body ?? {};
+  const sid = session_id ?? 'global';
+
+  try {
+    // If session_id refers to a session manager session, reset that
+    if (session_id) {
+      const session = sessionManager.getSession(session_id);
+      if (session) {
+        await sessionManager.resetSession(session);
+        broadcastStructuredEvent({
+          event: 'console:structured',
+          level: 'warn',
+          message: 'Execution interrupted',
+          traceback: null,
+          tick: 0,
+        });
+        return res.json({ interrupted: true, session_id: sid });
+      }
+    }
+    // Default: interrupt the global engine
+    await gameEngine.interruptExecution();
+    res.json({ interrupted: true, session_id: sid });
+  } catch (err: any) {
+    return structuredError(res, err);
+  }
+});
+
+/**
+ * POST /api/agent/inject_lua
+ * Inject and execute Lua code into a running session without clearing state.
+ * Body: { code, session_id? }
+ */
+app.post('/api/agent/inject_lua', async (req, res) => {
+  const { code, session_id } = req.body ?? {};
+  if (!code || typeof code !== 'string') return validationError(res, 'code (string) is required');
+
+  try {
+    // If session_id provided, inject into that session's engine
+    if (session_id) {
+      const session = sessionManager.getSession(session_id);
+      if (!session) {
+        const raw = gameEngine.getObserveStateRaw();
+        return res.status(404).json({
+          error: true,
+          error_type: 'SessionNotFound',
+          message: `Session '${session_id}' not found`,
+          traceback: '',
+          context_snapshot: { tick: raw.metadata.tick, seed: raw.metadata.seed, instance_count: raw.instances.length },
+          timestamp: Date.now(),
+        } satisfies StructuredError);
+      }
+      await sessionManager.ensureInit(session);
+      const result = await session.engine.injectLua(code);
+      return res.json({ ...result, session_id });
+    }
+
+    // Default: inject into global engine
+    const result = await gameEngine.injectLua(code);
+    res.json(result);
+  } catch (err: any) {
+    return structuredError(res, err);
+  }
+});
+
+// ============================================================
+// Wave H: Central Error Handler Middleware
+// ============================================================
+// Catches unhandled errors from all routes above
+app.use((err: any, _req: any, res: any, _next: any) => {
+  console.error('[server] Unhandled error:', err?.message ?? err);
+  const raw = (() => {
+    try { return gameEngine.getObserveStateRaw(); } catch { return null; }
+  })();
+  const ctx = raw
+    ? { tick: raw.metadata.tick, seed: raw.metadata.seed, instance_count: raw.instances.length }
+    : { tick: 0, seed: 0, instance_count: 0 };
+
+  const errObj = err instanceof Error ? err : new Error(String(err));
+  const type = classifyLuaError(errObj);
+  const msg = errObj.message ?? String(err);
+  const tracebackMatch = msg.match(/stack traceback:[\s\S]*/);
+  const traceback = tracebackMatch ? tracebackMatch[0] : '';
+
+  res.status(500).json({
+    error: true,
+    error_type: type,
+    message: tracebackMatch ? msg.replace(traceback, '').trim() : msg,
+    traceback,
+    context_snapshot: ctx,
+    timestamp: Date.now(),
+  } satisfies StructuredError);
+});
+// ============================================================
+// End Wave H
 // ============================================================
 
 const httpServer = app.listen(PORT, () => {
