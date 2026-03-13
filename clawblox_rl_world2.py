@@ -93,6 +93,7 @@ class ClawBloxRLTrainer:
         
         self.agent = ClawBloxAgent(self.client, seed=seed, deterministic=True)
         self.agent.reset()
+                self.spawn_world()
         
         self.episode_results: List[EpisodeResult] = []
         self.last_y = SPAWN_POSITION["Y"]  # Track for upward progress reward
@@ -213,22 +214,24 @@ char.Parent = workspace
         # For World 2 climbing, adjust directions for the Z-axis layout
         moves = {
             # forward/back move along Z axis (toward/away from goal at Z=60)
-            "forward": "workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, workspace.Character.Velocity.Y, -10)\nRunService:Step(0.033)",
-            "back": "workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, workspace.Character.Velocity.Y, 10)\nRunService:Step(0.033)",
+            "forward": "workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, workspace.Character.Velocity.Y, -10)",
+            "back": "workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, workspace.Character.Velocity.Y, 10)",
             # Jump: apply upward velocity impulse only if near ground
             "jump": """
 local pos = workspace.Character.Position
 if pos.Y < 4 then
     workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, 12, workspace.Character.Velocity.Z)
 end
-RunService:Step(0.033)
 """,
             # Left/right move along X axis
-            "left": "workspace.Character.Velocity = Vector3.new(-10, workspace.Character.Velocity.Y, workspace.Character.Velocity.Z)\nRunService:Step(0.033)",
-            "right": "workspace.Character.Velocity = Vector3.new(10, workspace.Character.Velocity.Y, workspace.Character.Velocity.Z)\nRunService:Step(0.033)",
+            "left": "workspace.Character.Velocity = Vector3.new(-10, workspace.Character.Velocity.Y, workspace.Character.Velocity.Z)",
+            "right": "workspace.Character.Velocity = Vector3.new(10, workspace.Character.Velocity.Y, workspace.Character.Velocity.Z)",
         }
         def _step():
-            return self.agent.step(moves.get(action, moves["forward"]))
+            result = self.agent.step(moves.get(action, moves["forward"]))
+            # Step physics after each action
+            self.agent.session.physics_step(0.033)
+            return result
         try:
             with_retry(_step)
         except Exception as e:
@@ -237,6 +240,7 @@ RunService:Step(0.033)
                 print("  Session lost, reinitializing...")
                 self.agent = ClawBloxAgent(self.client, seed=self.seed, deterministic=True)
                 self.agent.reset()
+                self.spawn_world()
                 with_retry(_step)
         
     def reset_agent(self):

@@ -127,6 +127,17 @@ class ClawBloxSession:
         """
         return self.client.session_messages(self.session_id)
 
+    def physics_step(self, dt: float = 0.033) -> dict:
+        """Step the physics simulation forward.
+
+        Args:
+            dt: Time delta in seconds (default 0.033 = ~30fps)
+
+        Returns:
+            dict with ok, dt
+        """
+        return self.client.physics_step(self.session_id, dt)
+
     def on(self, event_type: str, handler: Callable) -> None:
         """Subscribe to WebSocket events for this session.
 

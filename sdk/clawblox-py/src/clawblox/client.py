@@ -62,7 +62,7 @@ class ClawBloxClient:
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.ws_port = ws_port
-        self._client = httpx.Client(timeout=timeout)
+        self._client = httpx.Client(timeout=httpx.Timeout(timeout, connect=10.0))
 
     def close(self):
         """Close the HTTP client."""
@@ -458,6 +458,21 @@ class ClawBloxClient:
         return TestCoverageResponse.from_dict(data)
 
     # Physics endpoints
+    def physics_step(self, session_id: str | None = None, dt: float = 0.033) -> dict:
+        """Step the physics simulation forward.
+
+        Args:
+            session_id: Optional session ID (defaults to global)
+            dt: Time delta in seconds (default 0.033 = ~30fps)
+
+        Returns:
+            dict with ok, dt
+        """
+        params: dict = {"dt": dt}
+        if session_id is not None:
+            params["session_id"] = session_id
+        return self._post("/api/physics/step", json=params)
+
     def spherecast(
         self,
         origin: Vector3,
