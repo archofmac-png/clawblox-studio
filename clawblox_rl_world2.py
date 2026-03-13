@@ -34,8 +34,8 @@ def with_retry(fn, max_retries=5, delay=2.0):
 
 # Configuration
 SEED = 42
-NUM_EPISODES = 50  # Keep at 50 as requested
-MAX_STEPS = 150    # Keep at 150 as requested
+NUM_EPISODES = 50
+MAX_STEPS = 200    # more steps per episode = more jump attempts
 OBSERVE_EVERY = 5
 
 # Rewards
@@ -220,31 +220,34 @@ Character.Parent = workspace
         # Each action is two separate step() calls: set velocity/impulse, then step physics.
         # Combining them in one Lua string (semicolon-joined) doesn't work — impulse is
         # applied before the physics body's velocity state is fully synced.
+        # Impulse/velocity script (first call), then multi-step physics (10 × dt=0.02s = 0.2s of sim time)
+        # Running multiple sub-steps lets gravity arc the character through a full jump trajectory
+        PHYSICS_SUBSTEPS = "_cb_physics_step(0.02)\n" * 10
         move_scripts = {
             "forward": (
                 "Character.AssemblyLinearVelocity = Vector3.new(Character.AssemblyLinearVelocity.X, Character.AssemblyLinearVelocity.Y, -10)",
-                "_cb_physics_step(0.05)",
+                PHYSICS_SUBSTEPS,
             ),
             "back": (
                 "Character.AssemblyLinearVelocity = Vector3.new(Character.AssemblyLinearVelocity.X, Character.AssemblyLinearVelocity.Y, 10)",
-                "_cb_physics_step(0.05)",
+                PHYSICS_SUBSTEPS,
             ),
             "jump": (
                 "Character:ApplyImpulse(Vector3.new(0, 60, 0))",
-                "_cb_physics_step(0.05)",
+                PHYSICS_SUBSTEPS,
             ),
             "left": (
                 "Character.AssemblyLinearVelocity = Vector3.new(-10, Character.AssemblyLinearVelocity.Y, Character.AssemblyLinearVelocity.Z)",
-                "_cb_physics_step(0.05)",
+                PHYSICS_SUBSTEPS,
             ),
             "right": (
                 "Character.AssemblyLinearVelocity = Vector3.new(10, Character.AssemblyLinearVelocity.Y, Character.AssemblyLinearVelocity.Z)",
-                "_cb_physics_step(0.05)",
+                PHYSICS_SUBSTEPS,
             ),
         }
         scripts = move_scripts.get(action, move_scripts["forward"])
         def _step():
-            # Two separate calls: apply, then step physics
+            # Two separate calls: apply impulse/velocity, then run 10 physics sub-steps
             self.agent.step(scripts[0])
             result = self.agent.step(scripts[1])
             return result

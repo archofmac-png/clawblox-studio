@@ -58,7 +58,7 @@ export class PhysicsWorld {
     });
     // Broadphase for efficient collision detection
     this.world.broadphase = new CANNON.NaiveBroadphase();
-    this.world.allowSleep = true;
+    this.world.allowSleep = false; // keep bodies awake so impulses always apply
   }
 
   /**
@@ -206,8 +206,8 @@ export class PhysicsWorld {
     const body = this.bodies.get(id);
     if (!body || body.type !== CANNON.Body.DYNAMIC) return;
     // CANNON applyImpulse(impulse, worldPoint) — use body center
+    body.wakeUp(); // wake before impulse so sleep state doesn't discard it
     body.applyImpulse(new CANNON.Vec3(impulse.x, impulse.y, impulse.z), new CANNON.Vec3(0, 0, 0));
-    body.wakeUp();
   }
 
   /**
