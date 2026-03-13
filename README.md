@@ -327,6 +327,48 @@ See [`CLAWBLOX_USER_GUIDE.md`](CLAWBLOX_USER_GUIDE.md) for the complete REST API
 
 ---
 
+## For AI Agents
+
+ClawBlox Studio is designed for AI agents to programmatically control Roblox game development. Here's how to get started:
+
+### Python-Style PPO Agent Loop
+
+```python
+# Pseudocode - adapt to your agent framework
+agent = ClawBloxAgent(deterministic=True, seed=12345)
+state = agent.reset()  # Create session, get initial state
+
+for step in range(1000):
+    action = policy(state)  # Your policy function
+    state, done = agent.step(action)
+    if done:
+        state = agent.reset()
+
+agent.destroy()
+```
+
+### Installation
+
+```bash
+npm install clawblox-ts
+```
+
+### SDK Resources
+
+- **TypeScript SDK**: `sdk/clawblox-ts/` - Full SDK with `ClawBloxClient`, `ClawBloxSession`, and `ClawBloxAgent` classes
+- **OpenAPI Spec**: `openapi.json` - Complete REST API specification (also available at `GET /api/openapi.json`)
+
+### Key Endpoints
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/session/create` | Create isolated agent session |
+| `POST /api/session/:id/execute` | Run Lua code in session |
+| `GET /api/observe/state` | Get full game state |
+| `POST /api/simulation/replay` | Replay recorded trajectories |
+
+---
+
 ## License
 
 MIT — use it, fork it, build on it.

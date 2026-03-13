@@ -1,0 +1,22 @@
+{
+  "name": "clawblox-ts",
+  "version": "1.1.0",
+  "description": "TypeScript SDK for ClawBlox Studio API",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "roblox",
+    "lua",
+    "game-engine",
+    "api"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.19.37",
+    "typescript": "^5.9.3"
+  }
+}

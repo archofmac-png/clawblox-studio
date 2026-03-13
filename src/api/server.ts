@@ -171,6 +171,38 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Wave D: OpenAPI spec endpoints
+const OPENAPI_JSON_PATH = path.join(__dirname, '../../openapi.json');
+
+app.get('/api/openapi.json', (req, res) => {
+  try {
+    if (fs.existsSync(OPENAPI_JSON_PATH)) {
+      res.setHeader('Content-Type', 'application/json');
+      res.send(fs.readFileSync(OPENAPI_JSON_PATH, 'utf-8'));
+    } else {
+      res.status(404).json({ error: 'openapi.json not found. Generate it with: npm run generate-openapi' });
+    }
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/openapi.yaml', (req, res) => {
+  try {
+    if (fs.existsSync(OPENAPI_JSON_PATH)) {
+      const yaml = require('js-yaml');
+      const spec = JSON.parse(fs.readFileSync(OPENAPI_JSON_PATH, 'utf-8'));
+      const yamlStr = yaml.dump(spec, { lineWidth: -1 });
+      res.setHeader('Content-Type', 'text/yaml');
+      res.send(yamlStr);
+    } else {
+      res.status(404).json({ error: 'openapi.json not found' });
+    }
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // List all projects
 app.get('/api/projects', (req, res) => {
   try {
