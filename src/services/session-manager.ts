@@ -162,16 +162,21 @@ local function newInstance(className, name)
   setmetatable(inst, {
     __index = function(t, k)
       -- For physics-owned properties, read back from CANNON via JS bridge
-      if k == "Velocity" or k == "Position" then
-        local raw = _cb_getprop(id, k)
+      if k == "Velocity" or k == "Position" or k == "AssemblyLinearVelocity" then
+        local raw = _cb_getprop(id, "Velocity")
+        if k == "Position" then raw = _cb_getprop(id, "Position") end
         if raw ~= nil then
-          -- Convert JS object to a proper Lua table with X/Y/Z fields
           return Vector3.new(raw.X or 0, raw.Y or 0, raw.Z or 0)
         end
       end
       return _data[k]
     end,
     __newindex = function(t, k, v)
+      -- AssemblyLinearVelocity is Roblox alias for Velocity
+      if k == "AssemblyLinearVelocity" then
+        _cb_setprop(id, "Velocity", v)
+        return
+      end
       _data[k] = v
       if k == "Name" then
         _cb_setprop(id, "Name", v)
@@ -207,6 +212,22 @@ local function newInstance(className, name)
       end
     end
   })
+
+  -- Roblox BasePart:ApplyImpulse(Vector3) — mass-aware impulse via CANNON
+  function inst:ApplyImpulse(impulse)
+    if _cb_impulse then
+      _cb_impulse(id, impulse.X or 0, impulse.Y or 0, impulse.Z or 0)
+    end
+  end
+  -- Roblox BasePart:GetMass()
+  function inst:GetMass()
+    if _cb_getmass then return _cb_getmass(id) end
+    return 1
+  end
+
+  -- AssemblyLinearVelocity: Roblox alias for Velocity (read + write via __index/__newindex)
+  -- handled via the existing Velocity path in __index and a special key in __newindex above
+  -- (AssemblyLinearVelocity set is handled by the Lua __newindex below, read via __index)
 
   function inst:FindFirstChild(n)
     for _, c in ipairs(self._children) do if c.Name == n then return c end end
