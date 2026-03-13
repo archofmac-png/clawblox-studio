@@ -6,6 +6,23 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)](https://nodejs.org/)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows%20%7C%20macOS-lightgrey.svg)]()
+[![Release](https://img.shields.io/github/v/release/archofmac-png/clawblox-studio)](https://github.com/archofmac-png/clawblox-studio/releases/latest)
+
+---
+
+## ⬇️ Download
+
+| Platform | Installer | Notes |
+|---|---|---|
+| **Linux** | [ClawBlox-Studio-1.0.0.AppImage](https://github.com/archofmac-png/clawblox-studio/releases/download/v1.0.0/ClawBlox-Studio-1.0.0.AppImage) | Download, `chmod +x`, double-click to run |
+| **Windows** | Build from source (`npm run build:win`) | Generates NSIS `.exe` installer |
+| **macOS** | Build from source (`npm run build:mac`) | Generates `.dmg` |
+
+> **Linux users:** No install needed. Just download the AppImage, make it executable, and run it.
+> ```bash
+> chmod +x ClawBlox-Studio-1.0.0.AppImage
+> ./ClawBlox-Studio-1.0.0.AppImage
+> ```
 
 ---
 
@@ -187,7 +204,17 @@ These are Roblox Studio features not yet implemented — gaps vs the real thing:
 
 ## Quick Start
 
-### Human Usage (Desktop App)
+### Human Usage — Installer (Recommended)
+
+**Linux:** Download the AppImage from the [Releases page](https://github.com/archofmac-png/clawblox-studio/releases/latest), then:
+```bash
+chmod +x ClawBlox-Studio-1.0.0.AppImage
+./ClawBlox-Studio-1.0.0.AppImage
+```
+
+**Windows/macOS:** Build from source (see below) — generates a native installer.
+
+### Human Usage — Build From Source
 
 ```bash
 git clone https://github.com/archofmac-png/clawblox-studio.git
