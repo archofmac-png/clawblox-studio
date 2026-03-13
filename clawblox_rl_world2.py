@@ -48,7 +48,7 @@ REWARD_STEP = -0.1
 # Goal at top platform (inst_47 at Y=15.5, Z=60)
 GOAL_POSITION = {"X": 0, "Y": 20, "Z": 60}
 GOAL_THRESHOLD = 5.0  # Distance to consider goal reached
-SPAWN_POSITION = {"X": 0, "Y": 2, "Z": 60}  # Start above ground (Y=0.25 + char half-height)
+SPAWN_POSITION = {"X": 0, "Y": 5, "Z": 60}  # Start clear of ground (ground Y=0.25, char half-height=2)
 
 
 @dataclass
@@ -171,13 +171,13 @@ goalPart.Anchored = true
 goalPart.BrickColor = BrickColor.new("Bright red")
 goalPart.Parent = workspace
 
--- Character
-local char = Instance.new("Part")
-char.Name = "Character"
-char.Size = Vector3.new(2, 4, 1)
-char.Position = Vector3.new(0, 2, 60)
-char.Anchored = false
-char.Parent = workspace
+-- Character (stored as global so cross-step Lua can reference it)
+Character = Instance.new("Part")
+Character.Name = "Character"
+Character.Size = Vector3.new(2, 4, 1)
+Character.Position = Vector3.new(0, 5, 60)
+Character.Anchored = false
+Character.Parent = workspace
 """
         def _spawn():
             return self.agent.step(lua)
@@ -185,30 +185,34 @@ char.Parent = workspace
         print("World 2 spawned: Vertical climbing challenge")
         
     def get_position(self) -> Optional[Dict[str, float]]:
-        """Get character position from state with retry"""
-        def _step():
-            return self.agent.step("local _ = 1")
-        
+        """Get character position directly from Lua (live physics values, not stale registry).
+        Uses session.execute() directly to capture print() output from the Lua VM.
+        """
+        def _fetch():
+            if self.agent.session is None:
+                raise RuntimeError("No session")
+            return self.agent.session.execute(
+                'local p = Character.Position; '
+                'print("POS:" .. p.X .. "," .. p.Y .. "," .. p.Z)'
+            )
         try:
-            result = with_retry(_step)
+            result = with_retry(_fetch)
         except:
             return None
-            
-        if not result or not result.state:
-            return None
-            
-        for inst in result.state.instances:
-            name = inst.get('Name', '')
-            if name in ['Character', 'Part']:
-                props = inst.get('properties', {})
-                pos = props.get('Position')
-                # Position can be a dict {'X': ..., 'Y': ..., 'Z': ...} or a string
-                if isinstance(pos, dict):
-                    return {'X': float(pos.get('X', 0)), 'Y': float(pos.get('Y', 0)), 'Z': float(pos.get('Z', 0))}
-                elif isinstance(pos, str) and 'Vector3' in pos:
-                    match = re.search(r'Vector3\(([-\d.]+),([-\d.]+),([-\d.]+)\)', pos)
-                    if match:
-                        return {'X': float(match.group(1)), 'Y': float(match.group(2)), 'Z': float(match.group(3))}
+
+        if result and result.output:
+            for line in result.output:
+                if isinstance(line, str) and line.startswith("POS:"):
+                    parts = line[4:].split(",")
+                    if len(parts) == 3:
+                        try:
+                            return {
+                                'X': float(parts[0]),
+                                'Y': float(parts[1]),
+                                'Z': float(parts[2]),
+                            }
+                        except ValueError:
+                            pass
         return None
     
     def move(self, action: str):
@@ -218,23 +222,23 @@ char.Parent = workspace
         # applied before the physics body's velocity state is fully synced.
         move_scripts = {
             "forward": (
-                "workspace.Character.AssemblyLinearVelocity = Vector3.new(workspace.Character.AssemblyLinearVelocity.X, workspace.Character.AssemblyLinearVelocity.Y, -10)",
+                "Character.AssemblyLinearVelocity = Vector3.new(Character.AssemblyLinearVelocity.X, Character.AssemblyLinearVelocity.Y, -10)",
                 "_cb_physics_step(0.05)",
             ),
             "back": (
-                "workspace.Character.AssemblyLinearVelocity = Vector3.new(workspace.Character.AssemblyLinearVelocity.X, workspace.Character.AssemblyLinearVelocity.Y, 10)",
+                "Character.AssemblyLinearVelocity = Vector3.new(Character.AssemblyLinearVelocity.X, Character.AssemblyLinearVelocity.Y, 10)",
                 "_cb_physics_step(0.05)",
             ),
             "jump": (
-                "workspace.Character:ApplyImpulse(Vector3.new(0, 520, 0))",
+                "Character:ApplyImpulse(Vector3.new(0, 60, 0))",
                 "_cb_physics_step(0.05)",
             ),
             "left": (
-                "workspace.Character.AssemblyLinearVelocity = Vector3.new(-10, workspace.Character.AssemblyLinearVelocity.Y, workspace.Character.AssemblyLinearVelocity.Z)",
+                "Character.AssemblyLinearVelocity = Vector3.new(-10, Character.AssemblyLinearVelocity.Y, Character.AssemblyLinearVelocity.Z)",
                 "_cb_physics_step(0.05)",
             ),
             "right": (
-                "workspace.Character.AssemblyLinearVelocity = Vector3.new(10, workspace.Character.AssemblyLinearVelocity.Y, workspace.Character.AssemblyLinearVelocity.Z)",
+                "Character.AssemblyLinearVelocity = Vector3.new(10, Character.AssemblyLinearVelocity.Y, Character.AssemblyLinearVelocity.Z)",
                 "_cb_physics_step(0.05)",
             ),
         }
@@ -259,7 +263,7 @@ char.Parent = workspace
         """Reset to spawn using reset_part (preserves velocity properly)"""
         # Find the Character instance
         try:
-            result = self.agent.step("return workspace.Character")
+            result = self.agent.step("return Character")
             if result and result.state:
                 for inst in result.state.instances:
                     if inst.get('Name') == 'Character':
