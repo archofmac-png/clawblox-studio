@@ -1,0 +1,1908 @@
+import express from 'express';
+import cors from 'cors';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import git from 'isomorphic-git';
+import archiver from 'archiver';
+import { WebSocketServer, WebSocket } from 'ws';
+
+// Import game engine
+import { gameEngine, setBroadcastFunction } from '../services/game-engine';
+import { runTestFile } from '../services/test-runner.js';
+
+// Wave 4 imports
+import { physicsWorld } from '../services/physics-world.js';
+import { networkBridge } from '../services/network-bridge.js';
+import { pathfindingService } from '../services/pathfinding.js';
+
+// Wave 5.5 imports
+import { scenePersistence } from '../services/scene-persistence.js';
+
+// Wave 6: xml2js for rbxlx import
+import { parseStringPromise } from 'xml2js';
+import type { InstanceRecord } from '../services/game-engine.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+const PORT = 3001;
+const WS_PORT = 3002;
+
+// WebSocket server for live output
+const wss = new WebSocketServer({ port: WS_PORT });
+const wsClients: Set<WebSocket> = new Set();
+
+wss.on('connection', (ws) => {
+  wsClients.add(ws);
+  console.log(`[WS] Client connected. Total: ${wsClients.size}`);
+  
+  ws.on('close', () => {
+    wsClients.delete(ws);
+    console.log(`[WS] Client disconnected. Total: ${wsClients.size}`);
+  });
+  
+  ws.on('error', (err) => {
+    console.error('[WS] Error:', err.message);
+    wsClients.delete(ws);
+  });
+});
+
+console.log(`[WS] WebSocket server running on ws://localhost:${WS_PORT}`);
+
+// Broadcast to all WebSocket clients
+function broadcastOutput(type: string, message: string) {
+  const payload = JSON.stringify({
+    type,
+    message,
+    timestamp: new Date().toISOString(),
+  });
+  
+  for (const client of wsClients) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(payload);
+    }
+  }
+}
+
+// Set broadcast function on game engine (module-level export, not a method on gameEngine)
+try { setBroadcastFunction(broadcastOutput); console.log('[WS] Broadcast function wired to game engine'); } catch(e) { console.log("WS broadcast not available:", e) }
+
+// Wire NetworkBridge broadcast
+networkBridge.setBroadcast(broadcastOutput);
+
+// Wire PathfindingService agent movement broadcast
+pathfindingService.setAgentBroadcast((agentName, position, done) => {
+  broadcastOutput('agent-move', JSON.stringify({ agentName, position, done }));
+});
+
+app.use(cors());
+app.use(express.json());
+
+// Request logging middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
+  });
+  next();
+});
+
+const PROJECTS_DIR = path.join(__dirname, '../../clawblox-projects');
+
+// Ensure projects directory exists
+if (!fs.existsSync(PROJECTS_DIR)) {
+  fs.mkdirSync(PROJECTS_DIR, { recursive: true });
+}
+
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// List all projects
+app.get('/api/projects', (req, res) => {
+  try {
+    const dirs = fs.readdirSync(PROJECTS_DIR).filter(f => 
+      fs.statSync(path.join(PROJECTS_DIR, f)).isDirectory()
+    );
+    res.json(dirs.map(name => ({
+      id: name,
+      name,
+      created: fs.statSync(path.join(PROJECTS_DIR, name)).birthtime
+    })));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Create new project
+app.post('/api/projects', (req, res) => {
+  const { name } = req.body;
+  if (!name) return res.status(400).json({ error: 'name required' });
+  
+  const projectPath = path.join(PROJECTS_DIR, name);
+  if (fs.existsSync(projectPath)) {
+    return res.status(409).json({ error: 'project exists' });
+  }
+  
+  // Create project structure
+  const dirs = [
+    'src/ServerScriptService',
+    'src/StarterPlayer/StarterPlayerScripts',
+    'src/ReplicatedStorage',
+    'src/ReplicatedFirst',
+    'src/Workspace',
+    'assets'
+  ];
+  
+  dirs.forEach(d => {
+    fs.mkdirSync(path.join(projectPath, d), { recursive: true });
+  });
+  
+  // Create default README
+  fs.writeFileSync(path.join(projectPath, 'README.md'), `# ${name}\n\nRoblox project created with ClawBlox Studio\n`);
+  
+  res.json({ id: name, name, created: new Date().toISOString() });
+});
+
+// Get project details with metadata
+app.get('/api/projects/:id', (req, res) => {
+  const projectPath = path.join(PROJECTS_DIR, req.params.id);
+  if (!fs.existsSync(projectPath)) {
+    return res.status(404).json({ error: 'project not found' });
+  }
+  
+  function countFiles(dir: string): number {
+    let count = 0;
+    const items = fs.readdirSync(dir);
+    for (const item of items) {
+      const fullPath = path.join(dir, item);
+      if (fs.statSync(fullPath).isDirectory()) {
+        count += countFiles(fullPath);
+      } else {
+        count++;
+      }
+    }
+    return count;
+  }
+  
+  function getLatestModified(dir: string): Date {
+    let latest = fs.statSync(dir).mtime;
+    const items = fs.readdirSync(dir);
+    for (const item of items) {
+      const fullPath = path.join(dir, item);
+      const stat = fs.statSync(fullPath);
+      if (stat.isDirectory()) {
+        const childLatest = getLatestModified(fullPath);
+        if (childLatest > latest) latest = childLatest;
+      } else if (stat.mtime > latest) {
+        latest = stat.mtime;
+      }
+    }
+    return latest;
+  }
+  
+  const stats = fs.statSync(projectPath);
+  const fileCount = countFiles(projectPath);
+  const lastModified = getLatestModified(projectPath);
+  
+  res.json({
+    id: req.params.id,
+    name: req.params.id,
+    created: stats.birthtime,
+    modified: stats.mtime,
+    lastModified,
+    fileCount
+  });
+});
+
+// Delete project
+app.delete('/api/projects/:id', (req, res) => {
+  const projectPath = path.join(PROJECTS_DIR, req.params.id);
+  if (!fs.existsSync(projectPath)) {
+    return res.status(404).json({ error: 'project not found' });
+  }
+  
+  fs.rmSync(projectPath, { recursive: true });
+  res.json({ deleted: req.params.id });
+});
+
+// List project files
+app.get('/api/projects/:id/files', (req, res) => {
+  const projectPath = path.join(PROJECTS_DIR, req.params.id);
+  if (!fs.existsSync(projectPath)) {
+    return res.status(404).json({ error: 'project not found' });
+  }
+  
+  function listFiles(dir: string, base = ''): string[] {
+    const items = fs.readdirSync(dir);
+    const files: string[] = [];
+    for (const item of items) {
+      const fullPath = path.join(dir, item);
+      const relativePath = path.join(base, item);
+      if (fs.statSync(fullPath).isDirectory()) {
+        files.push(...listFiles(fullPath, relativePath));
+      } else {
+        files.push(relativePath);
+      }
+    }
+    return files;
+  }
+  
+  res.json(listFiles(projectPath));
+});
+
+// ============ Search Files ============
+// Search files by name in a project
+app.get('/api/projects/:id/search', (req, res) => {
+  const { id } = req.params;
+  const query = req.query.q as string;
+  
+  if (!query) {
+    return res.status(400).json({ error: 'query parameter q is required' });
+  }
+  
+  const projectPath = path.join(PROJECTS_DIR, id);
+  if (!fs.existsSync(projectPath)) {
+    return res.status(404).json({ error: 'project not found' });
+  }
+  
+  try {
+    function searchFiles(dir: string, base = ''): string[] {
+      const results: string[] = [];
+      const items = fs.readdirSync(dir);
+      
+      for (const item of items) {
+        const fullPath = path.join(dir, item);
+        const relativePath = path.join(base, item);
+        
+        // Check if filename contains query (case-insensitive)
+        if (item.toLowerCase().includes(query.toLowerCase())) {
+          results.push(relativePath);
+        }
+        
+        // Recurse into directories
+        if (fs.statSync(fullPath).isDirectory()) {
+          results.push(...searchFiles(fullPath, relativePath));
+        }
+      }
+      return results;
+    }
+    
+    const results = searchFiles(projectPath);
+    res.json({ query, count: results.length, results });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Create new file
+app.post('/api/projects/:id/files', (req, res) => {
+  const { path: filePath, content = '' } = req.body;
+  if (!filePath) return res.status(400).json({ error: 'path required' });
+  
+  const projectPath = path.join(PROJECTS_DIR, req.params.id);
+  if (!fs.existsSync(projectPath)) {
+    return res.status(404).json({ error: 'project not found' });
+  }
+  
+  const fullPath = path.join(projectPath, filePath);
+  if (fs.existsSync(fullPath)) {
+    return res.status(409).json({ error: 'file already exists' });
+  }
+  
+  const dir = path.dirname(fullPath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  
+  fs.writeFileSync(fullPath, content, 'utf-8');
+  res.json({ path: filePath, created: true });
+});
+
+// ============ Bulk File Operations ============
+// Create multiple files at once
+app.post('/api/projects/:id/files/bulk', (req, res) => {
+  const { files } = req.body;
+  
+  if (!files || !Array.isArray(files)) {
+    return res.status(400).json({ error: 'files array is required' });
+  }
+  
+  if (files.length === 0) {
+    return res.status(400).json({ error: 'files array cannot be empty' });
+  }
+  
+  const projectPath = path.join(PROJECTS_DIR, req.params.id);
+  if (!fs.existsSync(projectPath)) {
+    return res.status(404).json({ error: 'project not found' });
+  }
+  
+  const results: { path: string; success: boolean; error?: string }[] = [];
+  
+  for (const file of files) {
+    const { path: filePath, content = '' } = file;
+    
+    if (!filePath) {
+      results.push({ path: 'unknown', success: false, error: 'path is required' });
+      continue;
+    }
+    
+    try {
+      const fullPath = path.join(projectPath, filePath);
+      
+      if (fs.existsSync(fullPath)) {
+        results.push({ path: filePath, success: false, error: 'file already exists' });
+        continue;
+      }
+      
+      const dir = path.dirname(fullPath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      
+      fs.writeFileSync(fullPath, content, 'utf-8');
+      results.push({ path: filePath, success: true });
+    } catch (err: any) {
+      results.push({ path: filePath, success: false, error: err.message });
+    }
+  }
+  
+  const successful = results.filter(r => r.success).length;
+  res.json({ 
+    total: files.length, 
+    successful, 
+    failed: files.length - successful,
+    results 
+  });
+});
+
+// ============ File Rename ============
+// Rename a file
+app.post('/api/projects/:id/files/rename', (req, res) => {
+  const { path: oldPath, name: newName } = req.body;
+  
+  if (!oldPath) return res.status(400).json({ error: 'current path is required' });
+  if (!newName) return res.status(400).json({ error: 'new name is required' });
+  
+  const projectPath = path.join(PROJECTS_DIR, req.params.id);
+  if (!fs.existsSync(projectPath)) {
+    return res.status(404).json({ error: 'project not found' });
+  }
+  
+  const oldFullPath = path.join(projectPath, oldPath);
+  if (!fs.existsSync(oldFullPath)) {
+    return res.status(404).json({ error: 'file not found' });
+  }
+  
+  const oldDir = path.dirname(oldPath);
+  const newPath = path.join(oldDir, newName);
+  const newFullPath = path.join(projectPath, newPath);
+  
+  if (fs.existsSync(newFullPath)) {
+    return res.status(409).json({ error: 'a file with the new name already exists' });
+  }
+  
+  try {
+    fs.renameSync(oldFullPath, newFullPath);
+    res.json({ oldPath, newPath, renamed: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============ Project Export ============
+// Export project as ZIP
+app.get('/api/projects/:id/export', (req, res) => {
+  const projectPath = path.join(PROJECTS_DIR, req.params.id);
+  
+  if (!fs.existsSync(projectPath)) {
+    return res.status(404).json({ error: 'project not found' });
+  }
+  
+  const projectName = req.params.id;
+  res.setHeader('Content-Type', 'application/zip');
+  res.setHeader('Content-Disposition', `attachment; filename="${projectName}.zip"`);
+  
+  const archive = archiver('zip', { zlib: { level: 9 } });
+  
+  archive.on('error', (err) => {
+    res.status(500).json({ error: err.message });
+  });
+  
+  archive.pipe(res);
+  archive.directory(projectPath, false);
+  archive.finalize();
+});
+
+// Delete file
+app.delete('/api/projects/:id/files', (req, res) => {
+  const { path: filePath } = req.body;
+  if (!filePath) return res.status(400).json({ error: 'path required' });
+  
+  const projectPath = path.join(PROJECTS_DIR, req.params.id);
+  if (!fs.existsSync(projectPath)) {
+    return res.status(404).json({ error: 'project not found' });
+  }
+  
+  const fullPath = path.join(projectPath, filePath);
+  if (!fs.existsSync(fullPath)) {
+    return res.status(404).json({ error: 'file not found' });
+  }
+  
+  fs.unlinkSync(fullPath);
+  res.json({ path: filePath, deleted: true });
+});
+
+// Get file contents
+app.get('/api/files/:id', (req, res) => {
+  const { id } = req.params;
+  const filePath = req.query.path;
+  
+  if (!filePath) return res.status(400).json({ error: 'path required' });
+  
+  const fullPath = path.join(PROJECTS_DIR, id, filePath as string);
+  if (!fs.existsSync(fullPath)) {
+    return res.status(404).json({ error: 'file not found' });
+  }
+  
+  const content = fs.readFileSync(fullPath, 'utf-8');
+  res.json({ path: filePath, content });
+});
+
+// Legacy file write (kept for backward compatibility)
+app.put('/api/files/:id', (req, res) => {
+  const { id } = req.params;
+  const { path: filePath, content } = req.body;
+  
+  if (!filePath || content === undefined) {
+    return res.status(400).json({ error: 'path and content required' });
+  }
+  
+  const fullPath = path.join(PROJECTS_DIR, id, filePath);
+  const dir = path.dirname(fullPath);
+  
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  
+  fs.writeFileSync(fullPath, content, 'utf-8');
+  res.json({ path: filePath, written: true });
+});
+
+// ============ Git Integration ============
+
+// Initialize git repo for a project
+async function ensureGitRepo(projectPath: string): Promise<void> {
+  const gitDir = path.join(projectPath, '.git');
+  if (!fs.existsSync(gitDir)) {
+    await git.init({ fs, dir: projectPath, defaultBranch: 'main' });
+  }
+}
+
+// Commit changes
+app.post('/api/projects/:id/git/commit', async (req, res) => {
+  const { message, author } = req.body;
+  if (!message) return res.status(400).json({ error: 'message required' });
+  
+  const projectPath = path.join(PROJECTS_DIR, req.params.id);
+  if (!fs.existsSync(projectPath)) {
+    return res.status(404).json({ error: 'project not found' });
+  }
+  
+  try {
+    await ensureGitRepo(projectPath);
+    
+    // Stage all changes
+    const status = await git.statusMatrix({ fs, dir: projectPath });
+    for (const [filepath, head, workdir, stage] of status) {
+      if (workdir !== head || stage !== head) {
+        await git.add({ fs, dir: projectPath, filepath });
+      }
+    }
+    
+    // Commit
+    const sha = await git.commit({
+      fs,
+      dir: projectPath,
+      message,
+      author: {
+        name: author || 'ClawBlox User',
+        email: author ? `${author}@clawblox.local` : 'user@clawblox.local'
+      }
+    });
+    
+    res.json({ sha, message, author: author || 'ClawBlox User' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get commit log
+app.get('/api/projects/:id/git/log', async (req, res) => {
+  const projectPath = path.join(PROJECTS_DIR, req.params.id);
+  if (!fs.existsSync(projectPath)) {
+    return res.status(404).json({ error: 'project not found' });
+  }
+  
+  try {
+    await ensureGitRepo(projectPath);
+    
+    const commits = await git.log({ 
+      fs, 
+      dir: projectPath, 
+      depth: parseInt(req.query.limit as string) || 50 
+    });
+    
+    res.json(commits.map(c => ({
+      sha: c.oid,
+      message: c.commit.message,
+      author: c.commit.author.name,
+      date: c.commit.author.timestamp * 1000
+    })));
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get file diff
+app.get('/api/projects/:id/git/diff', async (req, res) => {
+  const projectPath = path.join(PROJECTS_DIR, req.params.id);
+  const filePath = req.query.path as string;
+  
+  if (!filePath) return res.status(400).json({ error: 'path required' });
+  if (!fs.existsSync(projectPath)) {
+    return res.status(404).json({ error: 'project not found' });
+  }
+  
+  try {
+    await ensureGitRepo(projectPath);
+    
+    const oid = await git.resolveRef({ fs, dir: projectPath, ref: 'HEAD' });
+    const { blob } = await git.readBlob({ fs, dir: projectPath, oid, filepath: filePath });
+    const content = new TextDecoder().decode(blob);
+    
+    res.json({ path: filePath, content });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Create branch
+app.post('/api/projects/:id/git/branch', async (req, res) => {
+  const { name } = req.body;
+  if (!name) return res.status(400).json({ error: 'branch name required' });
+  
+  const projectPath = path.join(PROJECTS_DIR, req.params.id);
+  if (!fs.existsSync(projectPath)) {
+    return res.status(404).json({ error: 'project not found' });
+  }
+  
+  try {
+    await ensureGitRepo(projectPath);
+    await git.branch({ fs, dir: projectPath, ref: name });
+    res.json({ branch: name, created: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// List branches
+app.get('/api/projects/:id/git/branches', async (req, res) => {
+  const projectPath = path.join(PROJECTS_DIR, req.params.id);
+  if (!fs.existsSync(projectPath)) {
+    return res.status(404).json({ error: 'project not found' });
+  }
+  
+  try {
+    await ensureGitRepo(projectPath);
+    const branches = await git.listBranches({ fs, dir: projectPath });
+    res.json(branches);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Checkout branch
+app.post('/api/projects/:id/git/checkout', async (req, res) => {
+  const { branch } = req.body;
+  if (!branch) return res.status(400).json({ error: 'branch name required' });
+  
+  const projectPath = path.join(PROJECTS_DIR, req.params.id);
+  if (!fs.existsSync(projectPath)) {
+    return res.status(404).json({ error: 'project not found' });
+  }
+  
+  try {
+    await ensureGitRepo(projectPath);
+    await git.checkout({ fs, dir: projectPath, ref: branch });
+    res.json({ branch, checkedOut: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get git status
+app.get('/api/projects/:id/git/status', async (req, res) => {
+  const projectPath = path.join(PROJECTS_DIR, req.params.id);
+  if (!fs.existsSync(projectPath)) {
+    return res.status(404).json({ error: 'project not found' });
+  }
+  
+  try {
+    await ensureGitRepo(projectPath);
+    
+    const status = await git.statusMatrix({ fs, dir: projectPath });
+    const files: Record<string, string> = {};
+    
+    for (const [filepath, head, workdir, stage] of status) {
+      if (head !== workdir || head !== stage) {
+        files[filepath] = git.StatusMatrix[head << 3 | workdir << 1 | stage];
+      }
+    }
+    
+    const currentBranch = await git.currentBranch({ fs, dir: projectPath });
+    
+    res.json({ branch: currentBranch, files });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============================================================================
+// Game Simulation API
+// ============================================================================
+
+// Start game simulation
+app.post('/api/game/start', async (req, res) => {
+  try {
+    const state = await gameEngine.start();
+    res.json({ 
+      success: true, 
+      status: state.status,
+      message: 'Game simulation started'
+    });
+  } catch (err: any) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// Stop game simulation
+app.post('/api/game/stop', (req, res) => {
+  try {
+    const state = gameEngine.stop();
+    res.json({ 
+      success: true, 
+      status: state.status,
+      message: 'Game simulation stopped'
+    });
+  } catch (err: any) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// Get game state
+app.get('/api/game/state', (req, res) => {
+  try {
+    const state = gameEngine.getState();
+    res.json(state);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Execute Lua script
+app.post('/api/game/execute', async (req, res) => {
+  const { script } = req.body;
+  if (!script) {
+    return res.status(400).json({ error: 'script is required' });
+  }
+  
+  try {
+    const result = await gameEngine.execute(script);
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Get workspace objects
+app.get('/api/workspace', (req, res) => {
+  try {
+    const workspace = gameEngine.getWorkspace();
+    res.json(workspace);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Create a part in workspace
+app.post('/api/workspace/part', (req, res) => {
+  const { name, position, size } = req.body;
+  
+  if (!name) {
+    return res.status(400).json({ error: 'name is required' });
+  }
+  
+  try {
+    const part = gameEngine.createPart(name, position, size);
+    res.json({ 
+      success: true, 
+      part: {
+        Name: part.Name,
+        ClassName: part.ClassName,
+        Position: part.Position,
+        Size: part.Size,
+      }
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get game object (for debugging)
+app.get('/api/game/debug', (req, res) => {
+  try {
+    const gameObj = gameEngine.getGame();
+    res.json(gameObj.toJSON());
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============================================================================
+// Playtest API — new endpoints
+// ============================================================================
+
+/**
+ * POST /api/game/load
+ * Load a project's scripts in Roblox execution order.
+ * Body: { projectId: string } — looks in PROJECTS_DIR/<projectId>
+ *       OR { projectPath: string } — absolute path
+ */
+app.post('/api/game/load', async (req, res) => {
+  const { projectId, projectPath: rawPath } = req.body;
+
+  if (!projectId && !rawPath) {
+    return res.status(400).json({ error: 'projectId or projectPath is required' });
+  }
+
+  const resolvedPath = rawPath ?? path.join(PROJECTS_DIR, projectId);
+
+  try {
+    const result = await gameEngine.loadProject(resolvedPath);
+    res.json({
+      success: true,
+      projectPath: resolvedPath,
+      scriptsLoaded: result.loaded.length,
+      scripts: result.loaded.map((s: any) => ({ name: s.name, service: s.service, path: s.path })),
+      errors: result.errors,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/game/simulate
+ * Simulate a player action.
+ * Body: { playerName: string, action: "join"|"leave"|"chat"|"move", message?: string, position?: {x,y,z} }
+ */
+app.post('/api/game/simulate', async (req, res) => {
+  const { playerName, action, message, position } = req.body;
+
+  if (!playerName) return res.status(400).json({ error: 'playerName is required' });
+  if (!action) return res.status(400).json({ error: 'action is required' });
+
+  try {
+    const result = await gameEngine.simulatePlayer(playerName, { action, message, position });
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /api/game/query
+ * Query a game instance by path.
+ * Query params: path=Workspace.Baseplate
+ */
+app.get('/api/game/query', (req, res) => {
+  const queryPath = req.query.path as string;
+
+  if (!queryPath) {
+    // No path → return full game state
+    try {
+      return res.json(gameEngine.getGameState());
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  }
+
+  try {
+    const inst = gameEngine.queryInstance(queryPath);
+    if (!inst) {
+      return res.status(404).json({ found: false, path: queryPath, error: 'Instance not found' });
+    }
+
+    // queryInstance now returns a plain JS object from the registry
+    if (!inst.found) {
+      return res.status(404).json(inst);
+    }
+    const serialized: any = {
+      found: inst.found,
+      path: queryPath,
+      Name: inst.Name,
+      ClassName: inst.ClassName,
+      Path: inst.Path,
+      ChildCount: inst.ChildCount,
+      Properties: inst.Properties || {},
+    };
+
+    res.json(serialized);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/game/test
+ * Run a Lua assertion test.
+ * Body: { assertion: string, description: string }
+ * Example assertion: "Players:FindFirstChild('TestPlayer') ~= nil"
+ */
+app.post('/api/game/test', async (req, res) => {
+  const { assertion, description } = req.body;
+
+  if (!assertion) return res.status(400).json({ error: 'assertion is required' });
+
+  try {
+    const result = await gameEngine.runTest(assertion, description ?? assertion);
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /api/game/instances
+ * List all instances in the workspace (and Players, ReplicatedStorage).
+ */
+app.get('/api/game/instances', (req, res) => {
+  try {
+    const data = gameEngine.getAllInstances();
+    res.json(data);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * GET /api/game/state/snapshot
+ * Wave 5 — Live Rendering Sync.
+ * Returns full current scene state: parts, players, enemies, running status.
+ * Used by the Viewport "Sync Scene" button to rebuild the 3D scene from scratch.
+ */
+app.get('/api/game/state/snapshot', (req, res) => {
+  try {
+    const snapshot = gameEngine.getSnapshotState();
+    res.json(snapshot);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/game/simulate-player
+ * Alias for /api/game/simulate (convenience endpoint).
+ * Body: { playerName: string, action: string, position?: {x,y,z} }
+ */
+app.post('/api/game/simulate-player', async (req, res) => {
+  const { playerName, action, message, position } = req.body;
+  if (!playerName) return res.status(400).json({ error: 'playerName is required' });
+  if (!action) return res.status(400).json({ error: 'action is required' });
+  try {
+    const result = await gameEngine.simulatePlayer(playerName, { action, message, position });
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ============================================================================
+// Test Runner API — Wave 5
+// ============================================================================
+
+/**
+ * POST /api/test/run
+ * Run a .clawtest.lua test file by path or inline code.
+ * Body: { filePath?: string, code?: string }
+ */
+app.post('/api/test/run', async (req, res) => {
+  const { filePath, code } = req.body;
+  let luaCode = code;
+  let resolvedPath = filePath || 'inline';
+
+  if (filePath && !code) {
+    try {
+      luaCode = fs.readFileSync(filePath, 'utf-8');
+    } catch (e: any) {
+      return res.status(404).json({ error: `File not found: ${filePath}` });
+    }
+  }
+
+  if (!luaCode) return res.status(400).json({ error: 'Provide filePath or code' });
+
+  try {
+    const suite = await runTestFile(resolvedPath, luaCode);
+    res.json(suite);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * GET /api/test/files
+ * List all .clawtest.lua files in the clawblox-projects directory.
+ */
+app.get('/api/test/files', (req, res) => {
+  const searchDirs = [
+    path.join(__dirname, '../../clawblox-projects'),
+    path.join(__dirname, '../../tests'),
+  ];
+  const files: string[] = [];
+  const walk = (dir: string) => {
+    if (!fs.existsSync(dir)) return;
+    for (const f of fs.readdirSync(dir)) {
+      const full = path.join(dir, f);
+      if (fs.statSync(full).isDirectory()) walk(full);
+      else if (f.endsWith('.clawtest.lua')) files.push(full);
+    }
+  };
+  for (const dir of searchDirs) walk(dir);
+  res.json({ files });
+});
+
+// ============================================================================
+// Physics API — Wave 4
+// ============================================================================
+
+/**
+ * POST /api/physics/spherecast
+ * Perform a sphere cast in the physics world.
+ * Body: { origin: {x,y,z}, direction: {x,y,z}, radius: number, distance: number }
+ */
+app.post('/api/physics/spherecast', (req, res) => {
+  try {
+    const { origin, direction, radius, distance } = req.body;
+    if (!origin || !direction || radius === undefined || distance === undefined) {
+      return res.status(400).json({ error: 'origin, direction, radius, distance required' });
+    }
+    const hits = physicsWorld.sphereCast(origin, direction, radius, distance);
+    const result = hits.map(inst => ({
+      name: inst.Name,
+      className: inst.ClassName,
+      position: inst.properties['Position'] ?? { X: 0, Y: 0, Z: 0 },
+    }));
+    res.json({ hits: result });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/physics/step
+ * Advance physics simulation by dt seconds.
+ * Body: { dt?: number }  (default 1/60)
+ */
+app.post('/api/physics/step', (req, res) => {
+  try {
+    const dt = (req.body && req.body.dt) ? Number(req.body.dt) : 1 / 60;
+    physicsWorld.step(dt);
+    res.json({ ok: true, dt });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * GET /api/physics/bodies
+ * List all registered physics bodies.
+ */
+app.get('/api/physics/bodies', (req, res) => {
+  try {
+    const bodies = physicsWorld.getAllBodies();
+    res.json({ count: bodies.length, bodies });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============================================================================
+// Network Bridge API — Wave 4
+// ============================================================================
+
+/**
+ * POST /api/network/add-client
+ * Spin up a client VM for a player.
+ * Body: { playerName: string }
+ */
+app.post('/api/network/add-client', async (req, res) => {
+  try {
+    const { playerName } = req.body;
+    if (!playerName) return res.status(400).json({ error: 'playerName required' });
+    await networkBridge.addClient(playerName);
+    res.json({ ok: true, playerName });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/network/fire-server
+ * Route a FireServer call from a client to the server.
+ * Body: { playerName: string, remoteName: string, args: any[] }
+ */
+app.post('/api/network/fire-server', async (req, res) => {
+  try {
+    const { playerName, remoteName, args } = req.body;
+    if (!playerName || !remoteName) {
+      return res.status(400).json({ error: 'playerName and remoteName required' });
+    }
+    await networkBridge.fireServer(playerName, remoteName, args ?? []);
+    res.json({ ok: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/network/fire-client
+ * Route a FireClient call from the server to a specific client.
+ * Body: { playerName: string, remoteName: string, args: any[] }
+ */
+app.post('/api/network/fire-client', async (req, res) => {
+  try {
+    const { playerName, remoteName, args } = req.body;
+    if (!playerName || !remoteName) {
+      return res.status(400).json({ error: 'playerName and remoteName required' });
+    }
+    await networkBridge.fireClient(playerName, remoteName, args ?? []);
+    res.json({ ok: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * GET /api/network/clients
+ * List all connected client VMs.
+ */
+app.get('/api/network/clients', (req, res) => {
+  try {
+    const clients = networkBridge.getClients();
+    res.json({ clients, count: clients.length });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/network/run-client
+ * Run a Lua script on a specific client VM.
+ * Body: { playerName: string, script: string }
+ */
+app.post('/api/network/run-client', async (req, res) => {
+  try {
+    const { playerName, script } = req.body;
+    if (!playerName || !script) {
+      return res.status(400).json({ error: 'playerName and script required' });
+    }
+    const result = await networkBridge.runOnClient(playerName, script);
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============================================================================
+// Pathfinding API — Wave 4
+// ============================================================================
+
+/**
+ * POST /api/pathfinding/find
+ * Find an A* path from `from` to `to`.
+ * Body: { from: {x,y,z}, to: {x,y,z} }
+ */
+app.post('/api/pathfinding/find', (req, res) => {
+  try {
+    const { from, to } = req.body;
+    if (!from || !to) return res.status(400).json({ error: 'from and to required' });
+    const result = pathfindingService.findPath(from, to);
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/pathfinding/add-obstacle
+ * Add a Part obstacle to the pathfinding grid.
+ * Body: { position: {x,y,z}, size: {x,y,z}, id: string }
+ */
+app.post('/api/pathfinding/add-obstacle', (req, res) => {
+  try {
+    const { position, size, id } = req.body;
+    if (!position || !size || !id) {
+      return res.status(400).json({ error: 'position, size, and id required' });
+    }
+    pathfindingService.addObstacle(id, position, size);
+    res.json({ ok: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/pathfinding/move-agent
+ * Move an agent along a computed A* path.
+ * Body: { agentName: string, from: {x,y,z}, to: {x,y,z}, speed: number }
+ */
+app.post('/api/pathfinding/move-agent', (req, res) => {
+  try {
+    const { agentName, from, to, speed } = req.body;
+    if (!agentName || !from || !to) {
+      return res.status(400).json({ error: 'agentName, from, and to required' });
+    }
+    const result = pathfindingService.moveAgent(agentName, from, to, speed ?? 16);
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * GET /api/pathfinding/grid
+ * Get pathfinding grid configuration.
+ */
+app.get('/api/pathfinding/grid', (req, res) => {
+  try {
+    res.json(pathfindingService.getGridInfo());
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============================================================================
+// Deploy Pipeline — Wave 6
+// ============================================================================
+
+const DEPLOY_HISTORY_PATH = path.join(__dirname, '../../deploy-history.json');
+const ROBLOX_API_KEY = process.env.ROBLOX_API_KEY || '';
+const ROBLOX_UNIVERSE_ID = process.env.ROBLOX_UNIVERSE_ID || '';
+const ROBLOX_PLACE_ID = process.env.ROBLOX_PLACE_ID || '';
+
+function readDeployHistory(): any[] {
+  try {
+    if (fs.existsSync(DEPLOY_HISTORY_PATH)) {
+      return JSON.parse(fs.readFileSync(DEPLOY_HISTORY_PATH, 'utf-8'));
+    }
+  } catch {}
+  return [];
+}
+
+function writeDeployHistory(history: any[]): void {
+  try {
+    fs.writeFileSync(DEPLOY_HISTORY_PATH, JSON.stringify(history, null, 2), 'utf-8');
+  } catch (e: any) {
+    console.error('[DEPLOY] Failed to write history:', e.message);
+  }
+}
+
+function collectLuaFiles(dir: string): { filePath: string; relativePath: string; content: string }[] {
+  const results: { filePath: string; relativePath: string; content: string }[] = [];
+  if (!fs.existsSync(dir)) return results;
+  const walk = (d: string, base: string) => {
+    for (const item of fs.readdirSync(d)) {
+      const full = path.join(d, item);
+      const rel = path.join(base, item);
+      const stat = fs.statSync(full);
+      if (stat.isDirectory()) {
+        walk(full, rel);
+      } else if (item.endsWith('.lua') || item.endsWith('.luau')) {
+        try {
+          results.push({ filePath: full, relativePath: rel, content: fs.readFileSync(full, 'utf-8') });
+        } catch {}
+      }
+    }
+  };
+  walk(dir, '');
+  return results;
+}
+
+function buildRbxlx(scripts: { relativePath: string; content: string }[]): string {
+  const escapeXml = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+
+  const scriptItems = scripts.map(({ relativePath, content }, i) => {
+    const name = path.basename(relativePath, path.extname(relativePath));
+    const isLocal = relativePath.toLowerCase().includes('localscript') || relativePath.toLowerCase().includes('starterplayer');
+    const isModule = relativePath.toLowerCase().includes('module');
+    const className = isModule ? 'ModuleScript' : isLocal ? 'LocalScript' : 'Script';
+    return `
+    <Item class="${className}" referent="RBX${String(i).padStart(8, '0')}">
+      <Properties>
+        <string name="Name">${escapeXml(name)}</string>
+        <ProtectedString name="Source"><![CDATA[${content}]]></ProtectedString>
+        <bool name="Disabled">false</bool>
+      </Properties>
+    </Item>`;
+  }).join('\n');
+
+  return `<?xml version="1.0" encoding="utf-8"?>
+<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
+  <External>null</External>
+  <External>nil</External>
+  <Item class="Workspace" referent="RBXWORKSPACE">
+    <Properties>
+      <string name="Name">Workspace</string>
+    </Properties>
+    ${scriptItems}
+  </Item>
+</roblox>`;
+}
+
+/**
+ * POST /api/deploy
+ * Deploy a project to Roblox Open Cloud.
+ * Body: { projectPath: string, universeId?: string }
+ */
+app.post('/api/deploy', async (req, res) => {
+  const { projectPath, universeId } = req.body;
+
+  if (!projectPath) {
+    return res.status(400).json({ success: false, error: 'projectPath is required' });
+  }
+
+  const deployId = `deploy_${Date.now()}`;
+  const errors: string[] = [];
+  let pushedToRoblox = false;
+  let rbxlxPath: string | null = null;
+
+  try {
+    // 1. Collect Lua files
+    const luaFiles = collectLuaFiles(projectPath);
+    if (luaFiles.length === 0) {
+      errors.push('No .lua/.luau files found in project path');
+    }
+
+    // 2. Generate .rbxlx
+    const rbxlxContent = buildRbxlx(luaFiles);
+    const outDir = path.join(__dirname, '../../deploy-output');
+    if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+    rbxlxPath = path.join(outDir, `${deployId}.rbxlx`);
+    fs.writeFileSync(rbxlxPath, rbxlxContent, 'utf-8');
+    console.log(`[DEPLOY] Generated .rbxlx: ${rbxlxPath} (${luaFiles.length} scripts)`);
+
+    // 3. Push to Roblox Open Cloud if universeId is provided
+    const targetUniverseId = universeId || ROBLOX_UNIVERSE_ID;
+    if (targetUniverseId && ROBLOX_API_KEY) {
+      try {
+        const rbxlxBuffer = fs.readFileSync(rbxlxPath);
+        const url = `https://apis.roblox.com/universes/v1/${targetUniverseId}/places/${ROBLOX_PLACE_ID}/versions?versionType=Published`;
+        
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'x-api-key': ROBLOX_API_KEY,
+            'Content-Type': 'application/octet-stream',
+          },
+          body: rbxlxBuffer,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          pushedToRoblox = true;
+          console.log(`[DEPLOY] Pushed to Roblox! Version: ${JSON.stringify(data)}`);
+        } else {
+          const errText = await response.text();
+          errors.push(`Roblox API error ${response.status}: ${errText}`);
+          console.error(`[DEPLOY] Roblox push failed: ${response.status} ${errText}`);
+        }
+      } catch (fetchErr: any) {
+        errors.push(`Roblox push failed: ${fetchErr.message}`);
+        console.error('[DEPLOY] Roblox push error:', fetchErr.message);
+      }
+    }
+
+    // 4. Log deploy
+    const history = readDeployHistory();
+    const entry = {
+      deployId,
+      timestamp: new Date().toISOString(),
+      projectPath,
+      scriptsDeployed: luaFiles.length,
+      rbxlxPath,
+      pushedToRoblox,
+      universeId: targetUniverseId,
+      placeId: ROBLOX_PLACE_ID,
+      errors,
+      success: errors.length === 0 || pushedToRoblox,
+    };
+    history.push(entry);
+    writeDeployHistory(history);
+
+    // 5. Respond
+    return res.json({
+      success: entry.success,
+      deployId,
+      rbxlxPath,
+      pushedToRoblox,
+      scriptsDeployed: luaFiles.length,
+      errors,
+    });
+  } catch (err: any) {
+    errors.push(err.message);
+    const history = readDeployHistory();
+    history.push({
+      deployId,
+      timestamp: new Date().toISOString(),
+      projectPath,
+      success: false,
+      errors,
+      rbxlxPath,
+      pushedToRoblox,
+    });
+    writeDeployHistory(history);
+    return res.status(500).json({ success: false, deployId, errors, rbxlxPath, pushedToRoblox });
+  }
+});
+
+/**
+ * GET /api/deploy/history
+ * Return the last 10 deploy entries.
+ */
+app.get('/api/deploy/history', (req, res) => {
+  const history = readDeployHistory();
+  const last10 = history.slice(-10).reverse();
+  res.json(last10);
+});
+
+// --- Wave 5.5: Scene Persistence Endpoints ---
+
+app.post('/api/project/save', async (req, res) => {
+  try {
+    const { projectId, message } = req.body as { projectId: string; message: string };
+    if (!projectId || !message) {
+      return res.status(400).json({ error: 'projectId and message required' });
+    }
+    // Get current instances from game engine
+    const allInsts = gameEngine.getAllInstances() as Array<{ id: string; ClassName: string; Name: string; properties: Record<string, unknown> }>;
+    const SKIP_PROPS = new Set(['FindFirstChild','WaitForChild','GetChildren','GetDescendants','GetFullName','IsA','Destroy','Clone','_addChild']);
+    const instances = allInsts.map(inst => ({
+      id: inst.id,
+      className: inst.ClassName,
+      name: inst.Name,
+      properties: Object.fromEntries(
+        Object.entries(inst.properties).filter(([k, v]) => {
+          if (SKIP_PROPS.has(k)) return false;
+          if (typeof v === 'string' && v.startsWith('function:')) return false;
+          return true;
+        })
+      ),
+    }));
+    const result = await scenePersistence.save(projectId, instances, message);
+    res.json({ ...result, projectId, scenePath: `clawblox-projects/${projectId}/scene.json` });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/project/load/:projectId', (req, res) => {
+  const { projectId } = req.params;
+  const snapshot = scenePersistence.load(projectId);
+  if (!snapshot) {
+    return res.status(404).json({ ok: false, error: 'No saved scene' });
+  }
+  res.json(snapshot);
+});
+
+app.get('/api/project/changelog/:projectId', (req, res) => {
+  const { projectId } = req.params;
+  const changelog = scenePersistence.getChangelog(projectId);
+  res.json({ changelog });
+});
+
+app.get('/api/project/list', (req, res) => {
+  const projects = scenePersistence.listProjects();
+  res.json({ projects });
+});
+
+// ============================================================
+// Wave 6: Scene Serializer (Option B) + rbxlx Importer (Option C)
+// ============================================================
+
+/**
+ * Material token mapping: Roblox material enum values
+ */
+const MATERIAL_TOKENS: Record<string, number> = {
+  SmoothPlastic: 256,
+  Wood: 512,
+  Grass: 1280,
+  Stone: 816,
+  Ground: 272,
+  Sand: 1296,
+  Neon: 1376,
+  Metal: 1040,
+  Brick: 784,
+  Plastic: 256,
+  WoodPlanks: 512,
+  Slate: 800,
+  Concrete: 816,
+  Foil: 1312,
+  Ice: 1536,
+  Glass: 1568,
+  CobbleStone: 788,
+  Marble: 784,
+  Granite: 832,
+  Fabric: 1312,
+  DiamondPlate: 1056,
+  CorrodedMetal: 1072,
+  Pebble: 1312,
+};
+
+const MATERIAL_TOKENS_REVERSE: Record<number, string> = Object.fromEntries(
+  Object.entries(MATERIAL_TOKENS).map(([k, v]) => [v, k])
+);
+
+function buildRbxlxFromScene(registry: ReturnType<typeof gameEngine['getAllInstances']>): string {
+  const instances: InstanceRecord[] = Array.isArray(registry) ? registry : (registry as any).getAll();
+
+  // Build children map
+  const childrenMap = new Map<string | null, InstanceRecord[]>();
+  for (const inst of instances) {
+    const key = inst.parentId ?? null;
+    if (!childrenMap.has(key)) childrenMap.set(key, []);
+    childrenMap.get(key)!.push(inst);
+  }
+
+  let refCounter = 0;
+  const instToRef = new Map<string, string>();
+  for (const inst of instances) {
+    instToRef.set(inst.id, `RBX${String(++refCounter).padStart(8, '0')}`);
+  }
+
+  const escapeXml = (s: string) =>
+    String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
+
+  function serializeVector3(v: any, fallback = { x: 1, y: 1, z: 1 }) {
+    const x = v?.x ?? v?.X ?? fallback.x;
+    const y = v?.y ?? v?.Y ?? fallback.y;
+    const z = v?.z ?? v?.Z ?? fallback.z;
+    return { x, y, z };
+  }
+
+  function serializeColor(c: any, fallback = { r: 163, g: 162, b: 165 }) {
+    // Supports {r,g,b}, {R,G,B}, or Roblox Color3 (0-1 range floats)
+    let r = c?.r ?? c?.R ?? fallback.r;
+    let g = c?.g ?? c?.G ?? fallback.g;
+    let b = c?.b ?? c?.B ?? fallback.b;
+    // If values are 0-1 floats, scale to 0-255
+    if (r <= 1 && g <= 1 && b <= 1 && (r > 0 || g > 0 || b > 0)) {
+      r = Math.round(r * 255);
+      g = Math.round(g * 255);
+      b = Math.round(b * 255);
+    }
+    return { r: Math.round(r), g: Math.round(g), b: Math.round(b) };
+  }
+
+  function getCFrameXml(props: Record<string, any>): string {
+    const cf = props['CFrame'] ?? props['cframe'];
+    const pos = props['Position'] ?? props['position'] ?? props['pos'];
+    let x = 0, y = 0, z = 0;
+    let r00 = 1, r01 = 0, r02 = 0;
+    let r10 = 0, r11 = 1, r12 = 0;
+    let r20 = 0, r21 = 0, r22 = 1;
+
+    if (cf) {
+      x = cf.x ?? cf.X ?? cf.position?.x ?? 0;
+      y = cf.y ?? cf.Y ?? cf.position?.y ?? 0;
+      z = cf.z ?? cf.Z ?? cf.position?.z ?? 0;
+      // Rotation matrix components
+      r00 = cf.r00 ?? cf.R00 ?? 1; r01 = cf.r01 ?? cf.R01 ?? 0; r02 = cf.r02 ?? cf.R02 ?? 0;
+      r10 = cf.r10 ?? cf.R10 ?? 0; r11 = cf.r11 ?? cf.R11 ?? 1; r12 = cf.r12 ?? cf.R12 ?? 0;
+      r20 = cf.r20 ?? cf.R20 ?? 0; r21 = cf.r21 ?? cf.R21 ?? 0; r22 = cf.r22 ?? cf.R22 ?? 1;
+    } else if (pos) {
+      x = pos.x ?? pos.X ?? 0;
+      y = pos.y ?? pos.Y ?? 0;
+      z = pos.z ?? pos.Z ?? 0;
+    }
+    return `<CoordinateFrame name="CFrame">
+          <X>${x}</X><Y>${y}</Y><Z>${z}</Z>
+          <R00>${r00}</R00><R01>${r01}</R01><R02>${r02}</R02>
+          <R10>${r10}</R10><R11>${r11}</R11><R12>${r12}</R12>
+          <R20>${r20}</R20><R21>${r21}</R21><R22>${r22}</R22>
+        </CoordinateFrame>`;
+  }
+
+  function buildItemXml(inst: InstanceRecord, indent: string): string {
+    const ref = instToRef.get(inst.id) ?? inst.id;
+    const props = inst.properties ?? {};
+    const children = childrenMap.get(inst.id) ?? [];
+
+    const propLines: string[] = [];
+
+    // Name
+    propLines.push(`<string name="Name">${escapeXml(inst.Name ?? inst.ClassName)}</string>`);
+
+    // Per-class property serialization
+    const isScript = ['Script', 'LocalScript', 'ModuleScript'].includes(inst.ClassName);
+    const isPart = ['Part', 'BasePart', 'MeshPart', 'WedgePart', 'TrussPart', 'CornerWedgePart', 'SpawnLocation'].includes(inst.ClassName);
+
+    if (isPart) {
+      // Size / Vector3
+      const size = props['Size'] ?? props['size'] ?? { x: 4, y: 1, z: 4 };
+      const sv = serializeVector3(size);
+      propLines.push(`<Vector3 name="size"><X>${sv.x}</X><Y>${sv.y}</Y><Z>${sv.z}</Z></Vector3>`);
+
+      // CFrame / Position
+      propLines.push(getCFrameXml(props));
+
+      // Color
+      const color = props['Color'] ?? props['Color3'] ?? props['BrickColor'] ?? props['color'];
+      if (color) {
+        const sc = serializeColor(color);
+        propLines.push(`<Color3uint8 name="Color3"><R>${sc.r}</R><G>${sc.g}</G><B>${sc.b}</B></Color3uint8>`);
+      } else {
+        propLines.push(`<Color3uint8 name="Color3"><R>163</R><G>162</G><B>165</B></Color3uint8>`);
+      }
+
+      // Anchored
+      const anchored = props['Anchored'] ?? props['anchored'] ?? true;
+      propLines.push(`<bool name="Anchored">${anchored ? 'true' : 'false'}</bool>`);
+
+      // Transparency
+      const transparency = props['Transparency'] ?? props['transparency'] ?? 0;
+      propLines.push(`<float name="Transparency">${transparency}</float>`);
+
+      // Material
+      const matRaw = props['Material'] ?? props['material'] ?? 'SmoothPlastic';
+      let matToken: number;
+      if (typeof matRaw === 'number') {
+        matToken = matRaw;
+      } else {
+        matToken = MATERIAL_TOKENS[matRaw] ?? MATERIAL_TOKENS[String(matRaw)] ?? 256;
+      }
+      propLines.push(`<token name="Material">${matToken}</token>`);
+
+      // CanCollide
+      const canCollide = props['CanCollide'] ?? props['cancollide'] ?? true;
+      propLines.push(`<bool name="CanCollide">${canCollide ? 'true' : 'false'}</bool>`);
+
+      // CastShadow
+      const castShadow = props['CastShadow'] ?? props['castshadow'] ?? true;
+      propLines.push(`<bool name="CastShadow">${castShadow ? 'true' : 'false'}</bool>`);
+    } else if (isScript) {
+      const source = props['Source'] ?? props['source'] ?? '';
+      const disabled = props['Disabled'] ?? props['disabled'] ?? false;
+      propLines.push(`<ProtectedString name="Source"><![CDATA[${source}]]></ProtectedString>`);
+      propLines.push(`<bool name="Disabled">${disabled ? 'true' : 'false'}</bool>`);
+    } else if (inst.ClassName === 'Model') {
+      // Models just need a name (already added above)
+    } else {
+      // Generic: serialize known typed props
+      for (const [key, val] of Object.entries(props)) {
+        if (key === 'Name') continue;
+        if (typeof val === 'boolean') {
+          propLines.push(`<bool name="${escapeXml(key)}">${val ? 'true' : 'false'}</bool>`);
+        } else if (typeof val === 'number') {
+          propLines.push(`<float name="${escapeXml(key)}">${val}</float>`);
+        } else if (typeof val === 'string') {
+          propLines.push(`<string name="${escapeXml(key)}">${escapeXml(val)}</string>`);
+        }
+      }
+    }
+
+    const propXml = propLines.map(l => `${indent}    ${l}`).join('\n');
+    const childXml = children.map(c => buildItemXml(c, indent + '  ')).join('\n');
+
+    return `${indent}<Item class="${escapeXml(inst.ClassName)}" referent="${ref}">
+${indent}  <Properties>
+${propXml}
+${indent}  </Properties>
+${childXml}
+${indent}</Item>`;
+  }
+
+  // Build root items (parentId === null)
+  const roots = childrenMap.get(null) ?? [];
+  const rootXml = roots.map(r => buildItemXml(r, '    ')).join('\n');
+
+  return `<?xml version="1.0" encoding="utf-8"?>
+<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
+  <External>null</External>
+  <External>nil</External>
+  <Item class="Workspace" referent="RBXWORKSPACE">
+    <Properties>
+      <string name="Name">Workspace</string>
+    </Properties>
+${rootXml}
+  </Item>
+</roblox>`;
+}
+
+/**
+ * POST /api/deploy/scene
+ * Serialize the live 3D scene (InstanceRegistry) to .rbxlx and optionally push to Roblox.
+ * Body: { universeId?: string }
+ */
+app.post('/api/deploy/scene', async (req, res) => {
+  const { universeId } = req.body ?? {};
+  const deployId = `scene_${Date.now()}`;
+  const errors: string[] = [];
+  let pushedToRoblox = false;
+  let rbxlxPath: string | null = null;
+
+  try {
+    const instances: InstanceRecord[] = gameEngine.getAllInstances() as InstanceRecord[];
+    const instanceCount = instances.length;
+
+    const rbxlxContent = buildRbxlxFromScene(instances);
+    const outDir = path.join(__dirname, '../../deploy-output');
+    if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+    rbxlxPath = path.join(outDir, `${deployId}.rbxlx`);
+    fs.writeFileSync(rbxlxPath, rbxlxContent, 'utf-8');
+    console.log(`[DEPLOY/SCENE] Generated .rbxlx: ${rbxlxPath} (${instanceCount} instances)`);
+
+    // Push to Roblox Open Cloud if universeId provided
+    const targetUniverseId = universeId || ROBLOX_UNIVERSE_ID;
+    if (targetUniverseId && ROBLOX_API_KEY) {
+      try {
+        const rbxlxBuffer = fs.readFileSync(rbxlxPath);
+        const url = `https://apis.roblox.com/universes/v1/${targetUniverseId}/places/${ROBLOX_PLACE_ID}/versions?versionType=Published`;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'x-api-key': ROBLOX_API_KEY, 'Content-Type': 'application/octet-stream' },
+          body: rbxlxBuffer,
+        });
+        if (response.ok) {
+          pushedToRoblox = true;
+          console.log(`[DEPLOY/SCENE] Pushed to Roblox!`);
+        } else {
+          const errText = await response.text();
+          errors.push(`Roblox API error ${response.status}: ${errText}`);
+        }
+      } catch (fetchErr: any) {
+        errors.push(`Roblox push failed: ${fetchErr.message}`);
+      }
+    }
+
+    return res.json({ success: true, rbxlxPath, instanceCount, pushedToRoblox, errors });
+  } catch (err: any) {
+    errors.push(err.message);
+    return res.status(500).json({ success: false, rbxlxPath, instanceCount: 0, pushedToRoblox, errors });
+  }
+});
+
+// ============================================================
+// Option C: .rbxlx Importer
+// ============================================================
+
+/**
+ * Parse a .rbxlx XML string into an array of InstanceRecord objects.
+ * Handles nested <Item> elements with proper parentId relationships.
+ */
+async function parseRbxlx(xmlString: string): Promise<InstanceRecord[]> {
+  const parsed = await parseStringPromise(xmlString, {
+    explicitArray: true,
+    explicitCharkey: false,
+    attrkey: '$',
+    charkey: '_',
+  });
+
+  const results: InstanceRecord[] = [];
+  let counter = 0;
+
+  function parseProperties(propsBlock: any): Record<string, any> {
+    const out: Record<string, any> = {};
+    if (!propsBlock) return out;
+
+    const p = Array.isArray(propsBlock) ? propsBlock[0] : propsBlock;
+
+    // string
+    for (const el of p.string ?? []) {
+      const name = el.$?.name;
+      if (name) out[name] = el._ ?? el;
+    }
+    // bool
+    for (const el of p.bool ?? []) {
+      const name = el.$?.name;
+      if (name) out[name] = String(el._ ?? el).trim() === 'true';
+    }
+    // float / double / int
+    for (const el of [...(p.float ?? []), ...(p.double ?? []), ...(p.int ?? [])]) {
+      const name = el.$?.name;
+      if (name) out[name] = parseFloat(String(el._ ?? el).trim());
+    }
+    // token (material enum)
+    for (const el of p.token ?? []) {
+      const name = el.$?.name;
+      if (name) {
+        const val = parseInt(String(el._ ?? el).trim(), 10);
+        out[name] = val;
+        if (name === 'Material') out['MaterialName'] = MATERIAL_TOKENS_REVERSE[val] ?? 'SmoothPlastic';
+      }
+    }
+    // Vector3
+    for (const el of p.Vector3 ?? []) {
+      const name = el.$?.name;
+      if (name) {
+        const x = parseFloat(String(el.X?.[0] ?? 0));
+        const y = parseFloat(String(el.Y?.[0] ?? 0));
+        const z = parseFloat(String(el.Z?.[0] ?? 0));
+        out[name] = { x, y, z };
+        if (name.toLowerCase() === 'size') out['Size'] = { x, y, z };
+      }
+    }
+    // CoordinateFrame
+    for (const el of p.CoordinateFrame ?? []) {
+      const name = el.$?.name;
+      if (name) {
+        const x = parseFloat(String(el.X?.[0] ?? 0));
+        const y = parseFloat(String(el.Y?.[0] ?? 0));
+        const z = parseFloat(String(el.Z?.[0] ?? 0));
+        const cf: Record<string, number> = {
+          x, y, z,
+          r00: parseFloat(String(el.R00?.[0] ?? 1)), r01: parseFloat(String(el.R01?.[0] ?? 0)), r02: parseFloat(String(el.R02?.[0] ?? 0)),
+          r10: parseFloat(String(el.R10?.[0] ?? 0)), r11: parseFloat(String(el.R11?.[0] ?? 1)), r12: parseFloat(String(el.R12?.[0] ?? 0)),
+          r20: parseFloat(String(el.R20?.[0] ?? 0)), r21: parseFloat(String(el.R21?.[0] ?? 0)), r22: parseFloat(String(el.R22?.[0] ?? 1)),
+        };
+        out[name] = cf;
+        if (name === 'CFrame') out['Position'] = { x, y, z };
+      }
+    }
+    // Color3uint8
+    for (const el of p.Color3uint8 ?? []) {
+      const name = el.$?.name;
+      if (name) {
+        out[name] = {
+          r: parseInt(String(el.R?.[0] ?? 163), 10),
+          g: parseInt(String(el.G?.[0] ?? 162), 10),
+          b: parseInt(String(el.B?.[0] ?? 165), 10),
+        };
+      }
+    }
+    // ProtectedString (script source)
+    for (const el of p.ProtectedString ?? []) {
+      const name = el.$?.name;
+      if (name) out[name] = el._ ?? String(el).trim();
+    }
+
+    return out;
+  }
+
+  function walkItems(items: any[], parentId: string | null) {
+    if (!items) return;
+    for (const item of items) {
+      const className = item.$?.class ?? 'Unknown';
+      const referent = item.$?.referent ?? `gen_${++counter}`;
+
+      const props = parseProperties(item.Properties);
+      const name = String(props['Name'] ?? className);
+      delete props['Name'];
+
+      const id = referent;
+      const record: InstanceRecord = {
+        id,
+        Name: name,
+        ClassName: className,
+        parentId,
+        properties: props,
+      };
+      results.push(record);
+
+      // Recurse into children
+      if (item.Item) {
+        walkItems(item.Item, id);
+      }
+    }
+  }
+
+  // The root element is <roblox>; top-level Items are direct children
+  const roblox = parsed.roblox ?? parsed;
+  const topItems = roblox.Item ?? [];
+  walkItems(topItems, null);
+
+  return results;
+}
+
+/**
+ * POST /api/import/rbxlx
+ * Body: { rbxlxPath: string, merge?: boolean }
+ * Loads a .rbxlx file into the game engine's InstanceRegistry.
+ */
+app.post('/api/import/rbxlx', async (req, res) => {
+  const { rbxlxPath, merge = false } = req.body ?? {};
+  if (!rbxlxPath) {
+    return res.status(400).json({ success: false, error: 'rbxlxPath is required' });
+  }
+
+  const errors: string[] = [];
+  try {
+    if (!fs.existsSync(rbxlxPath)) {
+      return res.status(404).json({ success: false, error: `File not found: ${rbxlxPath}` });
+    }
+    const xmlString = fs.readFileSync(rbxlxPath, 'utf-8');
+    const instances = await parseRbxlx(xmlString);
+
+    gameEngine.loadInstances(instances, Boolean(merge));
+
+    console.log(`[IMPORT/RBXLX] Loaded ${instances.length} instances from ${rbxlxPath} (merge=${merge})`);
+    return res.json({ success: true, instanceCount: instances.length, errors });
+  } catch (err: any) {
+    errors.push(err.message);
+    return res.status(500).json({ success: false, instanceCount: 0, errors });
+  }
+});
+
+/**
+ * GET /api/import/rbxlx/preview
+ * Query: ?path=...
+ * Parses .rbxlx but does NOT load into engine. Returns instance tree summary.
+ */
+app.get('/api/import/rbxlx/preview', async (req, res) => {
+  const filePath = req.query.path as string;
+  if (!filePath) {
+    return res.status(400).json({ success: false, error: 'path query param is required' });
+  }
+
+  try {
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ success: false, error: `File not found: ${filePath}` });
+    }
+    const xmlString = fs.readFileSync(filePath, 'utf-8');
+    const instances = await parseRbxlx(xmlString);
+
+    // Build tree summary
+    const childrenMap = new Map<string | null, InstanceRecord[]>();
+    for (const inst of instances) {
+      const key = inst.parentId;
+      if (!childrenMap.has(key)) childrenMap.set(key, []);
+      childrenMap.get(key)!.push(inst);
+    }
+
+    function buildSummary(parentId: string | null, depth: number = 0): any[] {
+      return (childrenMap.get(parentId) ?? []).map(inst => ({
+        id: inst.id,
+        Name: inst.Name,
+        ClassName: inst.ClassName,
+        childCount: (childrenMap.get(inst.id) ?? []).length,
+        children: depth < 3 ? buildSummary(inst.id, depth + 1) : [],
+      }));
+    }
+
+    return res.json({
+      success: true,
+      instanceCount: instances.length,
+      tree: buildSummary(null),
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ============================================================
+// End Wave 6
+// ============================================================
+
+app.listen(PORT, () => {
+  console.log(`ClawBlox API running on http://localhost:${PORT}`);
+});

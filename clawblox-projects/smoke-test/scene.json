@@ -1,0 +1,154 @@
+{
+  "version": 1,
+  "savedAt": "2026-03-12T23:59:50.270Z",
+  "projectId": "smoke-test",
+  "instanceCount": 22,
+  "workspace": [
+    {
+      "id": "inst_1",
+      "className": "Players",
+      "name": "Players",
+      "properties": {
+        "PlayerAdded": "table: 0x11c780",
+        "PlayerRemoving": "table: 0x11c8f8"
+      }
+    },
+    {
+      "id": "inst_2",
+      "className": "Workspace",
+      "name": "Workspace",
+      "properties": {}
+    },
+    {
+      "id": "inst_3",
+      "className": "Part",
+      "name": "Baseplate",
+      "properties": {
+        "Shape": "Block"
+      }
+    },
+    {
+      "id": "inst_4",
+      "className": "ReplicatedStorage",
+      "name": "ReplicatedStorage",
+      "properties": {}
+    },
+    {
+      "id": "inst_5",
+      "className": "ServerScriptService",
+      "name": "ServerScriptService",
+      "properties": {}
+    },
+    {
+      "id": "inst_6",
+      "className": "RunService",
+      "name": "RunService",
+      "properties": {
+        "Heartbeat": "table: 0x1107e0",
+        "Stepped": "table: 0x110958"
+      }
+    },
+    {
+      "id": "inst_7",
+      "className": "DataStoreService",
+      "name": "DataStoreService",
+      "properties": {}
+    },
+    {
+      "id": "inst_8",
+      "className": "CollectionService",
+      "name": "CollectionService",
+      "properties": {}
+    },
+    {
+      "id": "inst_9",
+      "className": "TweenService",
+      "name": "TweenService",
+      "properties": {}
+    },
+    {
+      "id": "inst_10",
+      "className": "HttpService",
+      "name": "HttpService",
+      "properties": {}
+    },
+    {
+      "id": "inst_11",
+      "className": "Debris",
+      "name": "Debris",
+      "properties": {}
+    },
+    {
+      "id": "inst_12",
+      "className": "Lighting",
+      "name": "Lighting",
+      "properties": {}
+    },
+    {
+      "id": "inst_13",
+      "className": "StarterPlayer",
+      "name": "StarterPlayer",
+      "properties": {}
+    },
+    {
+      "id": "inst_14",
+      "className": "PhysicsService",
+      "name": "PhysicsService",
+      "properties": {}
+    },
+    {
+      "id": "inst_15",
+      "className": "MessagingService",
+      "name": "MessagingService",
+      "properties": {}
+    },
+    {
+      "id": "inst_16",
+      "className": "PathfindingService",
+      "name": "PathfindingService",
+      "properties": {}
+    },
+    {
+      "id": "inst_17",
+      "className": "UserInputService",
+      "name": "UserInputService",
+      "properties": {}
+    },
+    {
+      "id": "inst_18",
+      "className": "SoundService",
+      "name": "SoundService",
+      "properties": {}
+    },
+    {
+      "id": "inst_19",
+      "className": "Chat",
+      "name": "Chat",
+      "properties": {}
+    },
+    {
+      "id": "inst_20",
+      "className": "Teams",
+      "name": "Teams",
+      "properties": {}
+    },
+    {
+      "id": "inst_21",
+      "className": "Script",
+      "name": "Script",
+      "properties": {}
+    },
+    {
+      "id": "inst_22",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "Shape": "Block",
+        "Anchored": true,
+        "BrickColor": "BrickColor(Bright red)",
+        "Material": "Enum.Material.Neon"
+      }
+    }
+  ],
+  "scripts": {}
+}

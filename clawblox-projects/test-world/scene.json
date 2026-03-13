@@ -1,0 +1,455 @@
+{
+  "version": 1,
+  "savedAt": "2026-03-12T07:51:31.946Z",
+  "projectId": "test-world",
+  "instanceCount": 23,
+  "workspace": [
+    {
+      "id": "inst_1",
+      "className": "Players",
+      "name": "Players",
+      "properties": {
+        "FindFirstChild": "function: 0x121300",
+        "WaitForChild": "function: 0x124a20",
+        "GetChildren": "function: 0x121448",
+        "GetDescendants": "function: 0x125b90",
+        "GetFullName": "function: 0x11e1c0",
+        "IsA": "function: 0x11e790",
+        "Destroy": "function: 0x1213b0",
+        "Clone": "function: 0x11b9b8",
+        "_addChild": "function: 0x11ba08",
+        "PlayerAdded": "table: 0x11fea0",
+        "PlayerRemoving": "table: 0x11fff8",
+        "GetPlayers": "function: 0x120048",
+        "AddPlayer": "function: 0x1201c8",
+        "RemovePlayer": "function: 0x11b860"
+      }
+    },
+    {
+      "id": "inst_2",
+      "className": "Workspace",
+      "name": "Workspace",
+      "properties": {
+        "FindFirstChild": "function: 0x1202b8",
+        "WaitForChild": "function: 0x1191f0",
+        "GetChildren": "function: 0x1203a0",
+        "GetDescendants": "function: 0x1203f0",
+        "GetFullName": "function: 0x11fe60",
+        "IsA": "function: 0x11b198",
+        "Destroy": "function: 0x1202d8",
+        "Clone": "function: 0x120328",
+        "_addChild": "function: 0x120378",
+        "SphereCast": "function: 0x12baf0",
+        "FindPartsInRadius": "function: 0x12bb48"
+      }
+    },
+    {
+      "id": "inst_3",
+      "className": "Part",
+      "name": "Baseplate",
+      "properties": {
+        "FindFirstChild": "function: 0x118c98",
+        "WaitForChild": "function: 0x11d720",
+        "GetChildren": "function: 0x118d80",
+        "GetDescendants": "function: 0x118dd0",
+        "GetFullName": "function: 0x117a38",
+        "IsA": "function: 0x11bc88",
+        "Destroy": "function: 0x118d18",
+        "Clone": "function: 0x10fdc8",
+        "_addChild": "function: 0x10fe18",
+        "Shape": "Block"
+      }
+    },
+    {
+      "id": "inst_4",
+      "className": "ReplicatedStorage",
+      "name": "ReplicatedStorage",
+      "properties": {
+        "FindFirstChild": "function: 0x110038",
+        "WaitForChild": "function: 0x11c468",
+        "GetChildren": "function: 0x110120",
+        "GetDescendants": "function: 0x110170",
+        "GetFullName": "function: 0x124fe8",
+        "IsA": "function: 0x116f28",
+        "Destroy": "function: 0x1100b8",
+        "Clone": "function: 0x110348",
+        "_addChild": "function: 0x110398"
+      }
+    },
+    {
+      "id": "inst_5",
+      "className": "ServerScriptService",
+      "name": "ServerScriptService",
+      "properties": {
+        "FindFirstChild": "function: 0x1105b8",
+        "WaitForChild": "function: 0x125ce8",
+        "GetChildren": "function: 0x1106a0",
+        "GetDescendants": "function: 0x1106f0",
+        "GetFullName": "function: 0x121400",
+        "IsA": "function: 0x118588",
+        "Destroy": "function: 0x110638",
+        "Clone": "function: 0x1108c8",
+        "_addChild": "function: 0x110918"
+      }
+    },
+    {
+      "id": "inst_6",
+      "className": "RunService",
+      "name": "RunService",
+      "properties": {
+        "FindFirstChild": "function: 0x110b38",
+        "WaitForChild": "function: 0x119720",
+        "GetChildren": "function: 0x110c20",
+        "GetDescendants": "function: 0x110c70",
+        "GetFullName": "function: 0x11f328",
+        "IsA": "function: 0x11dc58",
+        "Destroy": "function: 0x110bb8",
+        "Clone": "function: 0x110e48",
+        "_addChild": "function: 0x110e98",
+        "Heartbeat": "table: 0x110f10",
+        "Stepped": "table: 0x111088",
+        "IsServer": "function: 0x11c690",
+        "IsClient": "function: 0x11c378",
+        "IsRunning": "function: 0x11c150"
+      }
+    },
+    {
+      "id": "inst_7",
+      "className": "DataStoreService",
+      "name": "DataStoreService",
+      "properties": {
+        "FindFirstChild": "function: 0x111590",
+        "WaitForChild": "function: 0x110108",
+        "GetChildren": "function: 0x111678",
+        "GetDescendants": "function: 0x1116c8",
+        "GetFullName": "function: 0x124da0",
+        "IsA": "function: 0x110688",
+        "Destroy": "function: 0x111610",
+        "Clone": "function: 0x1118a0",
+        "_addChild": "function: 0x1118f0",
+        "GetDataStore": "function: 0x111968"
+      }
+    },
+    {
+      "id": "inst_8",
+      "className": "CollectionService",
+      "name": "CollectionService",
+      "properties": {
+        "FindFirstChild": "function: 0x111bb0",
+        "WaitForChild": "function: 0x11f698",
+        "GetChildren": "function: 0x111c98",
+        "GetDescendants": "function: 0x111ce8",
+        "GetFullName": "function: 0x116a18",
+        "IsA": "function: 0x124e10",
+        "Destroy": "function: 0x111c30",
+        "Clone": "function: 0x111ec0",
+        "_addChild": "function: 0x111f10",
+        "AddTag": "function: 0x111f88",
+        "HasTag": "function: 0x112000",
+        "GetTagged": "function: 0x112050",
+        "GetInstanceAddedSignal": "function: 0x1120a0"
+      }
+    },
+    {
+      "id": "inst_9",
+      "className": "TweenService",
+      "name": "TweenService",
+      "properties": {
+        "FindFirstChild": "function: 0x112460",
+        "WaitForChild": "function: 0x110c08",
+        "GetChildren": "function: 0x112548",
+        "GetDescendants": "function: 0x112598",
+        "GetFullName": "function: 0x111660",
+        "IsA": "function: 0x11f7e8",
+        "Destroy": "function: 0x1124e0",
+        "Clone": "function: 0x112770",
+        "_addChild": "function: 0x1127c0",
+        "Create": "function: 0x112810"
+      }
+    },
+    {
+      "id": "inst_10",
+      "className": "HttpService",
+      "name": "HttpService",
+      "properties": {
+        "FindFirstChild": "function: 0x125f78",
+        "WaitForChild": "function: 0x111c80",
+        "GetChildren": "function: 0x126090",
+        "GetDescendants": "function: 0x1260b0",
+        "GetFullName": "function: 0x112530",
+        "IsA": "function: 0x11e018",
+        "Destroy": "function: 0x125f98",
+        "Clone": "function: 0x125fe8",
+        "_addChild": "function: 0x126038",
+        "JSONEncode": "function: 0x126318",
+        "JSONDecode": "function: 0x110e30",
+        "GenerateGUID": "function: 0x126398"
+      }
+    },
+    {
+      "id": "inst_11",
+      "className": "Debris",
+      "name": "Debris",
+      "properties": {
+        "FindFirstChild": "function: 0x1265c8",
+        "WaitForChild": "function: 0x1266e0",
+        "GetChildren": "function: 0x1264c8",
+        "GetDescendants": "function: 0x126730",
+        "GetFullName": "function: 0x1264e8",
+        "IsA": "function: 0x126940",
+        "Destroy": "function: 0x126618",
+        "Clone": "function: 0x126668",
+        "_addChild": "function: 0x126990",
+        "AddItem": "function: 0x1269e8"
+      }
+    },
+    {
+      "id": "inst_12",
+      "className": "Lighting",
+      "name": "Lighting",
+      "properties": {
+        "FindFirstChild": "function: 0x126f20",
+        "WaitForChild": "function: 0x127038",
+        "GetChildren": "function: 0x126e18",
+        "GetDescendants": "function: 0x127090",
+        "GetFullName": "function: 0x126e38",
+        "IsA": "function: 0x1272a0",
+        "Destroy": "function: 0x126f70",
+        "Clone": "function: 0x126fc0",
+        "_addChild": "function: 0x1272f0"
+      }
+    },
+    {
+      "id": "inst_13",
+      "className": "StarterPlayer",
+      "name": "StarterPlayer",
+      "properties": {
+        "FindFirstChild": "function: 0x1274f8",
+        "WaitForChild": "function: 0x127610",
+        "GetChildren": "function: 0x1273f8",
+        "GetDescendants": "function: 0x127660",
+        "GetFullName": "function: 0x127418",
+        "IsA": "function: 0x127870",
+        "Destroy": "function: 0x127548",
+        "Clone": "function: 0x127598",
+        "_addChild": "function: 0x1278c0"
+      }
+    },
+    {
+      "id": "inst_14",
+      "className": "PhysicsService",
+      "name": "PhysicsService",
+      "properties": {
+        "FindFirstChild": "function: 0x127ac8",
+        "WaitForChild": "function: 0x127be0",
+        "GetChildren": "function: 0x1279c8",
+        "GetDescendants": "function: 0x127c30",
+        "GetFullName": "function: 0x1279e8",
+        "IsA": "function: 0x127e40",
+        "Destroy": "function: 0x127b18",
+        "Clone": "function: 0x127b68",
+        "_addChild": "function: 0x127e90"
+      }
+    },
+    {
+      "id": "inst_15",
+      "className": "MessagingService",
+      "name": "MessagingService",
+      "properties": {
+        "FindFirstChild": "function: 0x128098",
+        "WaitForChild": "function: 0x1281b0",
+        "GetChildren": "function: 0x127f98",
+        "GetDescendants": "function: 0x128200",
+        "GetFullName": "function: 0x127fb8",
+        "IsA": "function: 0x128410",
+        "Destroy": "function: 0x1280e8",
+        "Clone": "function: 0x128138",
+        "_addChild": "function: 0x128460"
+      }
+    },
+    {
+      "id": "inst_16",
+      "className": "PathfindingService",
+      "name": "PathfindingService",
+      "properties": {
+        "FindFirstChild": "function: 0x128668",
+        "WaitForChild": "function: 0x128780",
+        "GetChildren": "function: 0x128568",
+        "GetDescendants": "function: 0x1287d0",
+        "GetFullName": "function: 0x128588",
+        "IsA": "function: 0x1289e0",
+        "Destroy": "function: 0x1286b8",
+        "Clone": "function: 0x128708",
+        "_addChild": "function: 0x128a30",
+        "CreatePath": "function: 0x12bba0"
+      }
+    },
+    {
+      "id": "inst_17",
+      "className": "UserInputService",
+      "name": "UserInputService",
+      "properties": {
+        "FindFirstChild": "function: 0x128c38",
+        "WaitForChild": "function: 0x128d50",
+        "GetChildren": "function: 0x128b38",
+        "GetDescendants": "function: 0x128da0",
+        "GetFullName": "function: 0x128b58",
+        "IsA": "function: 0x128fb0",
+        "Destroy": "function: 0x128c88",
+        "Clone": "function: 0x128cd8",
+        "_addChild": "function: 0x129000"
+      }
+    },
+    {
+      "id": "inst_18",
+      "className": "SoundService",
+      "name": "SoundService",
+      "properties": {
+        "FindFirstChild": "function: 0x129208",
+        "WaitForChild": "function: 0x129320",
+        "GetChildren": "function: 0x129108",
+        "GetDescendants": "function: 0x129370",
+        "GetFullName": "function: 0x129128",
+        "IsA": "function: 0x129580",
+        "Destroy": "function: 0x129258",
+        "Clone": "function: 0x1292a8",
+        "_addChild": "function: 0x1295d0"
+      }
+    },
+    {
+      "id": "inst_19",
+      "className": "Chat",
+      "name": "Chat",
+      "properties": {
+        "FindFirstChild": "function: 0x1297d8",
+        "WaitForChild": "function: 0x1298f0",
+        "GetChildren": "function: 0x1296d8",
+        "GetDescendants": "function: 0x129940",
+        "GetFullName": "function: 0x1296f8",
+        "IsA": "function: 0x129b50",
+        "Destroy": "function: 0x129828",
+        "Clone": "function: 0x129878",
+        "_addChild": "function: 0x129ba0"
+      }
+    },
+    {
+      "id": "inst_20",
+      "className": "Teams",
+      "name": "Teams",
+      "properties": {
+        "FindFirstChild": "function: 0x129da8",
+        "WaitForChild": "function: 0x129ec0",
+        "GetChildren": "function: 0x129ca8",
+        "GetDescendants": "function: 0x129f10",
+        "GetFullName": "function: 0x129cc8",
+        "IsA": "function: 0x12a120",
+        "Destroy": "function: 0x129df8",
+        "Clone": "function: 0x129e48",
+        "_addChild": "function: 0x12a170"
+      }
+    },
+    {
+      "id": "inst_21",
+      "className": "Script",
+      "name": "Script",
+      "properties": {
+        "FindFirstChild": "function: 0x10d9b8",
+        "WaitForChild": "function: 0x10d8b8",
+        "GetChildren": "function: 0x10d8d0",
+        "GetDescendants": "function: 0x10db00",
+        "GetFullName": "function: 0x10db50",
+        "IsA": "function: 0x12ba60",
+        "Destroy": "function: 0x10dbc8",
+        "Clone": "function: 0x10d9d8",
+        "_addChild": "function: 0x10da28"
+      }
+    },
+    {
+      "id": "inst_22",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x12e190",
+        "WaitForChild": "function: 0x130068",
+        "GetChildren": "function: 0x12e210",
+        "GetDescendants": "function: 0x12ee10",
+        "GetFullName": "function: 0x12c668",
+        "IsA": "function: 0x12e8a0",
+        "Destroy": "function: 0x12ed48",
+        "Clone": "function: 0x12ed98",
+        "_addChild": "function: 0x12ede8",
+        "Shape": "Block",
+        "Size": {
+          "X": 24,
+          "Y": 8,
+          "Z": 0.5
+        },
+        "Position": {
+          "X": 0,
+          "Y": 4,
+          "Z": 0
+        },
+        "_rotation": {
+          "rx": 0,
+          "ry": 0,
+          "rz": 0
+        },
+        "CFrame": {
+          "X": 0,
+          "Y": 4,
+          "Z": 0,
+          "rx": 0,
+          "ry": 0,
+          "rz": 0
+        },
+        "Material": "Slate",
+        "Color3": "table: 0x12e8f0",
+        "Anchored": "true"
+      }
+    },
+    {
+      "id": "inst_23",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x130d60",
+        "WaitForChild": "function: 0x11e6c8",
+        "GetChildren": "function: 0x130e50",
+        "GetDescendants": "function: 0x130ea8",
+        "GetFullName": "function: 0x12e458",
+        "IsA": "function: 0x12faa0",
+        "Destroy": "function: 0x130db8",
+        "Clone": "function: 0x1310b8",
+        "_addChild": "function: 0x1310d8",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 4,
+          "Z": 2
+        },
+        "Position": {
+          "X": 8,
+          "Y": 14,
+          "Z": 4
+        },
+        "_rotation": {
+          "rx": 0,
+          "ry": 0.2617993877991494,
+          "rz": 0
+        },
+        "CFrame": {
+          "X": 8,
+          "Y": 14,
+          "Z": 4,
+          "rx": 0,
+          "ry": 0.2617993877991494,
+          "rz": 0
+        },
+        "Material": "Granite",
+        "Color3": "table: 0x130af0",
+        "Anchored": "true"
+      }
+    }
+  ],
+  "scripts": {}
+}

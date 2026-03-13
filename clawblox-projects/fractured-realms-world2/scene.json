@@ -1,0 +1,5746 @@
+{
+  "version": 1,
+  "savedAt": "2026-03-12T15:29:31.672Z",
+  "projectId": "fractured-realms-world2",
+  "instanceCount": 194,
+  "workspace": [
+    {
+      "id": "inst_1",
+      "className": "Players",
+      "name": "Players",
+      "properties": {
+        "FindFirstChild": "function: 0x121300",
+        "WaitForChild": "function: 0x124a20",
+        "GetChildren": "function: 0x121448",
+        "GetDescendants": "function: 0x125b90",
+        "GetFullName": "function: 0x11e1c0",
+        "IsA": "function: 0x11e790",
+        "Destroy": "function: 0x1213b0",
+        "Clone": "function: 0x11b9b8",
+        "_addChild": "function: 0x11ba08",
+        "PlayerAdded": "table: 0x11fea0",
+        "PlayerRemoving": "table: 0x11fff8",
+        "GetPlayers": "function: 0x120048",
+        "AddPlayer": "function: 0x1201c8",
+        "RemovePlayer": "function: 0x11b860"
+      }
+    },
+    {
+      "id": "inst_2",
+      "className": "Workspace",
+      "name": "Workspace",
+      "properties": {
+        "FindFirstChild": "function: 0x1202b8",
+        "WaitForChild": "function: 0x1191f0",
+        "GetChildren": "function: 0x1203a0",
+        "GetDescendants": "function: 0x1203f0",
+        "GetFullName": "function: 0x11fe60",
+        "IsA": "function: 0x11b198",
+        "Destroy": "function: 0x1202d8",
+        "Clone": "function: 0x120328",
+        "_addChild": "function: 0x120378",
+        "SphereCast": "function: 0x12baf0",
+        "FindPartsInRadius": "function: 0x12bb48"
+      }
+    },
+    {
+      "id": "inst_3",
+      "className": "Part",
+      "name": "Baseplate",
+      "properties": {
+        "FindFirstChild": "function: 0x118c98",
+        "WaitForChild": "function: 0x11d720",
+        "GetChildren": "function: 0x118d80",
+        "GetDescendants": "function: 0x118dd0",
+        "GetFullName": "function: 0x117a38",
+        "IsA": "function: 0x11bc88",
+        "Destroy": "function: 0x118d18",
+        "Clone": "function: 0x10fdc8",
+        "_addChild": "function: 0x10fe18",
+        "Shape": "Block"
+      }
+    },
+    {
+      "id": "inst_4",
+      "className": "ReplicatedStorage",
+      "name": "ReplicatedStorage",
+      "properties": {
+        "FindFirstChild": "function: 0x110038",
+        "WaitForChild": "function: 0x11c468",
+        "GetChildren": "function: 0x110120",
+        "GetDescendants": "function: 0x110170",
+        "GetFullName": "function: 0x124fe8",
+        "IsA": "function: 0x116f28",
+        "Destroy": "function: 0x1100b8",
+        "Clone": "function: 0x110348",
+        "_addChild": "function: 0x110398"
+      }
+    },
+    {
+      "id": "inst_5",
+      "className": "ServerScriptService",
+      "name": "ServerScriptService",
+      "properties": {
+        "FindFirstChild": "function: 0x1105b8",
+        "WaitForChild": "function: 0x125ce8",
+        "GetChildren": "function: 0x1106a0",
+        "GetDescendants": "function: 0x1106f0",
+        "GetFullName": "function: 0x121400",
+        "IsA": "function: 0x118588",
+        "Destroy": "function: 0x110638",
+        "Clone": "function: 0x1108c8",
+        "_addChild": "function: 0x110918"
+      }
+    },
+    {
+      "id": "inst_6",
+      "className": "RunService",
+      "name": "RunService",
+      "properties": {
+        "FindFirstChild": "function: 0x110b38",
+        "WaitForChild": "function: 0x119720",
+        "GetChildren": "function: 0x110c20",
+        "GetDescendants": "function: 0x110c70",
+        "GetFullName": "function: 0x11f328",
+        "IsA": "function: 0x11dc58",
+        "Destroy": "function: 0x110bb8",
+        "Clone": "function: 0x110e48",
+        "_addChild": "function: 0x110e98",
+        "Heartbeat": "table: 0x110f10",
+        "Stepped": "table: 0x111088",
+        "IsServer": "function: 0x11c690",
+        "IsClient": "function: 0x11c378",
+        "IsRunning": "function: 0x11c150"
+      }
+    },
+    {
+      "id": "inst_7",
+      "className": "DataStoreService",
+      "name": "DataStoreService",
+      "properties": {
+        "FindFirstChild": "function: 0x111590",
+        "WaitForChild": "function: 0x110108",
+        "GetChildren": "function: 0x111678",
+        "GetDescendants": "function: 0x1116c8",
+        "GetFullName": "function: 0x124da0",
+        "IsA": "function: 0x110688",
+        "Destroy": "function: 0x111610",
+        "Clone": "function: 0x1118a0",
+        "_addChild": "function: 0x1118f0",
+        "GetDataStore": "function: 0x111968"
+      }
+    },
+    {
+      "id": "inst_8",
+      "className": "CollectionService",
+      "name": "CollectionService",
+      "properties": {
+        "FindFirstChild": "function: 0x111bb0",
+        "WaitForChild": "function: 0x11f698",
+        "GetChildren": "function: 0x111c98",
+        "GetDescendants": "function: 0x111ce8",
+        "GetFullName": "function: 0x116a18",
+        "IsA": "function: 0x124e10",
+        "Destroy": "function: 0x111c30",
+        "Clone": "function: 0x111ec0",
+        "_addChild": "function: 0x111f10",
+        "AddTag": "function: 0x111f88",
+        "HasTag": "function: 0x112000",
+        "GetTagged": "function: 0x112050",
+        "GetInstanceAddedSignal": "function: 0x1120a0"
+      }
+    },
+    {
+      "id": "inst_9",
+      "className": "TweenService",
+      "name": "TweenService",
+      "properties": {
+        "FindFirstChild": "function: 0x112460",
+        "WaitForChild": "function: 0x110c08",
+        "GetChildren": "function: 0x112548",
+        "GetDescendants": "function: 0x112598",
+        "GetFullName": "function: 0x111660",
+        "IsA": "function: 0x11f7e8",
+        "Destroy": "function: 0x1124e0",
+        "Clone": "function: 0x112770",
+        "_addChild": "function: 0x1127c0",
+        "Create": "function: 0x112810"
+      }
+    },
+    {
+      "id": "inst_10",
+      "className": "HttpService",
+      "name": "HttpService",
+      "properties": {
+        "FindFirstChild": "function: 0x125f78",
+        "WaitForChild": "function: 0x111c80",
+        "GetChildren": "function: 0x126090",
+        "GetDescendants": "function: 0x1260b0",
+        "GetFullName": "function: 0x112530",
+        "IsA": "function: 0x11e018",
+        "Destroy": "function: 0x125f98",
+        "Clone": "function: 0x125fe8",
+        "_addChild": "function: 0x126038",
+        "JSONEncode": "function: 0x126318",
+        "JSONDecode": "function: 0x110e30",
+        "GenerateGUID": "function: 0x126398"
+      }
+    },
+    {
+      "id": "inst_11",
+      "className": "Debris",
+      "name": "Debris",
+      "properties": {
+        "FindFirstChild": "function: 0x1265c8",
+        "WaitForChild": "function: 0x1266e0",
+        "GetChildren": "function: 0x1264c8",
+        "GetDescendants": "function: 0x126730",
+        "GetFullName": "function: 0x1264e8",
+        "IsA": "function: 0x126940",
+        "Destroy": "function: 0x126618",
+        "Clone": "function: 0x126668",
+        "_addChild": "function: 0x126990",
+        "AddItem": "function: 0x1269e8"
+      }
+    },
+    {
+      "id": "inst_12",
+      "className": "Lighting",
+      "name": "Lighting",
+      "properties": {
+        "FindFirstChild": "function: 0x126f20",
+        "WaitForChild": "function: 0x127038",
+        "GetChildren": "function: 0x126e18",
+        "GetDescendants": "function: 0x127090",
+        "GetFullName": "function: 0x126e38",
+        "IsA": "function: 0x1272a0",
+        "Destroy": "function: 0x126f70",
+        "Clone": "function: 0x126fc0",
+        "_addChild": "function: 0x1272f0"
+      }
+    },
+    {
+      "id": "inst_13",
+      "className": "StarterPlayer",
+      "name": "StarterPlayer",
+      "properties": {
+        "FindFirstChild": "function: 0x1274f8",
+        "WaitForChild": "function: 0x127610",
+        "GetChildren": "function: 0x1273f8",
+        "GetDescendants": "function: 0x127660",
+        "GetFullName": "function: 0x127418",
+        "IsA": "function: 0x127870",
+        "Destroy": "function: 0x127548",
+        "Clone": "function: 0x127598",
+        "_addChild": "function: 0x1278c0"
+      }
+    },
+    {
+      "id": "inst_14",
+      "className": "PhysicsService",
+      "name": "PhysicsService",
+      "properties": {
+        "FindFirstChild": "function: 0x127ac8",
+        "WaitForChild": "function: 0x127be0",
+        "GetChildren": "function: 0x1279c8",
+        "GetDescendants": "function: 0x127c30",
+        "GetFullName": "function: 0x1279e8",
+        "IsA": "function: 0x127e40",
+        "Destroy": "function: 0x127b18",
+        "Clone": "function: 0x127b68",
+        "_addChild": "function: 0x127e90"
+      }
+    },
+    {
+      "id": "inst_15",
+      "className": "MessagingService",
+      "name": "MessagingService",
+      "properties": {
+        "FindFirstChild": "function: 0x128098",
+        "WaitForChild": "function: 0x1281b0",
+        "GetChildren": "function: 0x127f98",
+        "GetDescendants": "function: 0x128200",
+        "GetFullName": "function: 0x127fb8",
+        "IsA": "function: 0x128410",
+        "Destroy": "function: 0x1280e8",
+        "Clone": "function: 0x128138",
+        "_addChild": "function: 0x128460"
+      }
+    },
+    {
+      "id": "inst_16",
+      "className": "PathfindingService",
+      "name": "PathfindingService",
+      "properties": {
+        "FindFirstChild": "function: 0x128668",
+        "WaitForChild": "function: 0x128780",
+        "GetChildren": "function: 0x128568",
+        "GetDescendants": "function: 0x1287d0",
+        "GetFullName": "function: 0x128588",
+        "IsA": "function: 0x1289e0",
+        "Destroy": "function: 0x1286b8",
+        "Clone": "function: 0x128708",
+        "_addChild": "function: 0x128a30",
+        "CreatePath": "function: 0x12bba0"
+      }
+    },
+    {
+      "id": "inst_17",
+      "className": "UserInputService",
+      "name": "UserInputService",
+      "properties": {
+        "FindFirstChild": "function: 0x128c38",
+        "WaitForChild": "function: 0x128d50",
+        "GetChildren": "function: 0x128b38",
+        "GetDescendants": "function: 0x128da0",
+        "GetFullName": "function: 0x128b58",
+        "IsA": "function: 0x128fb0",
+        "Destroy": "function: 0x128c88",
+        "Clone": "function: 0x128cd8",
+        "_addChild": "function: 0x129000"
+      }
+    },
+    {
+      "id": "inst_18",
+      "className": "SoundService",
+      "name": "SoundService",
+      "properties": {
+        "FindFirstChild": "function: 0x129208",
+        "WaitForChild": "function: 0x129320",
+        "GetChildren": "function: 0x129108",
+        "GetDescendants": "function: 0x129370",
+        "GetFullName": "function: 0x129128",
+        "IsA": "function: 0x129580",
+        "Destroy": "function: 0x129258",
+        "Clone": "function: 0x1292a8",
+        "_addChild": "function: 0x1295d0"
+      }
+    },
+    {
+      "id": "inst_19",
+      "className": "Chat",
+      "name": "Chat",
+      "properties": {
+        "FindFirstChild": "function: 0x1297d8",
+        "WaitForChild": "function: 0x1298f0",
+        "GetChildren": "function: 0x1296d8",
+        "GetDescendants": "function: 0x129940",
+        "GetFullName": "function: 0x1296f8",
+        "IsA": "function: 0x129b50",
+        "Destroy": "function: 0x129828",
+        "Clone": "function: 0x129878",
+        "_addChild": "function: 0x129ba0"
+      }
+    },
+    {
+      "id": "inst_20",
+      "className": "Teams",
+      "name": "Teams",
+      "properties": {
+        "FindFirstChild": "function: 0x129da8",
+        "WaitForChild": "function: 0x129ec0",
+        "GetChildren": "function: 0x129ca8",
+        "GetDescendants": "function: 0x129f10",
+        "GetFullName": "function: 0x129cc8",
+        "IsA": "function: 0x12a120",
+        "Destroy": "function: 0x129df8",
+        "Clone": "function: 0x129e48",
+        "_addChild": "function: 0x12a170"
+      }
+    },
+    {
+      "id": "inst_21",
+      "className": "Script",
+      "name": "Script",
+      "properties": {
+        "FindFirstChild": "function: 0x10d9b8",
+        "WaitForChild": "function: 0x10d8b8",
+        "GetChildren": "function: 0x10d8d0",
+        "GetDescendants": "function: 0x10db00",
+        "GetFullName": "function: 0x10db50",
+        "IsA": "function: 0x12ba60",
+        "Destroy": "function: 0x10dbc8",
+        "Clone": "function: 0x10d9d8",
+        "_addChild": "function: 0x10da28"
+      }
+    },
+    {
+      "id": "inst_22",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x12f2e0",
+        "WaitForChild": "function: 0x12d200",
+        "GetChildren": "function: 0x12d4d8",
+        "GetDescendants": "function: 0x12d528",
+        "GetFullName": "function: 0x12d190",
+        "IsA": "function: 0x12d7b0",
+        "Destroy": "function: 0x12d5a8",
+        "Clone": "function: 0x12d470",
+        "_addChild": "function: 0x12da60",
+        "Shape": "Block",
+        "Size": {
+          "X": 35,
+          "Y": 0.5,
+          "Z": 25
+        },
+        "Position": {
+          "X": 0,
+          "Y": 0.25,
+          "Z": 100
+        },
+        "Anchored": "true",
+        "Material": "table: 0x12f240",
+        "Color": "table: 0x12d900"
+      }
+    },
+    {
+      "id": "inst_23",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x12e508",
+        "WaitForChild": "function: 0x11e6c8",
+        "GetChildren": "function: 0x12f3c8",
+        "GetDescendants": "function: 0x12e558",
+        "GetFullName": "function: 0x12c840",
+        "IsA": "function: 0x12d0a0",
+        "Destroy": "function: 0x12f578",
+        "Clone": "function: 0x12f360",
+        "_addChild": "function: 0x12f5a0",
+        "Shape": "Block",
+        "Size": {
+          "X": 41,
+          "Y": 0.3,
+          "Z": 3
+        },
+        "Position": {
+          "X": 0,
+          "Y": 0.15,
+          "Z": 114
+        },
+        "Anchored": "true",
+        "Material": "table: 0x12f3f0",
+        "Color": "table: 0x12f478"
+      }
+    },
+    {
+      "id": "inst_24",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x12fb28",
+        "WaitForChild": "function: 0x12d6c8",
+        "GetChildren": "function: 0x12fc18",
+        "GetDescendants": "function: 0x12fc70",
+        "GetFullName": "function: 0x12fcc8",
+        "IsA": "function: 0x12fe78",
+        "Destroy": "function: 0x12fbb0",
+        "Clone": "function: 0x12fea0",
+        "_addChild": "function: 0x12fef0",
+        "Shape": "Block",
+        "Size": {
+          "X": 41,
+          "Y": 0.3,
+          "Z": 3
+        },
+        "Position": {
+          "X": 0,
+          "Y": 0.15,
+          "Z": 86
+        },
+        "Anchored": "true",
+        "Material": "table: 0x12fd40",
+        "Color": "table: 0x12fdc8"
+      }
+    },
+    {
+      "id": "inst_25",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x130450",
+        "WaitForChild": "function: 0x130568",
+        "GetChildren": "function: 0x130378",
+        "GetDescendants": "function: 0x1305b8",
+        "GetFullName": "function: 0x130398",
+        "IsA": "function: 0x1307c8",
+        "Destroy": "function: 0x1304a0",
+        "Clone": "function: 0x1304f0",
+        "_addChild": "function: 0x130818",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 0.3,
+          "Z": 25
+        },
+        "Position": {
+          "X": 19.5,
+          "Y": 0.15,
+          "Z": 100
+        },
+        "Anchored": "true",
+        "Material": "table: 0x130628",
+        "Color": "table: 0x1306b0"
+      }
+    },
+    {
+      "id": "inst_26",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x130de0",
+        "WaitForChild": "function: 0x130ed0",
+        "GetChildren": "function: 0x130ef8",
+        "GetDescendants": "function: 0x130f48",
+        "GetFullName": "function: 0x130d00",
+        "IsA": "function: 0x131120",
+        "Destroy": "function: 0x130e68",
+        "Clone": "function: 0x131148",
+        "_addChild": "function: 0x131198",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 0.3,
+          "Z": 25
+        },
+        "Position": {
+          "X": -19.5,
+          "Y": 0.15,
+          "Z": 100
+        },
+        "Anchored": "true",
+        "Material": "table: 0x130fe8",
+        "Color": "table: 0x131070"
+      }
+    },
+    {
+      "id": "inst_27",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1319c8",
+        "WaitForChild": "function: 0x131ae0",
+        "GetChildren": "function: 0x1318a8",
+        "GetDescendants": "function: 0x131b08",
+        "GetFullName": "function: 0x131b58",
+        "IsA": "function: 0x131d28",
+        "Destroy": "function: 0x131a18",
+        "Clone": "function: 0x131a68",
+        "_addChild": "function: 0x131a88",
+        "Shape": "Block",
+        "Size": {
+          "X": 8,
+          "Y": 1,
+          "Z": 1
+        }
+      }
+    },
+    {
+      "id": "inst_28",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x135c90",
+        "WaitForChild": "function: 0x133aa0",
+        "GetChildren": "function: 0x133f40",
+        "GetDescendants": "function: 0x133f90",
+        "GetFullName": "function: 0x1326e0",
+        "IsA": "function: 0x134f98",
+        "Destroy": "function: 0x133c90",
+        "Clone": "function: 0x133e78",
+        "_addChild": "function: 0x133ec8",
+        "Shape": "Block",
+        "Size": {
+          "X": 35,
+          "Y": 0.5,
+          "Z": 25
+        },
+        "Position": {
+          "X": 0,
+          "Y": 0.25,
+          "Z": 100
+        },
+        "Anchored": "true",
+        "Material": "table: 0x133b48",
+        "Color": "table: 0x133bd0"
+      }
+    },
+    {
+      "id": "inst_29",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x12d5f8",
+        "WaitForChild": "function: 0x133968",
+        "GetChildren": "function: 0x131100",
+        "GetDescendants": "function: 0x133ba8",
+        "GetFullName": "function: 0x12d2a0",
+        "IsA": "function: 0x130d18",
+        "Destroy": "function: 0x133218",
+        "Clone": "function: 0x130740",
+        "_addChild": "function: 0x12d140",
+        "Shape": "Block",
+        "Size": {
+          "X": 41,
+          "Y": 0.3,
+          "Z": 3
+        },
+        "Position": {
+          "X": 0,
+          "Y": 0.15,
+          "Z": 114
+        },
+        "Anchored": "true",
+        "Material": "table: 0x10fde8",
+        "Color": "table: 0x110140"
+      }
+    },
+    {
+      "id": "inst_30",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x110938",
+        "WaitForChild": "function: 0x118d50",
+        "GetChildren": "function: 0x110e68",
+        "GetDescendants": "function: 0x1111b8",
+        "GetFullName": "function: 0x1116e8",
+        "IsA": "function: 0x111700",
+        "Destroy": "function: 0x111910",
+        "Clone": "function: 0x111cb8",
+        "_addChild": "function: 0x111ee0",
+        "Shape": "Block",
+        "Size": {
+          "X": 41,
+          "Y": 0.3,
+          "Z": 3
+        },
+        "Position": {
+          "X": 0,
+          "Y": 0.15,
+          "Z": 86
+        },
+        "Anchored": "true",
+        "Material": "table: 0x112500",
+        "Color": "table: 0x1127e0"
+      }
+    },
+    {
+      "id": "inst_31",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1266b0",
+        "WaitForChild": "function: 0x1125d0",
+        "GetChildren": "function: 0x126910",
+        "GetDescendants": "function: 0x126638",
+        "GetFullName": "function: 0x1269b8",
+        "IsA": "function: 0x1269d0",
+        "Destroy": "function: 0x127060",
+        "Clone": "function: 0x127270",
+        "_addChild": "function: 0x126f90",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 0.3,
+          "Z": 25
+        },
+        "Position": {
+          "X": 19.5,
+          "Y": 0.15,
+          "Z": 100
+        },
+        "Anchored": "true",
+        "Material": "table: 0x127518",
+        "Color": "table: 0x127890"
+      }
+    },
+    {
+      "id": "inst_32",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x127e60",
+        "WaitForChild": "function: 0x127858",
+        "GetChildren": "function: 0x1281d0",
+        "GetDescendants": "function: 0x1283e0",
+        "GetFullName": "function: 0x128108",
+        "IsA": "function: 0x128120",
+        "Destroy": "function: 0x128750",
+        "Clone": "function: 0x1287f8",
+        "_addChild": "function: 0x128688",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 0.3,
+          "Z": 25
+        },
+        "Position": {
+          "X": -19.5,
+          "Y": 0.15,
+          "Z": 100
+        },
+        "Anchored": "true",
+        "Material": "table: 0x128f80",
+        "Color": "table: 0x128ca8"
+      }
+    },
+    {
+      "id": "inst_33",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x129b20",
+        "WaitForChild": "function: 0x129848",
+        "GetChildren": "function: 0x129bc8",
+        "GetDescendants": "function: 0x129ee0",
+        "GetFullName": "function: 0x129860",
+        "IsA": "function: 0x129dc8",
+        "Destroy": "function: 0x12a140",
+        "Clone": "function: 0x10db20",
+        "_addChild": "function: 0x10da48",
+        "Shape": "Block",
+        "Size": {
+          "X": 8,
+          "Y": 1,
+          "Z": 1
+        },
+        "Position": {
+          "X": 16,
+          "Y": 4,
+          "Z": 111
+        },
+        "_rotation": {
+          "rx": 0,
+          "ry": 0,
+          "rz": 1.5707963267948966
+        },
+        "CFrame": {
+          "X": 16,
+          "Y": 4,
+          "Z": 111,
+          "rx": 0,
+          "ry": 0,
+          "rz": 1.5707963267948966
+        },
+        "Anchored": "true",
+        "Material": "table: 0x110a70",
+        "Color": "table: 0x129140"
+      }
+    },
+    {
+      "id": "inst_34",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x12fcf0",
+        "WaitForChild": "function: 0x120a50",
+        "GetChildren": "function: 0x130278",
+        "GetDescendants": "function: 0x12bbf8",
+        "GetFullName": "function: 0x10dc10",
+        "IsA": "function: 0x129d00",
+        "Destroy": "function: 0x12d1d8",
+        "Clone": "function: 0x130540",
+        "_addChild": "function: 0x118ce8",
+        "Shape": "Block",
+        "Size": {
+          "X": 5,
+          "Y": 4,
+          "Z": 5
+        },
+        "Position": {
+          "X": 16,
+          "Y": 8.5,
+          "Z": 111
+        },
+        "Anchored": "true",
+        "Material": "table: 0x111bf0",
+        "Color": "table: 0x126338"
+      }
+    },
+    {
+      "id": "inst_35",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1273d8",
+        "WaitForChild": "function: 0x111c18",
+        "GetChildren": "function: 0x12eea8",
+        "GetDescendants": "function: 0x127f68",
+        "GetFullName": "function: 0x1264b0",
+        "IsA": "function: 0x128ad8",
+        "Destroy": "function: 0x1290a8",
+        "Clone": "function: 0x129678",
+        "_addChild": "function: 0x129c48",
+        "Shape": "Block",
+        "Size": {
+          "X": 8,
+          "Y": 1,
+          "Z": 1
+        },
+        "Position": {
+          "X": -16,
+          "Y": 4,
+          "Z": 111
+        },
+        "_rotation": {
+          "rx": 0,
+          "ry": 0,
+          "rz": 1.5707963267948966
+        },
+        "CFrame": {
+          "X": -16,
+          "Y": 4,
+          "Z": 111,
+          "rx": 0,
+          "ry": 0,
+          "rz": 1.5707963267948966
+        },
+        "Anchored": "true",
+        "Material": "table: 0x12c518",
+        "Color": "table: 0x12c6c0"
+      }
+    },
+    {
+      "id": "inst_36",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x11d8d0",
+        "WaitForChild": "function: 0x130e50",
+        "GetChildren": "function: 0x11d898",
+        "GetDescendants": "function: 0x132bf0",
+        "GetFullName": "function: 0x10dae8",
+        "IsA": "function: 0x132df8",
+        "Destroy": "function: 0x11d920",
+        "Clone": "function: 0x11d970",
+        "_addChild": "function: 0x11d990",
+        "Shape": "Block",
+        "Size": {
+          "X": 5,
+          "Y": 4,
+          "Z": 5
+        },
+        "Position": {
+          "X": -16,
+          "Y": 8.5,
+          "Z": 111
+        },
+        "Anchored": "true",
+        "Material": "table: 0x132c40",
+        "Color": "table: 0x132cc8"
+      }
+    },
+    {
+      "id": "inst_37",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x133090",
+        "WaitForChild": "function: 0x133e30",
+        "GetChildren": "function: 0x133178",
+        "GetDescendants": "function: 0x1331c8",
+        "GetFullName": "function: 0x12c0f8",
+        "IsA": "function: 0x1330e0",
+        "Destroy": "function: 0x133128",
+        "Clone": "function: 0x12c298",
+        "_addChild": "function: 0x12c2e8",
+        "Shape": "Block",
+        "Size": {
+          "X": 8,
+          "Y": 1,
+          "Z": 1
+        },
+        "Position": {
+          "X": 16,
+          "Y": 4,
+          "Z": 89
+        },
+        "_rotation": {
+          "rx": 0,
+          "ry": 0,
+          "rz": 1.5707963267948966
+        },
+        "CFrame": {
+          "X": 16,
+          "Y": 4,
+          "Z": 89,
+          "rx": 0,
+          "ry": 0,
+          "rz": 1.5707963267948966
+        },
+        "Anchored": "true",
+        "Material": "table: 0x12c198",
+        "Color": "table: 0x12c220"
+      }
+    },
+    {
+      "id": "inst_38",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x12cec8",
+        "WaitForChild": "function: 0x12cdc8",
+        "GetChildren": "function: 0x12cde0",
+        "GetDescendants": "function: 0x12d010",
+        "GetFullName": "function: 0x12d060",
+        "IsA": "function: 0x12d078",
+        "Destroy": "function: 0x12cf48",
+        "Clone": "function: 0x135138",
+        "_addChild": "function: 0x135188",
+        "Shape": "Block",
+        "Size": {
+          "X": 5,
+          "Y": 4,
+          "Z": 5
+        },
+        "Position": {
+          "X": 16,
+          "Y": 8.5,
+          "Z": 89
+        },
+        "Anchored": "true",
+        "Material": "table: 0x135038",
+        "Color": "table: 0x1350c0"
+      }
+    },
+    {
+      "id": "inst_39",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1359e8",
+        "WaitForChild": "function: 0x12e930",
+        "GetChildren": "function: 0x12e948",
+        "GetDescendants": "function: 0x135b30",
+        "GetFullName": "function: 0x135b80",
+        "IsA": "function: 0x135bc8",
+        "Destroy": "function: 0x135a08",
+        "Clone": "function: 0x135a58",
+        "_addChild": "function: 0x135aa8",
+        "Shape": "Block",
+        "Size": {
+          "X": 8,
+          "Y": 1,
+          "Z": 1
+        },
+        "Position": {
+          "X": -16,
+          "Y": 4,
+          "Z": 89
+        },
+        "_rotation": {
+          "rx": 0,
+          "ry": 0,
+          "rz": 1.5707963267948966
+        },
+        "CFrame": {
+          "X": -16,
+          "Y": 4,
+          "Z": 89,
+          "rx": 0,
+          "ry": 0,
+          "rz": 1.5707963267948966
+        },
+        "Anchored": "true",
+        "Material": "table: 0x131578",
+        "Color": "table: 0x131600"
+      }
+    },
+    {
+      "id": "inst_40",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x132400",
+        "WaitForChild": "function: 0x132300",
+        "GetChildren": "function: 0x132318",
+        "GetDescendants": "function: 0x132548",
+        "GetFullName": "function: 0x132598",
+        "IsA": "function: 0x1325e0",
+        "Destroy": "function: 0x132420",
+        "Clone": "function: 0x132470",
+        "_addChild": "function: 0x1324c0",
+        "Shape": "Block",
+        "Size": {
+          "X": 5,
+          "Y": 4,
+          "Z": 5
+        },
+        "Position": {
+          "X": -16,
+          "Y": 8.5,
+          "Z": 89
+        },
+        "Anchored": "true",
+        "Material": "table: 0x1215b8",
+        "Color": "table: 0x121640"
+      }
+    },
+    {
+      "id": "inst_41",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x137a68",
+        "WaitForChild": "function: 0x123900",
+        "GetChildren": "function: 0x137b80",
+        "GetDescendants": "function: 0x1229b8",
+        "GetFullName": "function: 0x1244c0",
+        "IsA": "function: 0x137980",
+        "Destroy": "function: 0x137b18",
+        "Clone": "function: 0x122b90",
+        "_addChild": "function: 0x122be0",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 15,
+          "Z": 3
+        },
+        "Position": {
+          "X": -12,
+          "Y": 7.5,
+          "Z": 55
+        },
+        "Anchored": "true",
+        "Material": "table: 0x122a78",
+        "Color": "table: 0x122b00"
+      }
+    },
+    {
+      "id": "inst_42",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x122f48",
+        "WaitForChild": "function: 0x122f68",
+        "GetChildren": "function: 0x123ff8",
+        "GetDescendants": "function: 0x124048",
+        "GetFullName": "function: 0x137b68",
+        "IsA": "function: 0x123f60",
+        "Destroy": "function: 0x123fa8",
+        "Clone": "function: 0x124098",
+        "_addChild": "function: 0x1240e8",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 15,
+          "Z": 3
+        },
+        "Position": {
+          "X": 0,
+          "Y": 7.5,
+          "Z": 55
+        },
+        "Anchored": "true",
+        "Material": "table: 0x1362a8",
+        "Color": "table: 0x135d48"
+      }
+    },
+    {
+      "id": "inst_43",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x137d10",
+        "WaitForChild": "function: 0x137e00",
+        "GetChildren": "function: 0x137e28",
+        "GetDescendants": "function: 0x137e78",
+        "GetFullName": "function: 0x137c30",
+        "IsA": "function: 0x138050",
+        "Destroy": "function: 0x137d98",
+        "Clone": "function: 0x138078",
+        "_addChild": "function: 0x1380c8",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 15,
+          "Z": 3
+        },
+        "Position": {
+          "X": 12,
+          "Y": 7.5,
+          "Z": 55
+        },
+        "Anchored": "true",
+        "Material": "table: 0x137ec8",
+        "Color": "table: 0x137f50"
+      }
+    },
+    {
+      "id": "inst_44",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x138740",
+        "WaitForChild": "function: 0x138858",
+        "GetChildren": "function: 0x138640",
+        "GetDescendants": "function: 0x1388a8",
+        "GetFullName": "function: 0x138660",
+        "IsA": "function: 0x138ab8",
+        "Destroy": "function: 0x138790",
+        "Clone": "function: 0x1387e0",
+        "_addChild": "function: 0x138b08",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 15,
+          "Z": 3
+        },
+        "Position": {
+          "X": -12,
+          "Y": 7.5,
+          "Z": 65
+        },
+        "Anchored": "true",
+        "Material": "table: 0x138918",
+        "Color": "table: 0x1389a0"
+      }
+    },
+    {
+      "id": "inst_45",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1391a0",
+        "WaitForChild": "function: 0x139290",
+        "GetChildren": "function: 0x1392b8",
+        "GetDescendants": "function: 0x139308",
+        "GetFullName": "function: 0x139358",
+        "IsA": "function: 0x139528",
+        "Destroy": "function: 0x1391f8",
+        "Clone": "function: 0x139248",
+        "_addChild": "function: 0x139578",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 15,
+          "Z": 3
+        },
+        "Position": {
+          "X": 0,
+          "Y": 7.5,
+          "Z": 65
+        },
+        "Anchored": "true",
+        "Material": "table: 0x139388",
+        "Color": "table: 0x139410"
+      }
+    },
+    {
+      "id": "inst_46",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x139c10",
+        "WaitForChild": "function: 0x139d00",
+        "GetChildren": "function: 0x139d28",
+        "GetDescendants": "function: 0x139d78",
+        "GetFullName": "function: 0x139dc8",
+        "IsA": "function: 0x139f98",
+        "Destroy": "function: 0x139c68",
+        "Clone": "function: 0x139cb8",
+        "_addChild": "function: 0x139fe8",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 15,
+          "Z": 3
+        },
+        "Position": {
+          "X": 12,
+          "Y": 7.5,
+          "Z": 65
+        },
+        "Anchored": "true",
+        "Material": "table: 0x139df8",
+        "Color": "table: 0x139e80"
+      }
+    },
+    {
+      "id": "inst_47",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x13a680",
+        "WaitForChild": "function: 0x13a770",
+        "GetChildren": "function: 0x13a798",
+        "GetDescendants": "function: 0x13a7e8",
+        "GetFullName": "function: 0x13a838",
+        "IsA": "function: 0x13aa08",
+        "Destroy": "function: 0x13a6d8",
+        "Clone": "function: 0x13a728",
+        "_addChild": "function: 0x13aa58",
+        "Shape": "Block",
+        "Size": {
+          "X": 30,
+          "Y": 1,
+          "Z": 20
+        },
+        "Position": {
+          "X": 0,
+          "Y": 15.5,
+          "Z": 60
+        },
+        "Anchored": "true",
+        "Material": "table: 0x13a868",
+        "Color": "table: 0x13a8f0"
+      }
+    },
+    {
+      "id": "inst_48",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x13b2e0",
+        "WaitForChild": "function: 0x13b3f8",
+        "GetChildren": "function: 0x13b1e0",
+        "GetDescendants": "function: 0x13b448",
+        "GetFullName": "function: 0x13b200",
+        "IsA": "function: 0x13b658",
+        "Destroy": "function: 0x13b330",
+        "Clone": "function: 0x13b380",
+        "_addChild": "function: 0x13b6a8",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 2,
+          "Z": 2
+        },
+        "Position": {
+          "X": -14,
+          "Y": 1,
+          "Z": 53
+        },
+        "Anchored": "true",
+        "Material": "table: 0x13b4b8",
+        "Color": "table: 0x13b540"
+      }
+    },
+    {
+      "id": "inst_49",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x13be20",
+        "WaitForChild": "function: 0x13bf10",
+        "GetChildren": "function: 0x13bf38",
+        "GetDescendants": "function: 0x13bf88",
+        "GetFullName": "function: 0x13bfd8",
+        "IsA": "function: 0x13c1a8",
+        "Destroy": "function: 0x13be78",
+        "Clone": "function: 0x13bec8",
+        "_addChild": "function: 0x13c1f8",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 2,
+          "Z": 2
+        },
+        "Position": {
+          "X": 14,
+          "Y": 1,
+          "Z": 53
+        },
+        "Anchored": "true",
+        "Material": "table: 0x13c008",
+        "Color": "table: 0x13c090"
+      }
+    },
+    {
+      "id": "inst_50",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x13c970",
+        "WaitForChild": "function: 0x13ca60",
+        "GetChildren": "function: 0x13ca88",
+        "GetDescendants": "function: 0x13cad8",
+        "GetFullName": "function: 0x13cb28",
+        "IsA": "function: 0x13ccf8",
+        "Destroy": "function: 0x13c9c8",
+        "Clone": "function: 0x13ca18",
+        "_addChild": "function: 0x13cd48",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 2,
+          "Z": 2
+        },
+        "Position": {
+          "X": -14,
+          "Y": 1,
+          "Z": 67
+        },
+        "Anchored": "true",
+        "Material": "table: 0x13cb58",
+        "Color": "table: 0x13cbe0"
+      }
+    },
+    {
+      "id": "inst_51",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x13d4c0",
+        "WaitForChild": "function: 0x13d5b0",
+        "GetChildren": "function: 0x13d5d8",
+        "GetDescendants": "function: 0x13d628",
+        "GetFullName": "function: 0x13d678",
+        "IsA": "function: 0x13d848",
+        "Destroy": "function: 0x13d518",
+        "Clone": "function: 0x13d568",
+        "_addChild": "function: 0x13d898",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 2,
+          "Z": 2
+        },
+        "Position": {
+          "X": 14,
+          "Y": 1,
+          "Z": 67
+        },
+        "Anchored": "true",
+        "Material": "table: 0x13d6a8",
+        "Color": "table: 0x13d730"
+      }
+    },
+    {
+      "id": "inst_52",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x13e010",
+        "WaitForChild": "function: 0x13e100",
+        "GetChildren": "function: 0x13e128",
+        "GetDescendants": "function: 0x13e178",
+        "GetFullName": "function: 0x13e1c8",
+        "IsA": "function: 0x13e398",
+        "Destroy": "function: 0x13e068",
+        "Clone": "function: 0x13e0b8",
+        "_addChild": "function: 0x13e3e8",
+        "Shape": "Block",
+        "Size": {
+          "X": 10,
+          "Y": 0.5,
+          "Z": 6
+        },
+        "Position": {
+          "X": 0,
+          "Y": 0.25,
+          "Z": 60
+        },
+        "Anchored": "true",
+        "Material": "table: 0x13e1f8",
+        "Color": "table: 0x13e280"
+      }
+    },
+    {
+      "id": "inst_53",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x13ea80",
+        "WaitForChild": "function: 0x13eb70",
+        "GetChildren": "function: 0x13eb98",
+        "GetDescendants": "function: 0x13ebe8",
+        "GetFullName": "function: 0x13ec38",
+        "IsA": "function: 0x13ee08",
+        "Destroy": "function: 0x13ead8",
+        "Clone": "function: 0x13eb28",
+        "_addChild": "function: 0x13ee58",
+        "Shape": "Block",
+        "Size": {
+          "X": 6,
+          "Y": 0.5,
+          "Z": 4
+        },
+        "Position": {
+          "X": 0,
+          "Y": 0.75,
+          "Z": 60
+        },
+        "Anchored": "true",
+        "Material": "table: 0x13ec68",
+        "Color": "table: 0x13ecf0"
+      }
+    },
+    {
+      "id": "inst_54",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x13f4f0",
+        "WaitForChild": "function: 0x13f5e0",
+        "GetChildren": "function: 0x13f608",
+        "GetDescendants": "function: 0x13f658",
+        "GetFullName": "function: 0x13f6a8",
+        "IsA": "function: 0x13f878",
+        "Destroy": "function: 0x13f548",
+        "Clone": "function: 0x13f598",
+        "_addChild": "function: 0x13f8c8",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 2,
+          "Z": 3
+        },
+        "Position": {
+          "X": 0,
+          "Y": 1,
+          "Z": 55
+        },
+        "Anchored": "true",
+        "Material": "table: 0x13f6d8",
+        "Color": "table: 0x13f760"
+      }
+    },
+    {
+      "id": "inst_55",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x140e28",
+        "WaitForChild": "function: 0x1413b8",
+        "GetChildren": "function: 0x141ce8",
+        "GetDescendants": "function: 0x141d38",
+        "GetFullName": "function: 0x1414a8",
+        "IsA": "function: 0x1405d0",
+        "Destroy": "function: 0x142a38",
+        "Clone": "function: 0x141c20",
+        "_addChild": "function: 0x141c70",
+        "Shape": "Block",
+        "Size": {
+          "X": 8,
+          "Y": 4,
+          "Z": 6
+        },
+        "Position": {
+          "X": 40,
+          "Y": 2,
+          "Z": 88
+        },
+        "Anchored": "true",
+        "Material": "table: 0x1428b0",
+        "Color": "table: 0x142938"
+      }
+    },
+    {
+      "id": "inst_56",
+      "className": "WedgePart",
+      "name": "WedgePart",
+      "properties": {
+        "FindFirstChild": "function: 0x143088",
+        "WaitForChild": "function: 0x141620",
+        "GetChildren": "function: 0x1431a0",
+        "GetDescendants": "function: 0x1431c0",
+        "GetFullName": "function: 0x141be0",
+        "IsA": "function: 0x1433c8",
+        "Destroy": "function: 0x1430a8",
+        "Clone": "function: 0x1430f8",
+        "_addChild": "function: 0x143148",
+        "Shape": "Wedge",
+        "Size": {
+          "X": 8,
+          "Y": 2,
+          "Z": 4
+        },
+        "Position": {
+          "X": 40,
+          "Y": 5,
+          "Z": 87
+        },
+        "Anchored": "true",
+        "Material": "table: 0x143228",
+        "Color": "table: 0x1432b0"
+      }
+    },
+    {
+      "id": "inst_57",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x143ac0",
+        "WaitForChild": "function: 0x143bb0",
+        "GetChildren": "function: 0x143bd8",
+        "GetDescendants": "function: 0x143c28",
+        "GetFullName": "function: 0x143c78",
+        "IsA": "function: 0x143e48",
+        "Destroy": "function: 0x143b18",
+        "Clone": "function: 0x143b68",
+        "_addChild": "function: 0x143e98",
+        "Shape": "Block",
+        "Size": {
+          "X": 8,
+          "Y": 4,
+          "Z": 6
+        },
+        "Position": {
+          "X": 40,
+          "Y": 2,
+          "Z": 97
+        },
+        "Anchored": "true",
+        "Material": "table: 0x143c90",
+        "Color": "table: 0x143d18"
+      }
+    },
+    {
+      "id": "inst_58",
+      "className": "WedgePart",
+      "name": "WedgePart",
+      "properties": {
+        "FindFirstChild": "function: 0x144538",
+        "WaitForChild": "function: 0x144650",
+        "GetChildren": "function: 0x144420",
+        "GetDescendants": "function: 0x1446a8",
+        "GetFullName": "function: 0x144700",
+        "IsA": "function: 0x1448b0",
+        "Destroy": "function: 0x144440",
+        "Clone": "function: 0x1445e8",
+        "_addChild": "function: 0x144908",
+        "Shape": "Wedge",
+        "Size": {
+          "X": 8,
+          "Y": 2,
+          "Z": 4
+        },
+        "Position": {
+          "X": 40,
+          "Y": 5,
+          "Z": 96
+        },
+        "Anchored": "true",
+        "Material": "table: 0x144728",
+        "Color": "table: 0x1447b0"
+      }
+    },
+    {
+      "id": "inst_59",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x144fb0",
+        "WaitForChild": "function: 0x1450c8",
+        "GetChildren": "function: 0x144eb0",
+        "GetDescendants": "function: 0x145118",
+        "GetFullName": "function: 0x144ed0",
+        "IsA": "function: 0x145328",
+        "Destroy": "function: 0x145000",
+        "Clone": "function: 0x145050",
+        "_addChild": "function: 0x145378",
+        "Shape": "Block",
+        "Size": {
+          "X": 12,
+          "Y": 4,
+          "Z": 6
+        },
+        "Position": {
+          "X": 40,
+          "Y": 2,
+          "Z": 106
+        },
+        "Anchored": "true",
+        "Material": "table: 0x145170",
+        "Color": "table: 0x1451f8"
+      }
+    },
+    {
+      "id": "inst_60",
+      "className": "WedgePart",
+      "name": "WedgePart",
+      "properties": {
+        "FindFirstChild": "function: 0x145a18",
+        "WaitForChild": "function: 0x145b30",
+        "GetChildren": "function: 0x145900",
+        "GetDescendants": "function: 0x145b88",
+        "GetFullName": "function: 0x145be0",
+        "IsA": "function: 0x145d90",
+        "Destroy": "function: 0x145920",
+        "Clone": "function: 0x145ac8",
+        "_addChild": "function: 0x145de8",
+        "Shape": "Wedge",
+        "Size": {
+          "X": 12,
+          "Y": 2,
+          "Z": 4
+        },
+        "Position": {
+          "X": 40,
+          "Y": 5,
+          "Z": 105
+        },
+        "Anchored": "true",
+        "Material": "table: 0x145c08",
+        "Color": "table: 0x145c90"
+      }
+    },
+    {
+      "id": "inst_61",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x146498",
+        "WaitForChild": "function: 0x1465b0",
+        "GetChildren": "function: 0x146398",
+        "GetDescendants": "function: 0x146600",
+        "GetFullName": "function: 0x1463b8",
+        "IsA": "function: 0x146810",
+        "Destroy": "function: 0x1464e8",
+        "Clone": "function: 0x146538",
+        "_addChild": "function: 0x146860",
+        "Shape": "Block",
+        "Size": {
+          "X": 8,
+          "Y": 4,
+          "Z": 6
+        },
+        "Position": {
+          "X": 49,
+          "Y": 2,
+          "Z": 115
+        },
+        "Anchored": "true",
+        "Material": "table: 0x146658",
+        "Color": "table: 0x1466e0"
+      }
+    },
+    {
+      "id": "inst_62",
+      "className": "WedgePart",
+      "name": "WedgePart",
+      "properties": {
+        "FindFirstChild": "function: 0x146f00",
+        "WaitForChild": "function: 0x147018",
+        "GetChildren": "function: 0x146de8",
+        "GetDescendants": "function: 0x147070",
+        "GetFullName": "function: 0x1470c8",
+        "IsA": "function: 0x147278",
+        "Destroy": "function: 0x146e08",
+        "Clone": "function: 0x146fb0",
+        "_addChild": "function: 0x1472d0",
+        "Shape": "Wedge",
+        "Size": {
+          "X": 8,
+          "Y": 2,
+          "Z": 4
+        },
+        "Position": {
+          "X": 49,
+          "Y": 5,
+          "Z": 114
+        },
+        "Anchored": "true",
+        "Material": "table: 0x1470f0",
+        "Color": "table: 0x147178"
+      }
+    },
+    {
+      "id": "inst_63",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x147978",
+        "WaitForChild": "function: 0x147a90",
+        "GetChildren": "function: 0x147878",
+        "GetDescendants": "function: 0x147ae0",
+        "GetFullName": "function: 0x147898",
+        "IsA": "function: 0x147cf0",
+        "Destroy": "function: 0x1479c8",
+        "Clone": "function: 0x147a18",
+        "_addChild": "function: 0x147d40",
+        "Shape": "Block",
+        "Size": {
+          "X": 8,
+          "Y": 4,
+          "Z": 6
+        },
+        "Position": {
+          "X": 58,
+          "Y": 2,
+          "Z": 115
+        },
+        "Anchored": "true",
+        "Material": "table: 0x147b38",
+        "Color": "table: 0x147bc0"
+      }
+    },
+    {
+      "id": "inst_64",
+      "className": "WedgePart",
+      "name": "WedgePart",
+      "properties": {
+        "FindFirstChild": "function: 0x1483e0",
+        "WaitForChild": "function: 0x1484f8",
+        "GetChildren": "function: 0x12d0d8",
+        "GetDescendants": "function: 0x133ab8",
+        "GetFullName": "function: 0x127840",
+        "IsA": "function: 0x12da48",
+        "Destroy": "function: 0x11a050",
+        "Clone": "function: 0x111bd0",
+        "_addChild": "function: 0x10daa0",
+        "Shape": "Wedge",
+        "Size": {
+          "X": 8,
+          "Y": 2,
+          "Z": 4
+        },
+        "Position": {
+          "X": 58,
+          "Y": 5,
+          "Z": 114
+        },
+        "Anchored": "true",
+        "Material": "table: 0x12d668",
+        "Color": "table: 0x12f300"
+      }
+    },
+    {
+      "id": "inst_65",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x143288",
+        "WaitForChild": "function: 0x10ff28",
+        "GetChildren": "function: 0x144788",
+        "GetDescendants": "function: 0x1451d0",
+        "GetFullName": "function: 0x13d690",
+        "IsA": "function: 0x13e1e0",
+        "Destroy": "function: 0x1466b8",
+        "Clone": "function: 0x147150",
+        "_addChild": "function: 0x147b98",
+        "Shape": "Block",
+        "Size": {
+          "X": 18,
+          "Y": 10,
+          "Z": 12
+        },
+        "Position": {
+          "X": -40,
+          "Y": 5,
+          "Z": 90
+        },
+        "Anchored": "true",
+        "Material": "table: 0x111e98",
+        "Color": "table: 0x135098"
+      }
+    },
+    {
+      "id": "inst_66",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x143da8",
+        "WaitForChild": "function: 0x1125b8",
+        "GetChildren": "function: 0x145c68",
+        "GetDescendants": "function: 0x146770",
+        "GetFullName": "function: 0x139de0",
+        "IsA": "function: 0x12fc00",
+        "Destroy": "function: 0x145288",
+        "Clone": "function: 0x147208",
+        "_addChild": "function: 0x144840",
+        "Shape": "Block",
+        "Size": {
+          "X": 20,
+          "Y": 0.8,
+          "Z": 14
+        },
+        "Position": {
+          "X": -40,
+          "Y": 10.4,
+          "Z": 90
+        },
+        "Anchored": "true",
+        "Material": "table: 0x126f40",
+        "Color": "table: 0x127630"
+      }
+    },
+    {
+      "id": "inst_67",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x128488",
+        "WaitForChild": "function: 0x13bff0",
+        "GetChildren": "function: 0x1286d8",
+        "GetDescendants": "function: 0x128d70",
+        "GetFullName": "function: 0x129de0",
+        "IsA": "function: 0x139370",
+        "Destroy": "function: 0x129028",
+        "Clone": "function: 0x129340",
+        "_addChild": "function: 0x1295a0",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 8,
+          "Z": 2
+        },
+        "Position": {
+          "X": -44,
+          "Y": 4,
+          "Z": 84
+        },
+        "Anchored": "true",
+        "Material": "table: 0x12a198",
+        "Color": "table: 0x12bb18"
+      }
+    },
+    {
+      "id": "inst_68",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x130840",
+        "WaitForChild": "function: 0x118d38",
+        "GetChildren": "function: 0x1311b8",
+        "GetDescendants": "function: 0x133c60",
+        "GetFullName": "function: 0x13cb40",
+        "IsA": "function: 0x13ec50",
+        "Destroy": "function: 0x130248",
+        "Clone": "function: 0x12d1a8",
+        "_addChild": "function: 0x118cb8",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 8,
+          "Z": 2
+        },
+        "Position": {
+          "X": -36,
+          "Y": 4,
+          "Z": 84
+        },
+        "Anchored": "true",
+        "Material": "table: 0x133198",
+        "Color": "table: 0x1330b0"
+      }
+    },
+    {
+      "id": "inst_69",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x132568",
+        "WaitForChild": "function: 0x11d958",
+        "GetChildren": "function: 0x132490",
+        "GetDescendants": "function: 0x122bb0",
+        "GetFullName": "function: 0x124018",
+        "IsA": "function: 0x124030",
+        "Destroy": "function: 0x123f78",
+        "Clone": "function: 0x1240b8",
+        "_addChild": "function: 0x137e48",
+        "Shape": "Block",
+        "Size": {
+          "X": 10,
+          "Y": 1.5,
+          "Z": 1
+        },
+        "Position": {
+          "X": -40,
+          "Y": 8.75,
+          "Z": 84
+        },
+        "Anchored": "true",
+        "Material": "table: 0x138ad8",
+        "Color": "table: 0x1392d8"
+      }
+    },
+    {
+      "id": "inst_70",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x139fb8",
+        "WaitForChild": "function: 0x1387c8",
+        "GetChildren": "function: 0x13a808",
+        "GetDescendants": "function: 0x13a6f8",
+        "GetFullName": "function: 0x13aa80",
+        "IsA": "function: 0x13aa98",
+        "Destroy": "function: 0x13b350",
+        "Clone": "function: 0x13bf58",
+        "_addChild": "function: 0x13be48",
+        "Shape": "Block",
+        "Size": {
+          "X": 10,
+          "Y": 0.3,
+          "Z": 6
+        },
+        "Position": {
+          "X": -40,
+          "Y": 0.15,
+          "Z": 83
+        },
+        "Anchored": "true",
+        "Material": "table: 0x13d5f8",
+        "Color": "table: 0x13d4e8"
+      }
+    },
+    {
+      "id": "inst_71",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1446d0",
+        "WaitForChild": "function: 0x145098",
+        "GetChildren": "function: 0x145140",
+        "GetDescendants": "function: 0x144fd0",
+        "GetFullName": "function: 0x1450b0",
+        "IsA": "function: 0x1453a0",
+        "Destroy": "function: 0x145bb0",
+        "Clone": "function: 0x145e10",
+        "_addChild": "function: 0x1465d0",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 14,
+          "Z": 3
+        },
+        "Position": {
+          "X": 15,
+          "Y": 7,
+          "Z": 80
+        },
+        "Anchored": "true",
+        "Material": "table: 0x147040",
+        "Color": "table: 0x1472a0"
+      }
+    },
+    {
+      "id": "inst_72",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x147d68",
+        "WaitForChild": "function: 0x120178",
+        "GetChildren": "function: 0x11d9b8",
+        "GetDescendants": "function: 0x132338",
+        "GetFullName": "function: 0x132358",
+        "IsA": "function: 0x120190",
+        "Destroy": "function: 0x144468",
+        "Clone": "function: 0x145948",
+        "_addChild": "function: 0x146e30",
+        "Shape": "Block",
+        "Size": {
+          "X": 6,
+          "Y": 0.3,
+          "Z": 6
+        },
+        "Position": {
+          "X": 15,
+          "Y": 7,
+          "Z": 80
+        },
+        "Anchored": "true",
+        "Material": "table: 0x138a78",
+        "Color": "table: 0x13b618"
+      }
+    },
+    {
+      "id": "inst_73",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x146ff8",
+        "WaitForChild": "function: 0x1482f8",
+        "GetChildren": "function: 0x11b650",
+        "GetDescendants": "function: 0x1244a0",
+        "GetFullName": "function: 0x13cce0",
+        "IsA": "function: 0x13c190",
+        "Destroy": "function: 0x143208",
+        "Clone": "function: 0x146dc0",
+        "_addChild": "function: 0x1443f8",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 1,
+          "Z": 2
+        },
+        "Position": {
+          "X": 13,
+          "Y": 0.5,
+          "Z": 78
+        },
+        "Anchored": "true",
+        "Material": "table: 0x10d880",
+        "Color": "table: 0x12d548"
+      }
+    },
+    {
+      "id": "inst_74",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x12cf28",
+        "WaitForChild": "function: 0x138aa0",
+        "GetChildren": "function: 0x135b00",
+        "GetDescendants": "function: 0x1322d0",
+        "GetFullName": "function: 0x1296c0",
+        "IsA": "function: 0x146e50",
+        "Destroy": "function: 0x1379c8",
+        "Clone": "function: 0x137950",
+        "_addChild": "function: 0x136278",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 1,
+          "Z": 2
+        },
+        "Position": {
+          "X": 17,
+          "Y": 0.5,
+          "Z": 78
+        },
+        "Anchored": "true",
+        "Material": "table: 0x1385e0",
+        "Color": "table: 0x13b1a8"
+      }
+    },
+    {
+      "id": "inst_75",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x144558",
+        "WaitForChild": "function: 0x144488",
+        "GetChildren": "function: 0x144578",
+        "GetDescendants": "function: 0x1445c8",
+        "GetFullName": "function: 0x13e380",
+        "IsA": "function: 0x13b640",
+        "Destroy": "function: 0x145858",
+        "Clone": "function: 0x145a98",
+        "_addChild": "function: 0x146d10",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 1,
+          "Z": 2
+        },
+        "Position": {
+          "X": 13,
+          "Y": 0.5,
+          "Z": 82
+        },
+        "Anchored": "true",
+        "Material": "table: 0x148210",
+        "Color": "table: 0x121360"
+      }
+    },
+    {
+      "id": "inst_76",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1316c0",
+        "WaitForChild": "function: 0x135c08",
+        "GetChildren": "function: 0x131710",
+        "GetDescendants": "function: 0x122de8",
+        "GetFullName": "function: 0x147860",
+        "IsA": "function: 0x1290f0",
+        "Destroy": "function: 0x122e98",
+        "Clone": "function: 0x132f60",
+        "_addChild": "function: 0x132fb0",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 1,
+          "Z": 2
+        },
+        "Position": {
+          "X": 17,
+          "Y": 0.5,
+          "Z": 82
+        },
+        "Anchored": "true",
+        "Material": "table: 0x13a4f0",
+        "Color": "table: 0x13a578"
+      }
+    },
+    {
+      "id": "inst_77",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1405e8",
+        "WaitForChild": "function: 0x141df0",
+        "GetChildren": "function: 0x133948",
+        "GetDescendants": "function: 0x140638",
+        "GetFullName": "function: 0x145968",
+        "IsA": "function: 0x1433b0",
+        "Destroy": "function: 0x1406b8",
+        "Clone": "function: 0x1338b0",
+        "_addChild": "function: 0x133cb0",
+        "Shape": "Block",
+        "Size": {
+          "X": 16,
+          "Y": 8,
+          "Z": 1
+        },
+        "Position": {
+          "X": 232,
+          "Y": 4,
+          "Z": 180
+        },
+        "Anchored": "true",
+        "Material": "table: 0x120968",
+        "Color": "table: 0x11eea0"
+      }
+    },
+    {
+      "id": "inst_78",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1216d0",
+        "WaitForChild": "function: 0x13ded8",
+        "GetChildren": "function: 0x1216f0",
+        "GetDescendants": "function: 0x121740",
+        "GetFullName": "function: 0x142fe0",
+        "IsA": "function: 0x129c90",
+        "Destroy": "function: 0x12e100",
+        "Clone": "function: 0x12dfd8",
+        "_addChild": "function: 0x12e028",
+        "Shape": "Block",
+        "Size": {
+          "X": 16,
+          "Y": 8,
+          "Z": 1
+        },
+        "Position": {
+          "X": 268,
+          "Y": 4,
+          "Z": 180
+        },
+        "Anchored": "true",
+        "Material": "table: 0x134000",
+        "Color": "table: 0x134088"
+      }
+    },
+    {
+      "id": "inst_79",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x14dad8",
+        "WaitForChild": "function: 0x12d8e8",
+        "GetChildren": "function: 0x10ee90",
+        "GetDescendants": "function: 0x10eee0",
+        "GetFullName": "function: 0x142f78",
+        "IsA": "function: 0x10fbe8",
+        "Destroy": "function: 0x14daf8",
+        "Clone": "function: 0x14db48",
+        "_addChild": "function: 0x14db98",
+        "Shape": "Block",
+        "Size": {
+          "X": 40,
+          "Y": 8,
+          "Z": 1
+        },
+        "Position": {
+          "X": 250,
+          "Y": 4,
+          "Z": 220
+        },
+        "Anchored": "true",
+        "Material": "table: 0x14d0f0",
+        "Color": "table: 0x10fa58"
+      }
+    },
+    {
+      "id": "inst_80",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x135868",
+        "WaitForChild": "function: 0x14d150",
+        "GetChildren": "function: 0x135950",
+        "GetDescendants": "function: 0x1236f8",
+        "GetFullName": "function: 0x123748",
+        "IsA": "function: 0x1358b8",
+        "Destroy": "function: 0x135900",
+        "Clone": "function: 0x124310",
+        "_addChild": "function: 0x124360",
+        "Shape": "Block",
+        "Size": {
+          "X": 1,
+          "Y": 8,
+          "Z": 40
+        },
+        "Position": {
+          "X": 270,
+          "Y": 4,
+          "Z": 200
+        },
+        "Anchored": "true",
+        "Material": "table: 0x124188",
+        "Color": "table: 0x124210"
+      }
+    },
+    {
+      "id": "inst_81",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x13b048",
+        "WaitForChild": "function: 0x13af48",
+        "GetChildren": "function: 0x13af60",
+        "GetDescendants": "function: 0x13b0c8",
+        "GetFullName": "function: 0x13b0e8",
+        "IsA": "function: 0x134f78",
+        "Destroy": "function: 0x134d58",
+        "Clone": "function: 0x137610",
+        "_addChild": "function: 0x137660",
+        "Shape": "Block",
+        "Size": {
+          "X": 1,
+          "Y": 8,
+          "Z": 40
+        },
+        "Position": {
+          "X": 230,
+          "Y": 4,
+          "Z": 200
+        },
+        "Anchored": "true",
+        "Material": "table: 0x137840",
+        "Color": "table: 0x134df0"
+      }
+    },
+    {
+      "id": "inst_82",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x14e538",
+        "WaitForChild": "function: 0x14e628",
+        "GetChildren": "function: 0x14e650",
+        "GetDescendants": "function: 0x14e6a0",
+        "GetFullName": "function: 0x14e6f0",
+        "IsA": "function: 0x14e8c0",
+        "Destroy": "function: 0x14e590",
+        "Clone": "function: 0x14e5e0",
+        "_addChild": "function: 0x14e910",
+        "Shape": "Block",
+        "Size": {
+          "X": 5,
+          "Y": 12,
+          "Z": 5
+        },
+        "Position": {
+          "X": 230,
+          "Y": 6,
+          "Z": 180
+        },
+        "Anchored": "true",
+        "Material": "table: 0x14e720",
+        "Color": "table: 0x14e7a8"
+      }
+    },
+    {
+      "id": "inst_83",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x14efa8",
+        "WaitForChild": "function: 0x14f098",
+        "GetChildren": "function: 0x14f0c0",
+        "GetDescendants": "function: 0x14f110",
+        "GetFullName": "function: 0x14f160",
+        "IsA": "function: 0x14f330",
+        "Destroy": "function: 0x14f000",
+        "Clone": "function: 0x14f050",
+        "_addChild": "function: 0x14f380",
+        "Shape": "Block",
+        "Size": {
+          "X": 5,
+          "Y": 12,
+          "Z": 5
+        },
+        "Position": {
+          "X": 270,
+          "Y": 6,
+          "Z": 180
+        },
+        "Anchored": "true",
+        "Material": "table: 0x14f190",
+        "Color": "table: 0x14f218"
+      }
+    },
+    {
+      "id": "inst_84",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x14fa18",
+        "WaitForChild": "function: 0x14fb08",
+        "GetChildren": "function: 0x14fb30",
+        "GetDescendants": "function: 0x14fb80",
+        "GetFullName": "function: 0x14fbd0",
+        "IsA": "function: 0x14fda0",
+        "Destroy": "function: 0x14fa70",
+        "Clone": "function: 0x14fac0",
+        "_addChild": "function: 0x14fdf0",
+        "Shape": "Block",
+        "Size": {
+          "X": 5,
+          "Y": 12,
+          "Z": 5
+        },
+        "Position": {
+          "X": 230,
+          "Y": 6,
+          "Z": 220
+        },
+        "Anchored": "true",
+        "Material": "table: 0x14fc00",
+        "Color": "table: 0x14fc88"
+      }
+    },
+    {
+      "id": "inst_85",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x150488",
+        "WaitForChild": "function: 0x150578",
+        "GetChildren": "function: 0x1505a0",
+        "GetDescendants": "function: 0x1505f0",
+        "GetFullName": "function: 0x150640",
+        "IsA": "function: 0x150810",
+        "Destroy": "function: 0x1504e0",
+        "Clone": "function: 0x150530",
+        "_addChild": "function: 0x150860",
+        "Shape": "Block",
+        "Size": {
+          "X": 5,
+          "Y": 12,
+          "Z": 5
+        },
+        "Position": {
+          "X": 270,
+          "Y": 6,
+          "Z": 220
+        },
+        "Anchored": "true",
+        "Material": "table: 0x150670",
+        "Color": "table: 0x1506f8"
+      }
+    },
+    {
+      "id": "inst_86",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x150ef8",
+        "WaitForChild": "function: 0x150fe8",
+        "GetChildren": "function: 0x151010",
+        "GetDescendants": "function: 0x151060",
+        "GetFullName": "function: 0x1510b0",
+        "IsA": "function: 0x151280",
+        "Destroy": "function: 0x150f50",
+        "Clone": "function: 0x150fa0",
+        "_addChild": "function: 0x1512d0",
+        "Shape": "Block",
+        "Size": {
+          "X": 4,
+          "Y": 12,
+          "Z": 4
+        },
+        "Position": {
+          "X": 241,
+          "Y": 6,
+          "Z": 180
+        },
+        "Anchored": "true",
+        "Material": "table: 0x1510e0",
+        "Color": "table: 0x151168"
+      }
+    },
+    {
+      "id": "inst_87",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x13ff20",
+        "WaitForChild": "function: 0x13fe20",
+        "GetChildren": "function: 0x13fe38",
+        "GetDescendants": "function: 0x140068",
+        "GetFullName": "function: 0x1400b8",
+        "IsA": "function: 0x152168",
+        "Destroy": "function: 0x13ffa0",
+        "Clone": "function: 0x1400d0",
+        "_addChild": "function: 0x140120",
+        "Shape": "Block",
+        "Size": {
+          "X": 4,
+          "Y": 12,
+          "Z": 4
+        },
+        "Position": {
+          "X": 259,
+          "Y": 6,
+          "Z": 180
+        },
+        "Anchored": "true",
+        "Material": "table: 0x152600",
+        "Color": "table: 0x152040"
+      }
+    },
+    {
+      "id": "inst_88",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x155140",
+        "WaitForChild": "function: 0x152bf8",
+        "GetChildren": "function: 0x155288",
+        "GetDescendants": "function: 0x155c30",
+        "GetFullName": "function: 0x154b20",
+        "IsA": "function: 0x1548f0",
+        "Destroy": "function: 0x1551f0",
+        "Clone": "function: 0x155e08",
+        "_addChild": "function: 0x155e58",
+        "Shape": "Block",
+        "Size": {
+          "X": 12,
+          "Y": 6,
+          "Z": 8
+        },
+        "Position": {
+          "X": 250,
+          "Y": 3,
+          "Z": 200
+        },
+        "Anchored": "true",
+        "Material": "table: 0x155cf0",
+        "Color": "table: 0x155d78"
+      }
+    },
+    {
+      "id": "inst_89",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1557f0",
+        "WaitForChild": "function: 0x157270",
+        "GetChildren": "function: 0x157288",
+        "GetDescendants": "function: 0x155938",
+        "GetFullName": "function: 0x155988",
+        "IsA": "function: 0x155840",
+        "Destroy": "function: 0x155888",
+        "Clone": "function: 0x1559a0",
+        "_addChild": "function: 0x1559f0",
+        "Shape": "Block",
+        "Size": {
+          "X": 13,
+          "Y": 0.5,
+          "Z": 9
+        },
+        "Position": {
+          "X": 250,
+          "Y": 6.25,
+          "Z": 200
+        },
+        "Anchored": "true",
+        "Material": "table: 0x153370",
+        "Color": "table: 0x1533f8"
+      }
+    },
+    {
+      "id": "inst_90",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x153a58",
+        "WaitForChild": "function: 0x153958",
+        "GetChildren": "function: 0x153970",
+        "GetDescendants": "function: 0x153ba0",
+        "GetFullName": "function: 0x153bf0",
+        "IsA": "function: 0x153c38",
+        "Destroy": "function: 0x157500",
+        "Clone": "function: 0x153ad8",
+        "_addChild": "function: 0x157528",
+        "Shape": "Block",
+        "Size": {
+          "X": 20,
+          "Y": 5,
+          "Z": 8
+        },
+        "Position": {
+          "X": 265,
+          "Y": 2.5,
+          "Z": 210
+        },
+        "Anchored": "true",
+        "Material": "table: 0x157378",
+        "Color": "table: 0x157400"
+      }
+    },
+    {
+      "id": "inst_91",
+      "className": "WedgePart",
+      "name": "WedgePart",
+      "properties": {
+        "FindFirstChild": "function: 0x157ba0",
+        "WaitForChild": "function: 0x157cb8",
+        "GetChildren": "function: 0x157aa0",
+        "GetDescendants": "function: 0x157d08",
+        "GetFullName": "function: 0x157ac0",
+        "IsA": "function: 0x157f18",
+        "Destroy": "function: 0x157bf0",
+        "Clone": "function: 0x157c40",
+        "_addChild": "function: 0x157f68",
+        "Shape": "Wedge",
+        "Size": {
+          "X": 20,
+          "Y": 2,
+          "Z": 4
+        },
+        "Position": {
+          "X": 265,
+          "Y": 6,
+          "Z": 208
+        },
+        "Anchored": "true",
+        "Material": "table: 0x157d78",
+        "Color": "table: 0x157e00"
+      }
+    },
+    {
+      "id": "inst_92",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x158600",
+        "WaitForChild": "function: 0x1586f0",
+        "GetChildren": "function: 0x158718",
+        "GetDescendants": "function: 0x158768",
+        "GetFullName": "function: 0x1587b8",
+        "IsA": "function: 0x158988",
+        "Destroy": "function: 0x158658",
+        "Clone": "function: 0x1586a8",
+        "_addChild": "function: 0x1589d8",
+        "Shape": "Block",
+        "Size": {
+          "X": 10,
+          "Y": 5,
+          "Z": 8
+        },
+        "Position": {
+          "X": 235,
+          "Y": 2.5,
+          "Z": 190
+        },
+        "Anchored": "true",
+        "Material": "table: 0x1587e8",
+        "Color": "table: 0x158870"
+      }
+    },
+    {
+      "id": "inst_93",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x159178",
+        "WaitForChild": "function: 0x159290",
+        "GetChildren": "function: 0x159078",
+        "GetDescendants": "function: 0x1592e8",
+        "GetFullName": "function: 0x159098",
+        "IsA": "function: 0x1594f8",
+        "Destroy": "function: 0x1591c8",
+        "Clone": "function: 0x159218",
+        "_addChild": "function: 0x159548",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 2,
+          "Z": 2
+        },
+        "Position": {
+          "X": 231,
+          "Y": 1.5,
+          "Z": 188
+        },
+        "_rotation": {
+          "rx": 0,
+          "ry": 0,
+          "rz": 1.5707963267948966
+        },
+        "CFrame": {
+          "X": 231,
+          "Y": 1.5,
+          "Z": 188,
+          "rx": 0,
+          "ry": 0,
+          "rz": 1.5707963267948966
+        },
+        "Anchored": "true",
+        "Material": "table: 0x1593a8",
+        "Color": "table: 0x159430"
+      }
+    },
+    {
+      "id": "inst_94",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x15a418",
+        "WaitForChild": "function: 0x15a508",
+        "GetChildren": "function: 0x15a530",
+        "GetDescendants": "function: 0x15a580",
+        "GetFullName": "function: 0x15a5d0",
+        "IsA": "function: 0x15a7a0",
+        "Destroy": "function: 0x15a470",
+        "Clone": "function: 0x15a4c0",
+        "_addChild": "function: 0x15a7f0",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 2,
+          "Z": 2
+        },
+        "Position": {
+          "X": 233,
+          "Y": 1.5,
+          "Z": 186
+        },
+        "_rotation": {
+          "rx": 0,
+          "ry": 0,
+          "rz": 1.5707963267948966
+        },
+        "CFrame": {
+          "X": 233,
+          "Y": 1.5,
+          "Z": 186,
+          "rx": 0,
+          "ry": 0,
+          "rz": 1.5707963267948966
+        },
+        "Anchored": "true",
+        "Material": "table: 0x15a600",
+        "Color": "table: 0x15a688"
+      }
+    },
+    {
+      "id": "inst_95",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x15b598",
+        "WaitForChild": "function: 0x15b688",
+        "GetChildren": "function: 0x15b6b0",
+        "GetDescendants": "function: 0x15b700",
+        "GetFullName": "function: 0x15b750",
+        "IsA": "function: 0x15b920",
+        "Destroy": "function: 0x15b5f0",
+        "Clone": "function: 0x15b640",
+        "_addChild": "function: 0x15b970",
+        "Shape": "Block",
+        "Size": {
+          "X": 4,
+          "Y": 0.5,
+          "Z": 4
+        },
+        "Position": {
+          "X": 250,
+          "Y": 0.25,
+          "Z": 215
+        },
+        "Anchored": "true",
+        "Material": "table: 0x15b780",
+        "Color": "table: 0x15b808"
+      }
+    },
+    {
+      "id": "inst_96",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x15c008",
+        "WaitForChild": "function: 0x15c0f8",
+        "GetChildren": "function: 0x15c120",
+        "GetDescendants": "function: 0x15c170",
+        "GetFullName": "function: 0x15c1c0",
+        "IsA": "function: 0x15c390",
+        "Destroy": "function: 0x15c060",
+        "Clone": "function: 0x15c0b0",
+        "_addChild": "function: 0x15c3e0",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 2,
+          "Z": 2
+        },
+        "Position": {
+          "X": 250,
+          "Y": 1.5,
+          "Z": 215
+        },
+        "Anchored": "true",
+        "Material": "table: 0x15c1f0",
+        "Color": "table: 0x15c278"
+      }
+    },
+    {
+      "id": "inst_97",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x15cb58",
+        "WaitForChild": "function: 0x15cc48",
+        "GetChildren": "function: 0x15cc70",
+        "GetDescendants": "function: 0x15ccc0",
+        "GetFullName": "function: 0x15cd10",
+        "IsA": "function: 0x15cee0",
+        "Destroy": "function: 0x15cbb0",
+        "Clone": "function: 0x15cc00",
+        "_addChild": "function: 0x15cf30",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 2,
+          "Z": 3
+        },
+        "Position": {
+          "X": 250,
+          "Y": 1,
+          "Z": 196
+        },
+        "Anchored": "true",
+        "Material": "table: 0x15cd40",
+        "Color": "table: 0x15cdc8"
+      }
+    },
+    {
+      "id": "inst_98",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x15f780",
+        "WaitForChild": "function: 0x15eff8",
+        "GetChildren": "function: 0x15f898",
+        "GetDescendants": "function: 0x15f8e8",
+        "GetFullName": "function: 0x15f3c0",
+        "IsA": "function: 0x15faf0",
+        "Destroy": "function: 0x15f800",
+        "Clone": "function: 0x15f850",
+        "_addChild": "function: 0x15f870",
+        "Shape": "Block",
+        "Size": {
+          "X": 6,
+          "Y": 3,
+          "Z": 5
+        },
+        "Position": {
+          "X": -183,
+          "Y": 1.5,
+          "Z": 283
+        },
+        "Anchored": "true",
+        "Material": "table: 0x15f9c0",
+        "Color": "table: 0x15fa48"
+      }
+    },
+    {
+      "id": "inst_99",
+      "className": "WedgePart",
+      "name": "WedgePart",
+      "properties": {
+        "FindFirstChild": "function: 0x161a30",
+        "WaitForChild": "function: 0x161900",
+        "GetChildren": "function: 0x161948",
+        "GetDescendants": "function: 0x15e520",
+        "GetFullName": "function: 0x15e570",
+        "IsA": "function: 0x15e458",
+        "Destroy": "function: 0x15e4a0",
+        "Clone": "function: 0x15e588",
+        "_addChild": "function: 0x15e5d8",
+        "Shape": "Wedge",
+        "Size": {
+          "X": 6,
+          "Y": 2,
+          "Z": 3
+        },
+        "Position": {
+          "X": -183,
+          "Y": 4,
+          "Z": 282
+        },
+        "Anchored": "true",
+        "Material": "table: 0x160100",
+        "Color": "table: 0x15fb68"
+      }
+    },
+    {
+      "id": "inst_100",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x161bb8",
+        "WaitForChild": "function: 0x161cd0",
+        "GetChildren": "function: 0x161ab0",
+        "GetDescendants": "function: 0x161d28",
+        "GetFullName": "function: 0x161ad0",
+        "IsA": "function: 0x161f38",
+        "Destroy": "function: 0x161c08",
+        "Clone": "function: 0x161c58",
+        "_addChild": "function: 0x161f88",
+        "Shape": "Block",
+        "Size": {
+          "X": 6,
+          "Y": 3,
+          "Z": 5
+        },
+        "Position": {
+          "X": -188,
+          "Y": 1.5,
+          "Z": 287
+        },
+        "Anchored": "true",
+        "Material": "table: 0x161d80",
+        "Color": "table: 0x161e08"
+      }
+    },
+    {
+      "id": "inst_101",
+      "className": "WedgePart",
+      "name": "WedgePart",
+      "properties": {
+        "FindFirstChild": "function: 0x162630",
+        "WaitForChild": "function: 0x162748",
+        "GetChildren": "function: 0x162510",
+        "GetDescendants": "function: 0x162768",
+        "GetFullName": "function: 0x1627b8",
+        "IsA": "function: 0x162988",
+        "Destroy": "function: 0x162680",
+        "Clone": "function: 0x1626d0",
+        "_addChild": "function: 0x1626f0",
+        "Shape": "Wedge",
+        "Size": {
+          "X": 6,
+          "Y": 2,
+          "Z": 3
+        },
+        "Position": {
+          "X": -188,
+          "Y": 4,
+          "Z": 286
+        },
+        "Anchored": "true",
+        "Material": "table: 0x1627d0",
+        "Color": "table: 0x162858"
+      }
+    },
+    {
+      "id": "inst_102",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x163088",
+        "WaitForChild": "function: 0x1631a0",
+        "GetChildren": "function: 0x162f68",
+        "GetDescendants": "function: 0x1631c0",
+        "GetFullName": "function: 0x163210",
+        "IsA": "function: 0x1633e0",
+        "Destroy": "function: 0x1630d8",
+        "Clone": "function: 0x163128",
+        "_addChild": "function: 0x163148",
+        "Shape": "Block",
+        "Size": {
+          "X": 6,
+          "Y": 3,
+          "Z": 5
+        },
+        "Position": {
+          "X": -178,
+          "Y": 1.5,
+          "Z": 289
+        },
+        "Anchored": "true",
+        "Material": "table: 0x163228",
+        "Color": "table: 0x1632b0"
+      }
+    },
+    {
+      "id": "inst_103",
+      "className": "WedgePart",
+      "name": "WedgePart",
+      "properties": {
+        "FindFirstChild": "function: 0x163ae0",
+        "WaitForChild": "function: 0x163bf8",
+        "GetChildren": "function: 0x1639c0",
+        "GetDescendants": "function: 0x163c18",
+        "GetFullName": "function: 0x163c68",
+        "IsA": "function: 0x163e38",
+        "Destroy": "function: 0x163b30",
+        "Clone": "function: 0x163b80",
+        "_addChild": "function: 0x163ba0",
+        "Shape": "Wedge",
+        "Size": {
+          "X": 6,
+          "Y": 2,
+          "Z": 3
+        },
+        "Position": {
+          "X": -178,
+          "Y": 4,
+          "Z": 288
+        },
+        "Anchored": "true",
+        "Material": "table: 0x163c80",
+        "Color": "table: 0x163d08"
+      }
+    },
+    {
+      "id": "inst_104",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x164808",
+        "WaitForChild": "function: 0x164920",
+        "GetChildren": "function: 0x1646e8",
+        "GetDescendants": "function: 0x164940",
+        "GetFullName": "function: 0x164990",
+        "IsA": "function: 0x164b60",
+        "Destroy": "function: 0x164858",
+        "Clone": "function: 0x1648a8",
+        "_addChild": "function: 0x1648c8",
+        "Shape": "Block",
+        "Size": {
+          "X": 0.5,
+          "Y": 4,
+          "Z": 0.5
+        },
+        "Position": {
+          "X": -195,
+          "Y": 2,
+          "Z": 280
+        },
+        "Anchored": "true",
+        "Material": "table: 0x1649c0",
+        "Color": "table: 0x164a48"
+      }
+    },
+    {
+      "id": "inst_105",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x165238",
+        "WaitForChild": "function: 0x165328",
+        "GetChildren": "function: 0x165350",
+        "GetDescendants": "function: 0x1653a0",
+        "GetFullName": "function: 0x1653f0",
+        "IsA": "function: 0x1655c0",
+        "Destroy": "function: 0x165290",
+        "Clone": "function: 0x1652e0",
+        "_addChild": "function: 0x165610",
+        "Shape": "Block",
+        "Size": {
+          "X": 0.5,
+          "Y": 4,
+          "Z": 0.5
+        },
+        "Position": {
+          "X": -195,
+          "Y": 2,
+          "Z": 290
+        },
+        "Anchored": "true",
+        "Material": "table: 0x165420",
+        "Color": "table: 0x1654a8"
+      }
+    },
+    {
+      "id": "inst_106",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x165ca8",
+        "WaitForChild": "function: 0x165d98",
+        "GetChildren": "function: 0x165dc0",
+        "GetDescendants": "function: 0x165e10",
+        "GetFullName": "function: 0x165e60",
+        "IsA": "function: 0x166030",
+        "Destroy": "function: 0x165d00",
+        "Clone": "function: 0x165d50",
+        "_addChild": "function: 0x166080",
+        "Shape": "Block",
+        "Size": {
+          "X": 0.5,
+          "Y": 4,
+          "Z": 0.5
+        },
+        "Position": {
+          "X": -195,
+          "Y": 2,
+          "Z": 300
+        },
+        "Anchored": "true",
+        "Material": "table: 0x165e90",
+        "Color": "table: 0x165f18"
+      }
+    },
+    {
+      "id": "inst_107",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x166718",
+        "WaitForChild": "function: 0x166808",
+        "GetChildren": "function: 0x166830",
+        "GetDescendants": "function: 0x166880",
+        "GetFullName": "function: 0x1668d0",
+        "IsA": "function: 0x166aa0",
+        "Destroy": "function: 0x166770",
+        "Clone": "function: 0x1667c0",
+        "_addChild": "function: 0x166af0",
+        "Shape": "Block",
+        "Size": {
+          "X": 0.5,
+          "Y": 4,
+          "Z": 0.5
+        },
+        "Position": {
+          "X": -175,
+          "Y": 2,
+          "Z": 280
+        },
+        "Anchored": "true",
+        "Material": "table: 0x166900",
+        "Color": "table: 0x166988"
+      }
+    },
+    {
+      "id": "inst_108",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x167188",
+        "WaitForChild": "function: 0x167278",
+        "GetChildren": "function: 0x1672a0",
+        "GetDescendants": "function: 0x1672f0",
+        "GetFullName": "function: 0x167340",
+        "IsA": "function: 0x167510",
+        "Destroy": "function: 0x1671e0",
+        "Clone": "function: 0x167230",
+        "_addChild": "function: 0x167560",
+        "Shape": "Block",
+        "Size": {
+          "X": 0.5,
+          "Y": 4,
+          "Z": 0.5
+        },
+        "Position": {
+          "X": -175,
+          "Y": 2,
+          "Z": 290
+        },
+        "Anchored": "true",
+        "Material": "table: 0x167370",
+        "Color": "table: 0x1673f8"
+      }
+    },
+    {
+      "id": "inst_109",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x167bf8",
+        "WaitForChild": "function: 0x167ce8",
+        "GetChildren": "function: 0x167d10",
+        "GetDescendants": "function: 0x167d60",
+        "GetFullName": "function: 0x167db0",
+        "IsA": "function: 0x167f80",
+        "Destroy": "function: 0x167c50",
+        "Clone": "function: 0x167ca0",
+        "_addChild": "function: 0x167fd0",
+        "Shape": "Block",
+        "Size": {
+          "X": 0.5,
+          "Y": 4,
+          "Z": 0.5
+        },
+        "Position": {
+          "X": -175,
+          "Y": 2,
+          "Z": 300
+        },
+        "Anchored": "true",
+        "Material": "table: 0x167de0",
+        "Color": "table: 0x167e68"
+      }
+    },
+    {
+      "id": "inst_110",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x168878",
+        "WaitForChild": "function: 0x168968",
+        "GetChildren": "function: 0x168990",
+        "GetDescendants": "function: 0x1689e0",
+        "GetFullName": "function: 0x168a30",
+        "IsA": "function: 0x168c00",
+        "Destroy": "function: 0x1688d0",
+        "Clone": "function: 0x168920",
+        "_addChild": "function: 0x168c50",
+        "Shape": "Block",
+        "Size": {
+          "X": 0.3,
+          "Y": 0.3,
+          "Z": 10
+        },
+        "Position": {
+          "X": -195,
+          "Y": 4,
+          "Z": 285
+        },
+        "Anchored": "true",
+        "Material": "table: 0x168a60",
+        "Color": "table: 0x168ae8"
+      }
+    },
+    {
+      "id": "inst_111",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1692e8",
+        "WaitForChild": "function: 0x1693d8",
+        "GetChildren": "function: 0x169400",
+        "GetDescendants": "function: 0x169450",
+        "GetFullName": "function: 0x1694a0",
+        "IsA": "function: 0x169670",
+        "Destroy": "function: 0x169340",
+        "Clone": "function: 0x169390",
+        "_addChild": "function: 0x1696c0",
+        "Shape": "Block",
+        "Size": {
+          "X": 0.3,
+          "Y": 0.3,
+          "Z": 10
+        },
+        "Position": {
+          "X": -175,
+          "Y": 4,
+          "Z": 285
+        },
+        "Anchored": "true",
+        "Material": "table: 0x1694d0",
+        "Color": "table: 0x169558"
+      }
+    },
+    {
+      "id": "inst_112",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x169d58",
+        "WaitForChild": "function: 0x169e48",
+        "GetChildren": "function: 0x169e70",
+        "GetDescendants": "function: 0x169ec0",
+        "GetFullName": "function: 0x169f10",
+        "IsA": "function: 0x16a0e0",
+        "Destroy": "function: 0x169db0",
+        "Clone": "function: 0x169e00",
+        "_addChild": "function: 0x16a130",
+        "Shape": "Block",
+        "Size": {
+          "X": 20,
+          "Y": 0.3,
+          "Z": 0.3
+        },
+        "Position": {
+          "X": -185,
+          "Y": 4,
+          "Z": 280
+        },
+        "Anchored": "true",
+        "Material": "table: 0x169f40",
+        "Color": "table: 0x169fc8"
+      }
+    },
+    {
+      "id": "inst_113",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x16a7c8",
+        "WaitForChild": "function: 0x16a8b8",
+        "GetChildren": "function: 0x16a8e0",
+        "GetDescendants": "function: 0x16a930",
+        "GetFullName": "function: 0x16a980",
+        "IsA": "function: 0x16ab50",
+        "Destroy": "function: 0x16a820",
+        "Clone": "function: 0x16a870",
+        "_addChild": "function: 0x16aba0",
+        "Shape": "Block",
+        "Size": {
+          "X": 20,
+          "Y": 0.5,
+          "Z": 10
+        },
+        "Position": {
+          "X": -185,
+          "Y": -0.25,
+          "Z": 295
+        },
+        "Anchored": "true",
+        "Material": "table: 0x16a9b0",
+        "Color": "table: 0x16aa38"
+      }
+    },
+    {
+      "id": "inst_114",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x131c80",
+        "WaitForChild": "function: 0x11d8b8",
+        "GetChildren": "function: 0x157330",
+        "GetDescendants": "function: 0x15f0b0",
+        "GetFullName": "function: 0x13a850",
+        "IsA": "function: 0x13f6c0",
+        "Destroy": "function: 0x141bc0",
+        "Clone": "function: 0x13a9e8",
+        "_addChild": "function: 0x135be0",
+        "Shape": "Block",
+        "Size": {
+          "X": 6,
+          "Y": 1,
+          "Z": 6
+        },
+        "Position": {
+          "X": -210,
+          "Y": 0.5,
+          "Z": 295
+        },
+        "Anchored": "true",
+        "Material": "table: 0x12d718",
+        "Color": "table: 0x13d928"
+      }
+    },
+    {
+      "id": "inst_115",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x142f90",
+        "WaitForChild": "function: 0x11d9d8",
+        "GetChildren": "function: 0x134060",
+        "GetDescendants": "function: 0x123b08",
+        "GetFullName": "function: 0x1243d8",
+        "IsA": "function: 0x14e708",
+        "Destroy": "function: 0x1242a0",
+        "Clone": "function: 0x14e780",
+        "_addChild": "function: 0x14f1f0",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 4,
+          "Z": 3
+        },
+        "Position": {
+          "X": -210,
+          "Y": 3,
+          "Z": 295
+        },
+        "Anchored": "true",
+        "Material": "table: 0x1511f8",
+        "Color": "table: 0x155d50"
+      }
+    },
+    {
+      "id": "inst_116",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x15a4e0",
+        "WaitForChild": "function: 0x1510c8",
+        "GetChildren": "function: 0x15b7e0",
+        "GetDescendants": "function: 0x15c0d0",
+        "GetFullName": "function: 0x15b768",
+        "IsA": "function: 0x15c1d8",
+        "Destroy": "function: 0x15fa20",
+        "Clone": "function: 0x15fbf8",
+        "_addChild": "function: 0x161e98",
+        "Shape": "Block",
+        "Size": {
+          "X": 4,
+          "Y": 1.5,
+          "Z": 4
+        },
+        "Position": {
+          "X": -210,
+          "Y": 5.75,
+          "Z": 295
+        },
+        "Anchored": "true",
+        "Material": "table: 0x165480",
+        "Color": "table: 0x165ef0"
+      }
+    },
+    {
+      "id": "inst_117",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1695e8",
+        "WaitForChild": "function: 0x165e78",
+        "GetChildren": "function: 0x16aa10",
+        "GetDescendants": "function: 0x132ca0",
+        "GetFullName": "function: 0x167dc8",
+        "IsA": "function: 0x168a48",
+        "Destroy": "function: 0x137f28",
+        "Clone": "function: 0x13cbb8",
+        "_addChild": "function: 0x10bfd8",
+        "Shape": "Block",
+        "Size": {
+          "X": 6,
+          "Y": 1,
+          "Z": 6
+        },
+        "Position": {
+          "X": -205,
+          "Y": 0.5,
+          "Z": 305
+        },
+        "Anchored": "true",
+        "Material": "table: 0x1340b0",
+        "Color": "table: 0x10fae8"
+      }
+    },
+    {
+      "id": "inst_118",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x15cda0",
+        "WaitForChild": "function: 0x130fd0",
+        "GetChildren": "function: 0x162830",
+        "GetDescendants": "function: 0x16a058",
+        "GetFullName": "function: 0x1387b0",
+        "IsA": "function: 0x1453b8",
+        "Destroy": "function: 0x135dd8",
+        "Clone": "function: 0x13ed80",
+        "_addChild": "function: 0x15fa70",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 7,
+          "Z": 3
+        },
+        "Position": {
+          "X": -205,
+          "Y": 4.5,
+          "Z": 305
+        },
+        "Anchored": "true",
+        "Material": "table: 0x161de0",
+        "Color": "table: 0x10d9f8"
+      }
+    },
+    {
+      "id": "inst_119",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x130510",
+        "WaitForChild": "function: 0x150658",
+        "GetChildren": "function: 0x132dc8",
+        "GetDescendants": "function: 0x12c0c8",
+        "GetFullName": "function: 0x15cd28",
+        "IsA": "function: 0x165408",
+        "Destroy": "function: 0x132440",
+        "Clone": "function: 0x122c00",
+        "_addChild": "function: 0x123f30",
+        "Shape": "Block",
+        "Size": {
+          "X": 4,
+          "Y": 1.5,
+          "Z": 4
+        },
+        "Position": {
+          "X": -205,
+          "Y": 8.75,
+          "Z": 305
+        },
+        "Anchored": "true",
+        "Material": "table: 0x139328",
+        "Color": "table: 0x13a010"
+      }
+    },
+    {
+      "id": "inst_120",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x13c998",
+        "WaitForChild": "function: 0x169f28",
+        "GetChildren": "function: 0x13d648",
+        "GetDescendants": "function: 0x13d868",
+        "GetFullName": "function: 0x11d940",
+        "IsA": "function: 0x12d590",
+        "Destroy": "function: 0x13e038",
+        "Clone": "function: 0x13e410",
+        "_addChild": "function: 0x13eaa8",
+        "Shape": "Block",
+        "Size": {
+          "X": 6,
+          "Y": 1,
+          "Z": 6
+        },
+        "Position": {
+          "X": -198,
+          "Y": 0.5,
+          "Z": 298
+        },
+        "Anchored": "true",
+        "Material": "table: 0x13f898",
+        "Color": "table: 0x13f8f0"
+      }
+    },
+    {
+      "id": "inst_121",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x146580",
+        "WaitForChild": "function: 0x1694b8",
+        "GetChildren": "function: 0x146830",
+        "GetDescendants": "function: 0x147098",
+        "GetFullName": "function: 0x14f178",
+        "IsA": "function: 0x1587d0",
+        "Destroy": "function: 0x124470",
+        "Clone": "function: 0x1443c8",
+        "_addChild": "function: 0x146d90",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 10,
+          "Z": 3
+        },
+        "Position": {
+          "X": -198,
+          "Y": 6,
+          "Z": 298
+        },
+        "Anchored": "true",
+        "Material": "table: 0x146ce0",
+        "Color": "table: 0x132f30"
+      }
+    },
+    {
+      "id": "inst_122",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x10eeb0",
+        "WaitForChild": "function: 0x1668e8",
+        "GetChildren": "function: 0x123718",
+        "GetDescendants": "function: 0x1358d0",
+        "GetFullName": "function: 0x12f348",
+        "IsA": "function: 0x124380",
+        "Destroy": "function: 0x137680",
+        "Clone": "function: 0x14e670",
+        "_addChild": "function: 0x14e560",
+        "Shape": "Block",
+        "Size": {
+          "X": 4,
+          "Y": 1.5,
+          "Z": 4
+        },
+        "Position": {
+          "X": -198,
+          "Y": 11.75,
+          "Z": 298
+        },
+        "Anchored": "true",
+        "Material": "table: 0x14f020",
+        "Color": "table: 0x14f3a8"
+      }
+    },
+    {
+      "id": "inst_123",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1504b0",
+        "WaitForChild": "function: 0x150830",
+        "GetChildren": "function: 0x151030",
+        "GetDescendants": "function: 0x151250",
+        "GetFullName": "function: 0x150848",
+        "IsA": "function: 0x1512a0",
+        "Destroy": "function: 0x140088",
+        "Clone": "function: 0x140140",
+        "_addChild": "function: 0x155e78",
+        "Shape": "Block",
+        "Size": {
+          "X": 6,
+          "Y": 1,
+          "Z": 6
+        },
+        "Position": {
+          "X": -193,
+          "Y": 0.5,
+          "Z": 312
+        },
+        "Anchored": "true",
+        "Material": "table: 0x157548",
+        "Color": "table: 0x157cd8"
+      }
+    },
+    {
+      "id": "inst_124",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x158678",
+        "WaitForChild": "function: 0x158a00",
+        "GetChildren": "function: 0x1594c8",
+        "GetDescendants": "function: 0x1591e8",
+        "GetFullName": "function: 0x158a18",
+        "IsA": "function: 0x15a5a0",
+        "Destroy": "function: 0x15a490",
+        "Clone": "function: 0x15b6d0",
+        "_addChild": "function: 0x15b5c0",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 5,
+          "Z": 3
+        },
+        "Position": {
+          "X": -193,
+          "Y": 3.5,
+          "Z": 312
+        },
+        "Anchored": "true",
+        "Material": "table: 0x15c080",
+        "Color": "table: 0x15cc90"
+      }
+    },
+    {
+      "id": "inst_125",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1618d0",
+        "WaitForChild": "function: 0x15e540",
+        "GetChildren": "function: 0x15e470",
+        "GetDescendants": "function: 0x15e5f8",
+        "GetFullName": "function: 0x15e558",
+        "IsA": "function: 0x161cf8",
+        "Destroy": "function: 0x161f08",
+        "Clone": "function: 0x161c28",
+        "_addChild": "function: 0x161fb0",
+        "Shape": "Block",
+        "Size": {
+          "X": 4,
+          "Y": 1.5,
+          "Z": 4
+        },
+        "Position": {
+          "X": -193,
+          "Y": 6.75,
+          "Z": 312
+        },
+        "Anchored": "true",
+        "Material": "table: 0x163170",
+        "Color": "table: 0x1631e0"
+      }
+    },
+    {
+      "id": "inst_126",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x163b50",
+        "WaitForChild": "function: 0x1646b8",
+        "GetChildren": "function: 0x164b30",
+        "GetDescendants": "function: 0x164878",
+        "GetFullName": "function: 0x1646d0",
+        "IsA": "function: 0x165590",
+        "Destroy": "function: 0x1652b0",
+        "Clone": "function: 0x165638",
+        "_addChild": "function: 0x165e30",
+        "Shape": "Block",
+        "Size": {
+          "X": 6,
+          "Y": 1,
+          "Z": 6
+        },
+        "Position": {
+          "X": -202,
+          "Y": 0.5,
+          "Z": 318
+        },
+        "Anchored": "true",
+        "Material": "table: 0x166740",
+        "Color": "table: 0x166ac0"
+      }
+    },
+    {
+      "id": "inst_127",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x167588",
+        "WaitForChild": "function: 0x167d80",
+        "GetChildren": "function: 0x167c70",
+        "GetDescendants": "function: 0x167ff8",
+        "GetFullName": "function: 0x167d98",
+        "IsA": "function: 0x168bd0",
+        "Destroy": "function: 0x1688f0",
+        "Clone": "function: 0x168c78",
+        "_addChild": "function: 0x169470",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 8,
+          "Z": 3
+        },
+        "Position": {
+          "X": -202,
+          "Y": 5,
+          "Z": 318
+        },
+        "Anchored": "true",
+        "Material": "table: 0x169ee0",
+        "Color": "table: 0x169d80"
+      }
+    },
+    {
+      "id": "inst_128",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x16abc8",
+        "WaitForChild": "function: 0x146d30",
+        "GetChildren": "function: 0x146d48",
+        "GetDescendants": "function: 0x13fe58",
+        "GetFullName": "function: 0x13fe78",
+        "IsA": "function: 0x157ad8",
+        "Destroy": "function: 0x157af0",
+        "Clone": "function: 0x161ae8",
+        "_addChild": "function: 0x139f58",
+        "Shape": "Block",
+        "Size": {
+          "X": 4,
+          "Y": 1.5,
+          "Z": 4
+        },
+        "Position": {
+          "X": -202,
+          "Y": 9.75,
+          "Z": 318
+        },
+        "Anchored": "true",
+        "Material": "table: 0x14f2f0",
+        "Color": "table: 0x154908"
+      }
+    },
+    {
+      "id": "inst_129",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x128508",
+        "WaitForChild": "function: 0x157068",
+        "GetChildren": "function: 0x132518",
+        "GetDescendants": "function: 0x145828",
+        "GetFullName": "function: 0x123948",
+        "IsA": "function: 0x15a788",
+        "Destroy": "function: 0x12c360",
+        "Clone": "function: 0x139b18",
+        "_addChild": "function: 0x13bd28",
+        "Shape": "Block",
+        "Size": {
+          "X": 8,
+          "Y": 20,
+          "Z": 8
+        },
+        "Position": {
+          "X": -212,
+          "Y": 10,
+          "Z": 320
+        },
+        "Anchored": "true",
+        "Material": "table: 0x10ef00",
+        "Color": "table: 0x13af10"
+      }
+    },
+    {
+      "id": "inst_130",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1538f8",
+        "WaitForChild": "function: 0x13ff88",
+        "GetChildren": "function: 0x153aa8",
+        "GetDescendants": "function: 0x157a70",
+        "GetFullName": "function: 0x10fc28",
+        "IsA": "function: 0x1328a0",
+        "Destroy": "function: 0x15f7d0",
+        "Clone": "function: 0x15fb38",
+        "_addChild": "function: 0x161a80",
+        "Shape": "Block",
+        "Size": {
+          "X": 8,
+          "Y": 20,
+          "Z": 8
+        },
+        "Position": {
+          "X": -188,
+          "Y": 10,
+          "Z": 320
+        },
+        "Anchored": "true",
+        "Material": "table: 0x1629c0",
+        "Color": "table: 0x163e50"
+      }
+    },
+    {
+      "id": "inst_131",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x162fd8",
+        "WaitForChild": "function: 0x161b08",
+        "GetChildren": "function: 0x162ff8",
+        "GetDescendants": "function: 0x1638e8",
+        "GetFullName": "function: 0x111d50",
+        "IsA": "function: 0x16c610",
+        "Destroy": "function: 0x163a40",
+        "Clone": "function: 0x164738",
+        "_addChild": "function: 0x167ef8",
+        "Shape": "Block",
+        "Size": {
+          "X": 24,
+          "Y": 3,
+          "Z": 6
+        },
+        "Position": {
+          "X": -200,
+          "Y": 21.5,
+          "Z": 320
+        },
+        "Anchored": "true",
+        "Material": "table: 0x141b20",
+        "Color": "table: 0x11b5c8"
+      }
+    },
+    {
+      "id": "inst_132",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x153b20",
+        "WaitForChild": "function: 0x157258",
+        "GetChildren": "function: 0x143958",
+        "GetDescendants": "function: 0x1439a8",
+        "GetFullName": "function: 0x12d240",
+        "IsA": "function: 0x1629e8",
+        "Destroy": "function: 0x15f998",
+        "Clone": "function: 0x15e088",
+        "_addChild": "function: 0x15e0d8",
+        "Shape": "Block",
+        "Size": {
+          "X": 12,
+          "Y": 14,
+          "Z": 2
+        },
+        "Position": {
+          "X": -200,
+          "Y": 7,
+          "Z": 322
+        },
+        "Anchored": "true",
+        "Material": "table: 0x13d350",
+        "Color": "table: 0x13f360"
+      }
+    },
+    {
+      "id": "inst_133",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1503a0",
+        "WaitForChild": "function: 0x13df30",
+        "GetChildren": "function: 0x154970",
+        "GetDescendants": "function: 0x1549c0",
+        "GetFullName": "function: 0x1605e0",
+        "IsA": "function: 0x14f318",
+        "Destroy": "function: 0x150d98",
+        "Clone": "function: 0x150de8",
+        "_addChild": "function: 0x150e08",
+        "Shape": "Block",
+        "Size": {
+          "X": 5,
+          "Y": 6,
+          "Z": 3
+        },
+        "Position": {
+          "X": -222,
+          "Y": 3,
+          "Z": 316
+        },
+        "Anchored": "true",
+        "Material": "table: 0x15a310",
+        "Color": "table: 0x15bed8"
+      }
+    },
+    {
+      "id": "inst_134",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x166588",
+        "WaitForChild": "function: 0x15a338",
+        "GetChildren": "function: 0x1665a8",
+        "GetDescendants": "function: 0x1665f8",
+        "GetFullName": "function: 0x14f910",
+        "IsA": "function: 0x1238e8",
+        "Destroy": "function: 0x167058",
+        "Clone": "function: 0x167a68",
+        "_addChild": "function: 0x167ab8",
+        "Shape": "Block",
+        "Size": {
+          "X": 5,
+          "Y": 4,
+          "Z": 3
+        },
+        "Position": {
+          "X": -222,
+          "Y": 2,
+          "Z": 324
+        },
+        "Anchored": "true",
+        "Material": "table: 0x169bc8",
+        "Color": "table: 0x169c50"
+      }
+    },
+    {
+      "id": "inst_135",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x134f48",
+        "WaitForChild": "function: 0x159390",
+        "GetChildren": "function: 0x155398",
+        "GetDescendants": "function: 0x16b6f0",
+        "GetFullName": "function: 0x140da0",
+        "IsA": "function: 0x1670a8",
+        "Destroy": "function: 0x1552d0",
+        "Clone": "function: 0x155320",
+        "_addChild": "function: 0x155370",
+        "Shape": "Block",
+        "Size": {
+          "X": 5,
+          "Y": 7,
+          "Z": 3
+        },
+        "Position": {
+          "X": -178,
+          "Y": 3.5,
+          "Z": 316
+        },
+        "Anchored": "true",
+        "Material": "table: 0x140550",
+        "Color": "table: 0x159de0"
+      }
+    },
+    {
+      "id": "inst_136",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1235b8",
+        "WaitForChild": "function: 0x165178",
+        "GetChildren": "function: 0x1236d0",
+        "GetDescendants": "function: 0x10ed30",
+        "GetFullName": "function: 0x15bf28",
+        "IsA": "function: 0x16b7a0",
+        "Destroy": "function: 0x123638",
+        "Clone": "function: 0x10ed80",
+        "_addChild": "function: 0x10edd0",
+        "Shape": "Block",
+        "Size": {
+          "X": 5,
+          "Y": 3,
+          "Z": 3
+        },
+        "Position": {
+          "X": -178,
+          "Y": 1.5,
+          "Z": 324
+        },
+        "Anchored": "true",
+        "Material": "table: 0x15adc8",
+        "Color": "table: 0x159a38"
+      }
+    },
+    {
+      "id": "inst_137",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1414c0",
+        "WaitForChild": "function: 0x123688",
+        "GetChildren": "function: 0x1415a8",
+        "GetDescendants": "function: 0x1415f8",
+        "GetFullName": "function: 0x16da38",
+        "IsA": "function: 0x141510",
+        "Destroy": "function: 0x141558",
+        "Clone": "function: 0x158e70",
+        "_addChild": "function: 0x158ec0",
+        "Shape": "Block",
+        "Size": {
+          "X": 10,
+          "Y": 0.3,
+          "Z": 1
+        },
+        "Position": {
+          "X": -200,
+          "Y": 0.15,
+          "Z": 320
+        },
+        "Anchored": "true",
+        "Material": "table: 0x15f218",
+        "Color": "table: 0x15f438"
+      }
+    },
+    {
+      "id": "inst_138",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x14df90",
+        "WaitForChild": "function: 0x137250",
+        "GetChildren": "function: 0x14dfb0",
+        "GetDescendants": "function: 0x14e000",
+        "GetFullName": "function: 0x14e050",
+        "IsA": "function: 0x15f6e8",
+        "Destroy": "function: 0x155af0",
+        "Clone": "function: 0x155b40",
+        "_addChild": "function: 0x155b90",
+        "Shape": "Block",
+        "Size": {
+          "X": 10,
+          "Y": 1,
+          "Z": 3
+        },
+        "Position": {
+          "X": -200,
+          "Y": 2.5,
+          "Z": 315
+        },
+        "Anchored": "true",
+        "Material": "table: 0x141350",
+        "Color": "table: 0x15f588"
+      }
+    },
+    {
+      "id": "inst_139",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x14b5f8",
+        "WaitForChild": "function: 0x14b710",
+        "GetChildren": "function: 0x14b4f8",
+        "GetDescendants": "function: 0x16c6f8",
+        "GetFullName": "function: 0x14b518",
+        "IsA": "function: 0x16c8d0",
+        "Destroy": "function: 0x14b678",
+        "Clone": "function: 0x141638",
+        "_addChild": "function: 0x141688",
+        "Shape": "Block",
+        "Size": {
+          "X": 10,
+          "Y": 1,
+          "Z": 3
+        },
+        "Position": {
+          "X": -200,
+          "Y": 1.5,
+          "Z": 312
+        },
+        "Anchored": "true",
+        "Material": "table: 0x16c748",
+        "Color": "table: 0x16c7d0"
+      }
+    },
+    {
+      "id": "inst_140",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x141a50",
+        "WaitForChild": "function: 0x141aa0",
+        "GetChildren": "function: 0x141ab8",
+        "GetDescendants": "function: 0x168500",
+        "GetFullName": "function: 0x141968",
+        "IsA": "function: 0x168468",
+        "Destroy": "function: 0x1684b0",
+        "Clone": "function: 0x14d900",
+        "_addChild": "function: 0x14d950",
+        "Shape": "Block",
+        "Size": {
+          "X": 10,
+          "Y": 1,
+          "Z": 3
+        },
+        "Position": {
+          "X": -200,
+          "Y": 0.5,
+          "Z": 309
+        },
+        "Anchored": "true",
+        "Material": "table: 0x168650",
+        "Color": "table: 0x14d7d8"
+      }
+    },
+    {
+      "id": "inst_141",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x136988",
+        "WaitForChild": "function: 0x136890",
+        "GetChildren": "function: 0x136a70",
+        "GetDescendants": "function: 0x136ac0",
+        "GetFullName": "function: 0x136ae0",
+        "IsA": "function: 0x1369d8",
+        "Destroy": "function: 0x136a20",
+        "Clone": "function: 0x140ba0",
+        "_addChild": "function: 0x140bf0",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 2,
+          "Z": 3
+        },
+        "Position": {
+          "X": -200,
+          "Y": 1,
+          "Z": 310
+        },
+        "Anchored": "true",
+        "Material": "table: 0x140a78",
+        "Color": "table: 0x140b00"
+      }
+    },
+    {
+      "id": "inst_142",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x15db58",
+        "WaitForChild": "function: 0x15dee8",
+        "GetChildren": "function: 0x15dc70",
+        "GetDescendants": "function: 0x15dcc0",
+        "GetFullName": "function: 0x15dce0",
+        "IsA": "function: 0x142828",
+        "Destroy": "function: 0x15dc08",
+        "Clone": "function: 0x15d828",
+        "_addChild": "function: 0x15d878",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 2,
+          "Z": 2
+        },
+        "Position": {
+          "X": -215,
+          "Y": 1,
+          "Z": 302
+        },
+        "_rotation": {
+          "rx": 0.19999999999999998,
+          "ry": 0.39999999999999997,
+          "rz": 0
+        },
+        "CFrame": {
+          "X": -215,
+          "Y": 1,
+          "Z": 302,
+          "rx": 0.19999999999999998,
+          "ry": 0.39999999999999997,
+          "rz": 0
+        },
+        "Anchored": "true",
+        "Material": "table: 0x15d710",
+        "Color": "table: 0x15d798"
+      }
+    },
+    {
+      "id": "inst_143",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x16e3a8",
+        "WaitForChild": "function: 0x15dc58",
+        "GetChildren": "function: 0x16e4c0",
+        "GetDescendants": "function: 0x16e4e0",
+        "GetFullName": "function: 0x16e530",
+        "IsA": "function: 0x16e700",
+        "Destroy": "function: 0x16e3f8",
+        "Clone": "function: 0x16e448",
+        "_addChild": "function: 0x16e468",
+        "Shape": "Block",
+        "Size": {
+          "X": 5,
+          "Y": 3,
+          "Z": 4
+        },
+        "Position": {
+          "X": -207,
+          "Y": 1.5,
+          "Z": 325
+        },
+        "_rotation": {
+          "rx": 0,
+          "ry": 0.8,
+          "rz": 0
+        },
+        "CFrame": {
+          "X": -207,
+          "Y": 1.5,
+          "Z": 325,
+          "rx": 0,
+          "ry": 0.8,
+          "rz": 0
+        },
+        "Anchored": "true",
+        "Material": "table: 0x16e548",
+        "Color": "table: 0x16e5d0"
+      }
+    },
+    {
+      "id": "inst_144",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x16f430",
+        "WaitForChild": "function: 0x16f548",
+        "GetChildren": "function: 0x16f310",
+        "GetDescendants": "function: 0x16f568",
+        "GetFullName": "function: 0x16f5b8",
+        "IsA": "function: 0x16f788",
+        "Destroy": "function: 0x16f480",
+        "Clone": "function: 0x16f4d0",
+        "_addChild": "function: 0x16f4f0",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 2,
+          "Z": 2
+        },
+        "Position": {
+          "X": -195,
+          "Y": 1,
+          "Z": 330
+        },
+        "_rotation": {
+          "rx": 0.29999999999999993,
+          "ry": 0.19999999999999998,
+          "rz": 0
+        },
+        "CFrame": {
+          "X": -195,
+          "Y": 1,
+          "Z": 330,
+          "rx": 0.29999999999999993,
+          "ry": 0.19999999999999998,
+          "rz": 0
+        },
+        "Anchored": "true",
+        "Material": "table: 0x16f5d0",
+        "Color": "table: 0x16f658"
+      }
+    },
+    {
+      "id": "inst_145",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1704b8",
+        "WaitForChild": "function: 0x1705d0",
+        "GetChildren": "function: 0x170398",
+        "GetDescendants": "function: 0x1705f0",
+        "GetFullName": "function: 0x170640",
+        "IsA": "function: 0x170810",
+        "Destroy": "function: 0x170508",
+        "Clone": "function: 0x170558",
+        "_addChild": "function: 0x170578",
+        "Shape": "Block",
+        "Size": {
+          "X": 4,
+          "Y": 2,
+          "Z": 3
+        },
+        "Position": {
+          "X": -218,
+          "Y": 1,
+          "Z": 310
+        },
+        "_rotation": {
+          "rx": 0.09999999999999999,
+          "ry": 1.1,
+          "rz": 0
+        },
+        "CFrame": {
+          "X": -218,
+          "Y": 1,
+          "Z": 310,
+          "rx": 0.09999999999999999,
+          "ry": 1.1,
+          "rz": 0
+        },
+        "Anchored": "true",
+        "Material": "table: 0x170658",
+        "Color": "table: 0x1706e0"
+      }
+    },
+    {
+      "id": "inst_146",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x171540",
+        "WaitForChild": "function: 0x171658",
+        "GetChildren": "function: 0x171420",
+        "GetDescendants": "function: 0x171678",
+        "GetFullName": "function: 0x1716c8",
+        "IsA": "function: 0x171898",
+        "Destroy": "function: 0x171590",
+        "Clone": "function: 0x1715e0",
+        "_addChild": "function: 0x171600",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 1.5,
+          "Z": 3
+        },
+        "Position": {
+          "X": -183,
+          "Y": 0.75,
+          "Z": 305
+        },
+        "_rotation": {
+          "rx": 0.25,
+          "ry": 0.6000000000000001,
+          "rz": 0
+        },
+        "CFrame": {
+          "X": -183,
+          "Y": 0.75,
+          "Z": 305,
+          "rx": 0.25,
+          "ry": 0.6000000000000001,
+          "rz": 0
+        },
+        "Anchored": "true",
+        "Material": "table: 0x1716e0",
+        "Color": "table: 0x171768"
+      }
+    },
+    {
+      "id": "inst_147",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1725c8",
+        "WaitForChild": "function: 0x1726e0",
+        "GetChildren": "function: 0x1724a8",
+        "GetDescendants": "function: 0x172700",
+        "GetFullName": "function: 0x172750",
+        "IsA": "function: 0x172920",
+        "Destroy": "function: 0x172618",
+        "Clone": "function: 0x172668",
+        "_addChild": "function: 0x172688",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 3,
+          "Z": 2
+        },
+        "Position": {
+          "X": -190,
+          "Y": 1.5,
+          "Z": 322
+        },
+        "_rotation": {
+          "rx": 0,
+          "ry": 0.29999999999999993,
+          "rz": 0
+        },
+        "CFrame": {
+          "X": -190,
+          "Y": 1.5,
+          "Z": 322,
+          "rx": 0,
+          "ry": 0.29999999999999993,
+          "rz": 0
+        },
+        "Anchored": "true",
+        "Material": "table: 0x172768",
+        "Color": "table: 0x1727f0"
+      }
+    },
+    {
+      "id": "inst_148",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x173650",
+        "WaitForChild": "function: 0x173768",
+        "GetChildren": "function: 0x173530",
+        "GetDescendants": "function: 0x173788",
+        "GetFullName": "function: 0x1737d8",
+        "IsA": "function: 0x1739a8",
+        "Destroy": "function: 0x1736a0",
+        "Clone": "function: 0x1736f0",
+        "_addChild": "function: 0x173710",
+        "Shape": "Block",
+        "Size": {
+          "X": 5,
+          "Y": 2,
+          "Z": 2
+        },
+        "Position": {
+          "X": -210,
+          "Y": 1,
+          "Z": 330
+        },
+        "_rotation": {
+          "rx": 0.15,
+          "ry": 0.9000000000000001,
+          "rz": 0
+        },
+        "CFrame": {
+          "X": -210,
+          "Y": 1,
+          "Z": 330,
+          "rx": 0.15,
+          "ry": 0.9000000000000001,
+          "rz": 0
+        },
+        "Anchored": "true",
+        "Material": "table: 0x1737f0",
+        "Color": "table: 0x173878"
+      }
+    },
+    {
+      "id": "inst_149",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1746d8",
+        "WaitForChild": "function: 0x1747f0",
+        "GetChildren": "function: 0x1745b8",
+        "GetDescendants": "function: 0x174810",
+        "GetFullName": "function: 0x174860",
+        "IsA": "function: 0x174a30",
+        "Destroy": "function: 0x174728",
+        "Clone": "function: 0x174778",
+        "_addChild": "function: 0x174798",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 2.5,
+          "Z": 4
+        },
+        "Position": {
+          "X": -175,
+          "Y": 1.25,
+          "Z": 315
+        },
+        "_rotation": {
+          "rx": 0.29999999999999993,
+          "ry": 1.4,
+          "rz": 0
+        },
+        "CFrame": {
+          "X": -175,
+          "Y": 1.25,
+          "Z": 315,
+          "rx": 0.29999999999999993,
+          "ry": 1.4,
+          "rz": 0
+        },
+        "Anchored": "true",
+        "Material": "table: 0x174878",
+        "Color": "table: 0x174900"
+      }
+    },
+    {
+      "id": "inst_150",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x175760",
+        "WaitForChild": "function: 0x175878",
+        "GetChildren": "function: 0x175640",
+        "GetDescendants": "function: 0x175898",
+        "GetFullName": "function: 0x1758e8",
+        "IsA": "function: 0x175ab8",
+        "Destroy": "function: 0x1757b0",
+        "Clone": "function: 0x175800",
+        "_addChild": "function: 0x175820",
+        "Shape": "Block",
+        "Size": {
+          "X": 4,
+          "Y": 1.5,
+          "Z": 3
+        },
+        "Position": {
+          "X": -205,
+          "Y": 0.75,
+          "Z": 287
+        },
+        "_rotation": {
+          "rx": 0.19999999999999998,
+          "ry": 0.5,
+          "rz": 0
+        },
+        "CFrame": {
+          "X": -205,
+          "Y": 0.75,
+          "Z": 287,
+          "rx": 0.19999999999999998,
+          "ry": 0.5,
+          "rz": 0
+        },
+        "Anchored": "true",
+        "Material": "table: 0x175900",
+        "Color": "table: 0x175988"
+      }
+    },
+    {
+      "id": "inst_151",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x178500",
+        "WaitForChild": "function: 0x178978",
+        "GetChildren": "function: 0x177c00",
+        "GetDescendants": "function: 0x179790",
+        "GetFullName": "function: 0x178570",
+        "IsA": "function: 0x15ddf0",
+        "Destroy": "function: 0x179668",
+        "Clone": "function: 0x1796b8",
+        "_addChild": "function: 0x179708",
+        "Shape": "Block",
+        "Size": {
+          "X": 60,
+          "Y": 2,
+          "Z": 60
+        },
+        "Position": {
+          "X": 100,
+          "Y": 1,
+          "Z": 500
+        },
+        "Anchored": "true",
+        "Material": "table: 0x1797e0",
+        "Color": "table: 0x179868"
+      }
+    },
+    {
+      "id": "inst_152",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x17a058",
+        "WaitForChild": "function: 0x177c20",
+        "GetChildren": "function: 0x17a170",
+        "GetDescendants": "function: 0x17a190",
+        "GetFullName": "function: 0x178290",
+        "IsA": "function: 0x17a398",
+        "Destroy": "function: 0x17a078",
+        "Clone": "function: 0x17a0c8",
+        "_addChild": "function: 0x17a118",
+        "Shape": "Block",
+        "Size": {
+          "X": 48,
+          "Y": 2,
+          "Z": 48
+        },
+        "Position": {
+          "X": 100,
+          "Y": 4,
+          "Z": 500
+        },
+        "Anchored": "true",
+        "Material": "table: 0x17a1f8",
+        "Color": "table: 0x17a280"
+      }
+    },
+    {
+      "id": "inst_153",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x17aa90",
+        "WaitForChild": "function: 0x17ab80",
+        "GetChildren": "function: 0x17aba8",
+        "GetDescendants": "function: 0x17abf8",
+        "GetFullName": "function: 0x17ac48",
+        "IsA": "function: 0x17ae18",
+        "Destroy": "function: 0x17aae8",
+        "Clone": "function: 0x17ab38",
+        "_addChild": "function: 0x17ae68",
+        "Shape": "Block",
+        "Size": {
+          "X": 36,
+          "Y": 2,
+          "Z": 36
+        },
+        "Position": {
+          "X": 100,
+          "Y": 7,
+          "Z": 500
+        },
+        "Anchored": "true",
+        "Material": "table: 0x17ac60",
+        "Color": "table: 0x17ace8"
+      }
+    },
+    {
+      "id": "inst_154",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x17b510",
+        "WaitForChild": "function: 0x17b628",
+        "GetChildren": "function: 0x17b3f0",
+        "GetDescendants": "function: 0x17b648",
+        "GetFullName": "function: 0x17b698",
+        "IsA": "function: 0x17b868",
+        "Destroy": "function: 0x17b560",
+        "Clone": "function: 0x17b5b0",
+        "_addChild": "function: 0x17b5d0",
+        "Shape": "Block",
+        "Size": {
+          "X": 24,
+          "Y": 2,
+          "Z": 24
+        },
+        "Position": {
+          "X": 100,
+          "Y": 10,
+          "Z": 500
+        },
+        "Anchored": "true",
+        "Material": "table: 0x17b6b0",
+        "Color": "table: 0x17b738"
+      }
+    },
+    {
+      "id": "inst_155",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x17bf68",
+        "WaitForChild": "function: 0x17c080",
+        "GetChildren": "function: 0x17be48",
+        "GetDescendants": "function: 0x17c0a0",
+        "GetFullName": "function: 0x17c0f0",
+        "IsA": "function: 0x17c2c0",
+        "Destroy": "function: 0x17bfb8",
+        "Clone": "function: 0x17c008",
+        "_addChild": "function: 0x17c028",
+        "Shape": "Block",
+        "Size": {
+          "X": 12,
+          "Y": 2,
+          "Z": 12
+        },
+        "Position": {
+          "X": 100,
+          "Y": 13,
+          "Z": 500
+        },
+        "Anchored": "true",
+        "Material": "table: 0x17c108",
+        "Color": "table: 0x17c190"
+      }
+    },
+    {
+      "id": "inst_156",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x17c9c0",
+        "WaitForChild": "function: 0x17cad8",
+        "GetChildren": "function: 0x17c8a0",
+        "GetDescendants": "function: 0x17caf8",
+        "GetFullName": "function: 0x17cb48",
+        "IsA": "function: 0x17cd18",
+        "Destroy": "function: 0x17ca10",
+        "Clone": "function: 0x17ca60",
+        "_addChild": "function: 0x17ca80",
+        "Shape": "Block",
+        "Size": {
+          "X": 4,
+          "Y": 3,
+          "Z": 4
+        },
+        "Position": {
+          "X": 100,
+          "Y": 16,
+          "Z": 500
+        },
+        "Anchored": "true",
+        "Material": "table: 0x17cb78",
+        "Color": "table: 0x17cc00"
+      }
+    },
+    {
+      "id": "inst_157",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x17ecb0",
+        "WaitForChild": "function: 0x17eb10",
+        "GetChildren": "function: 0x17ed00",
+        "GetDescendants": "function: 0x17f568",
+        "GetFullName": "function: 0x17f5b8",
+        "IsA": "function: 0x17efa0",
+        "Destroy": "function: 0x17f5d0",
+        "Clone": "function: 0x17f620",
+        "_addChild": "function: 0x17f640",
+        "Shape": "Block",
+        "Size": {
+          "X": 4,
+          "Y": 18,
+          "Z": 4
+        },
+        "Position": {
+          "X": 88,
+          "Y": 9,
+          "Z": 530
+        },
+        "Anchored": "true",
+        "Material": "table: 0x17ee08",
+        "Color": "table: 0x17ee90"
+      }
+    },
+    {
+      "id": "inst_158",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1802f0",
+        "WaitForChild": "function: 0x1803e0",
+        "GetChildren": "function: 0x180408",
+        "GetDescendants": "function: 0x180458",
+        "GetFullName": "function: 0x1804a8",
+        "IsA": "function: 0x180678",
+        "Destroy": "function: 0x180348",
+        "Clone": "function: 0x180398",
+        "_addChild": "function: 0x1806c8",
+        "Shape": "Block",
+        "Size": {
+          "X": 4,
+          "Y": 18,
+          "Z": 4
+        },
+        "Position": {
+          "X": 112,
+          "Y": 9,
+          "Z": 530
+        },
+        "Anchored": "true",
+        "Material": "table: 0x1804d8",
+        "Color": "table: 0x180560"
+      }
+    },
+    {
+      "id": "inst_159",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x180d60",
+        "WaitForChild": "function: 0x180e50",
+        "GetChildren": "function: 0x180e78",
+        "GetDescendants": "function: 0x180ec8",
+        "GetFullName": "function: 0x180f18",
+        "IsA": "function: 0x1810e8",
+        "Destroy": "function: 0x180db8",
+        "Clone": "function: 0x180e08",
+        "_addChild": "function: 0x181138",
+        "Shape": "Block",
+        "Size": {
+          "X": 6,
+          "Y": 8,
+          "Z": 2
+        },
+        "Position": {
+          "X": 100,
+          "Y": 4,
+          "Z": 531
+        },
+        "Anchored": "true",
+        "Material": "table: 0x180f48",
+        "Color": "table: 0x180fd0"
+      }
+    },
+    {
+      "id": "inst_160",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1818b8",
+        "WaitForChild": "function: 0x1819a8",
+        "GetChildren": "function: 0x1819d0",
+        "GetDescendants": "function: 0x181a20",
+        "GetFullName": "function: 0x181a70",
+        "IsA": "function: 0x181c40",
+        "Destroy": "function: 0x181910",
+        "Clone": "function: 0x181960",
+        "_addChild": "function: 0x181c90",
+        "Shape": "Block",
+        "Size": {
+          "X": 4,
+          "Y": 8,
+          "Z": 4
+        },
+        "Position": {
+          "X": 92,
+          "Y": 4,
+          "Z": 526
+        },
+        "Anchored": "true",
+        "Material": "table: 0x181aa0",
+        "Color": "table: 0x181b28"
+      }
+    },
+    {
+      "id": "inst_161",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x182328",
+        "WaitForChild": "function: 0x182418",
+        "GetChildren": "function: 0x182440",
+        "GetDescendants": "function: 0x182490",
+        "GetFullName": "function: 0x1824e0",
+        "IsA": "function: 0x1826b0",
+        "Destroy": "function: 0x182380",
+        "Clone": "function: 0x1823d0",
+        "_addChild": "function: 0x182700",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 3,
+          "Z": 3
+        },
+        "Position": {
+          "X": 92,
+          "Y": 9.5,
+          "Z": 526
+        },
+        "Anchored": "true",
+        "Material": "table: 0x182510",
+        "Color": "table: 0x182598"
+      }
+    },
+    {
+      "id": "inst_162",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x182e78",
+        "WaitForChild": "function: 0x182f68",
+        "GetChildren": "function: 0x182f90",
+        "GetDescendants": "function: 0x182fe0",
+        "GetFullName": "function: 0x183030",
+        "IsA": "function: 0x183200",
+        "Destroy": "function: 0x182ed0",
+        "Clone": "function: 0x182f20",
+        "_addChild": "function: 0x183250",
+        "Shape": "Block",
+        "Size": {
+          "X": 4,
+          "Y": 8,
+          "Z": 4
+        },
+        "Position": {
+          "X": 108,
+          "Y": 4,
+          "Z": 526
+        },
+        "Anchored": "true",
+        "Material": "table: 0x183060",
+        "Color": "table: 0x1830e8"
+      }
+    },
+    {
+      "id": "inst_163",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1838e8",
+        "WaitForChild": "function: 0x1839d8",
+        "GetChildren": "function: 0x183a00",
+        "GetDescendants": "function: 0x183a50",
+        "GetFullName": "function: 0x183aa0",
+        "IsA": "function: 0x183c70",
+        "Destroy": "function: 0x183940",
+        "Clone": "function: 0x183990",
+        "_addChild": "function: 0x183cc0",
+        "Shape": "Block",
+        "Size": {
+          "X": 3,
+          "Y": 3,
+          "Z": 3
+        },
+        "Position": {
+          "X": 108,
+          "Y": 9.5,
+          "Z": 526
+        },
+        "Anchored": "true",
+        "Material": "table: 0x183ad0",
+        "Color": "table: 0x183b58"
+      }
+    },
+    {
+      "id": "inst_164",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1896c0",
+        "WaitForChild": "function: 0x186000",
+        "GetChildren": "function: 0x187340",
+        "GetDescendants": "function: 0x187390",
+        "GetFullName": "function: 0x1873e0",
+        "IsA": "function: 0x185f08",
+        "Destroy": "function: 0x1872d8",
+        "Clone": "function: 0x189438",
+        "_addChild": "function: 0x189488",
+        "Shape": "Block",
+        "Size": {
+          "X": 50,
+          "Y": 0.5,
+          "Z": 30
+        },
+        "Position": {
+          "X": 100,
+          "Y": 0.25,
+          "Z": 520
+        },
+        "Anchored": "true",
+        "Material": "table: 0x189668",
+        "Color": "table: 0x188e10"
+      }
+    },
+    {
+      "id": "inst_165",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1864a0",
+        "WaitForChild": "function: 0x187328",
+        "GetChildren": "function: 0x186588",
+        "GetDescendants": "function: 0x1865d8",
+        "GetFullName": "function: 0x1867d0",
+        "IsA": "function: 0x1864f0",
+        "Destroy": "function: 0x186538",
+        "Clone": "function: 0x186628",
+        "_addChild": "function: 0x186678",
+        "Shape": "Block",
+        "Size": {
+          "X": 5,
+          "Y": 5,
+          "Z": 8
+        },
+        "Position": {
+          "X": 75,
+          "Y": 2.5,
+          "Z": 505
+        },
+        "Anchored": "true",
+        "Material": "table: 0x186988",
+        "Color": "table: 0x186a10"
+      }
+    },
+    {
+      "id": "inst_166",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x187490",
+        "WaitForChild": "function: 0x186f10",
+        "GetChildren": "function: 0x186f28",
+        "GetDescendants": "function: 0x1875d8",
+        "GetFullName": "function: 0x187628",
+        "IsA": "function: 0x1874e0",
+        "Destroy": "function: 0x187528",
+        "Clone": "function: 0x1877c8",
+        "_addChild": "function: 0x187818",
+        "Shape": "Block",
+        "Size": {
+          "X": 5,
+          "Y": 4,
+          "Z": 6
+        },
+        "Position": {
+          "X": 75,
+          "Y": 2,
+          "Z": 520
+        },
+        "Anchored": "true",
+        "Material": "table: 0x187640",
+        "Color": "table: 0x1876c8"
+      }
+    },
+    {
+      "id": "inst_167",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x189ba0",
+        "WaitForChild": "function: 0x189cb8",
+        "GetChildren": "function: 0x189ac8",
+        "GetDescendants": "function: 0x189d08",
+        "GetFullName": "function: 0x189ae8",
+        "IsA": "function: 0x189f18",
+        "Destroy": "function: 0x189bf0",
+        "Clone": "function: 0x189c40",
+        "_addChild": "function: 0x189f68",
+        "Shape": "Block",
+        "Size": {
+          "X": 5,
+          "Y": 6,
+          "Z": 7
+        },
+        "Position": {
+          "X": 75,
+          "Y": 3,
+          "Z": 535
+        },
+        "Anchored": "true",
+        "Material": "table: 0x189d60",
+        "Color": "table: 0x189de8"
+      }
+    },
+    {
+      "id": "inst_168",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x18a610",
+        "WaitForChild": "function: 0x18a728",
+        "GetChildren": "function: 0x18a4f0",
+        "GetDescendants": "function: 0x18a748",
+        "GetFullName": "function: 0x18a798",
+        "IsA": "function: 0x18a968",
+        "Destroy": "function: 0x18a660",
+        "Clone": "function: 0x18a6b0",
+        "_addChild": "function: 0x18a6d0",
+        "Shape": "Block",
+        "Size": {
+          "X": 5,
+          "Y": 4,
+          "Z": 8
+        },
+        "Position": {
+          "X": 125,
+          "Y": 2,
+          "Z": 505
+        },
+        "Anchored": "true",
+        "Material": "table: 0x18a7b0",
+        "Color": "table: 0x18a838"
+      }
+    },
+    {
+      "id": "inst_169",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x18b068",
+        "WaitForChild": "function: 0x18b180",
+        "GetChildren": "function: 0x18af48",
+        "GetDescendants": "function: 0x18b1a0",
+        "GetFullName": "function: 0x18b1f0",
+        "IsA": "function: 0x18b3c0",
+        "Destroy": "function: 0x18b0b8",
+        "Clone": "function: 0x18b108",
+        "_addChild": "function: 0x18b128",
+        "Shape": "Block",
+        "Size": {
+          "X": 5,
+          "Y": 7,
+          "Z": 6
+        },
+        "Position": {
+          "X": 125,
+          "Y": 3.5,
+          "Z": 520
+        },
+        "Anchored": "true",
+        "Material": "table: 0x18b208",
+        "Color": "table: 0x18b290"
+      }
+    },
+    {
+      "id": "inst_170",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x18bac0",
+        "WaitForChild": "function: 0x18bbd8",
+        "GetChildren": "function: 0x18b9a0",
+        "GetDescendants": "function: 0x18bbf8",
+        "GetFullName": "function: 0x18bc48",
+        "IsA": "function: 0x18be18",
+        "Destroy": "function: 0x18bb10",
+        "Clone": "function: 0x18bb60",
+        "_addChild": "function: 0x18bb80",
+        "Shape": "Block",
+        "Size": {
+          "X": 5,
+          "Y": 3,
+          "Z": 7
+        },
+        "Position": {
+          "X": 125,
+          "Y": 1.5,
+          "Z": 535
+        },
+        "Anchored": "true",
+        "Material": "table: 0x18bc60",
+        "Color": "table: 0x18bce8"
+      }
+    },
+    {
+      "id": "inst_171",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x18c518",
+        "WaitForChild": "function: 0x18c630",
+        "GetChildren": "function: 0x18c3f8",
+        "GetDescendants": "function: 0x18c650",
+        "GetFullName": "function: 0x18c6a0",
+        "IsA": "function: 0x18c870",
+        "Destroy": "function: 0x18c568",
+        "Clone": "function: 0x18c5b8",
+        "_addChild": "function: 0x18c5d8",
+        "Shape": "Block",
+        "Size": {
+          "X": 10,
+          "Y": 5,
+          "Z": 5
+        },
+        "Position": {
+          "X": 90,
+          "Y": 2.5,
+          "Z": 540
+        },
+        "Anchored": "true",
+        "Material": "table: 0x18c6b8",
+        "Color": "table: 0x18c740"
+      }
+    },
+    {
+      "id": "inst_172",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x18cf70",
+        "WaitForChild": "function: 0x18d088",
+        "GetChildren": "function: 0x18ce50",
+        "GetDescendants": "function: 0x18d0a8",
+        "GetFullName": "function: 0x18d0f8",
+        "IsA": "function: 0x18d2c8",
+        "Destroy": "function: 0x18cfc0",
+        "Clone": "function: 0x18d010",
+        "_addChild": "function: 0x18d030",
+        "Shape": "Block",
+        "Size": {
+          "X": 10,
+          "Y": 4,
+          "Z": 5
+        },
+        "Position": {
+          "X": 110,
+          "Y": 2,
+          "Z": 540
+        },
+        "Anchored": "true",
+        "Material": "table: 0x18d110",
+        "Color": "table: 0x18d198"
+      }
+    },
+    {
+      "id": "inst_173",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x18db48",
+        "WaitForChild": "function: 0x18dc60",
+        "GetChildren": "function: 0x18da28",
+        "GetDescendants": "function: 0x18dc80",
+        "GetFullName": "function: 0x18dcd0",
+        "IsA": "function: 0x18dea0",
+        "Destroy": "function: 0x18db98",
+        "Clone": "function: 0x18dbe8",
+        "_addChild": "function: 0x18dc08",
+        "Shape": "Block",
+        "Size": {
+          "X": 8,
+          "Y": 3,
+          "Z": 4
+        },
+        "Position": {
+          "X": 85,
+          "Y": 1.5,
+          "Z": 515
+        },
+        "Anchored": "true",
+        "Material": "table: 0x18dd00",
+        "Color": "table: 0x18dd88"
+      }
+    },
+    {
+      "id": "inst_174",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x18e578",
+        "WaitForChild": "function: 0x18e668",
+        "GetChildren": "function: 0x18e690",
+        "GetDescendants": "function: 0x18e6e0",
+        "GetFullName": "function: 0x18e730",
+        "IsA": "function: 0x18e900",
+        "Destroy": "function: 0x18e5d0",
+        "Clone": "function: 0x18e620",
+        "_addChild": "function: 0x18e950",
+        "Shape": "Block",
+        "Size": {
+          "X": 7.5,
+          "Y": 0.5,
+          "Z": 3.5
+        },
+        "Position": {
+          "X": 85,
+          "Y": 3.25,
+          "Z": 515
+        },
+        "Anchored": "true",
+        "Material": "table: 0x18e760",
+        "Color": "table: 0x18e7e8"
+      }
+    },
+    {
+      "id": "inst_175",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x18efe8",
+        "WaitForChild": "function: 0x18f0d8",
+        "GetChildren": "function: 0x18f100",
+        "GetDescendants": "function: 0x18f150",
+        "GetFullName": "function: 0x18f1a0",
+        "IsA": "function: 0x18f370",
+        "Destroy": "function: 0x18f040",
+        "Clone": "function: 0x18f090",
+        "_addChild": "function: 0x18f3c0",
+        "Shape": "Block",
+        "Size": {
+          "X": 8,
+          "Y": 3,
+          "Z": 4
+        },
+        "Position": {
+          "X": 115,
+          "Y": 1.5,
+          "Z": 525
+        },
+        "Anchored": "true",
+        "Material": "table: 0x18f1d0",
+        "Color": "table: 0x18f258"
+      }
+    },
+    {
+      "id": "inst_176",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x18fa58",
+        "WaitForChild": "function: 0x18fb48",
+        "GetChildren": "function: 0x18fb70",
+        "GetDescendants": "function: 0x18fbc0",
+        "GetFullName": "function: 0x18fc10",
+        "IsA": "function: 0x18fde0",
+        "Destroy": "function: 0x18fab0",
+        "Clone": "function: 0x18fb00",
+        "_addChild": "function: 0x18fe30",
+        "Shape": "Block",
+        "Size": {
+          "X": 7.5,
+          "Y": 0.5,
+          "Z": 3.5
+        },
+        "Position": {
+          "X": 115,
+          "Y": 3.25,
+          "Z": 525
+        },
+        "Anchored": "true",
+        "Material": "table: 0x18fc40",
+        "Color": "table: 0x18fcc8"
+      }
+    },
+    {
+      "id": "inst_177",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1904c8",
+        "WaitForChild": "function: 0x1905b8",
+        "GetChildren": "function: 0x1905e0",
+        "GetDescendants": "function: 0x190630",
+        "GetFullName": "function: 0x190680",
+        "IsA": "function: 0x190850",
+        "Destroy": "function: 0x190520",
+        "Clone": "function: 0x190570",
+        "_addChild": "function: 0x1908a0",
+        "Shape": "Block",
+        "Size": {
+          "X": 8,
+          "Y": 3,
+          "Z": 4
+        },
+        "Position": {
+          "X": 100,
+          "Y": 1.5,
+          "Z": 535
+        },
+        "Anchored": "true",
+        "Material": "table: 0x1906b0",
+        "Color": "table: 0x190738"
+      }
+    },
+    {
+      "id": "inst_178",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x190f38",
+        "WaitForChild": "function: 0x191028",
+        "GetChildren": "function: 0x191050",
+        "GetDescendants": "function: 0x1910a0",
+        "GetFullName": "function: 0x1910f0",
+        "IsA": "function: 0x1912c0",
+        "Destroy": "function: 0x190f90",
+        "Clone": "function: 0x190fe0",
+        "_addChild": "function: 0x191310",
+        "Shape": "Block",
+        "Size": {
+          "X": 7.5,
+          "Y": 0.5,
+          "Z": 3.5
+        },
+        "Position": {
+          "X": 100,
+          "Y": 3.25,
+          "Z": 535
+        },
+        "Anchored": "true",
+        "Material": "table: 0x191120",
+        "Color": "table: 0x1911a8"
+      }
+    },
+    {
+      "id": "inst_179",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1919a8",
+        "WaitForChild": "function: 0x191a98",
+        "GetChildren": "function: 0x191ac0",
+        "GetDescendants": "function: 0x191b10",
+        "GetFullName": "function: 0x191b60",
+        "IsA": "function: 0x191d30",
+        "Destroy": "function: 0x191a00",
+        "Clone": "function: 0x191a50",
+        "_addChild": "function: 0x191d80",
+        "Shape": "Block",
+        "Size": {
+          "X": 10,
+          "Y": 0.3,
+          "Z": 10
+        },
+        "Position": {
+          "X": 100,
+          "Y": 0.5,
+          "Z": 520
+        },
+        "Anchored": "true",
+        "Material": "table: 0x191b90",
+        "Color": "table: 0x191c18"
+      }
+    },
+    {
+      "id": "inst_180",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x194a10",
+        "WaitForChild": "function: 0x1938e0",
+        "GetChildren": "function: 0x192ff0",
+        "GetDescendants": "function: 0x193040",
+        "GetFullName": "function: 0x1935e8",
+        "IsA": "function: 0x193878",
+        "Destroy": "function: 0x194a90",
+        "Clone": "function: 0x194ae0",
+        "_addChild": "function: 0x194b00",
+        "Shape": "Block",
+        "Size": {
+          "X": 8,
+          "Y": 0.3,
+          "Z": 8
+        },
+        "Position": {
+          "X": 100,
+          "Y": 0.15,
+          "Z": 450
+        },
+        "Anchored": "true",
+        "Material": "table: 0x1936d8",
+        "Color": "table: 0x193760"
+      }
+    },
+    {
+      "id": "inst_181",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x193f88",
+        "WaitForChild": "function: 0x193e88",
+        "GetChildren": "function: 0x193ea0",
+        "GetDescendants": "function: 0x194ff0",
+        "GetFullName": "function: 0x1940d0",
+        "IsA": "function: 0x1951f8",
+        "Destroy": "function: 0x193fa8",
+        "Clone": "function: 0x193ff8",
+        "_addChild": "function: 0x194048",
+        "Shape": "Block",
+        "Size": {
+          "X": 8,
+          "Y": 0.3,
+          "Z": 8
+        },
+        "Position": {
+          "X": 100,
+          "Y": 0.15,
+          "Z": 460
+        },
+        "Anchored": "true",
+        "Material": "table: 0x195040",
+        "Color": "table: 0x1950c8"
+      }
+    },
+    {
+      "id": "inst_182",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x195910",
+        "WaitForChild": "function: 0x195a28",
+        "GetChildren": "function: 0x1957f0",
+        "GetDescendants": "function: 0x195a48",
+        "GetFullName": "function: 0x195a98",
+        "IsA": "function: 0x195c68",
+        "Destroy": "function: 0x195960",
+        "Clone": "function: 0x1959b0",
+        "_addChild": "function: 0x1959d0",
+        "Shape": "Block",
+        "Size": {
+          "X": 8,
+          "Y": 0.3,
+          "Z": 8
+        },
+        "Position": {
+          "X": 100,
+          "Y": 0.15,
+          "Z": 470
+        },
+        "Anchored": "true",
+        "Material": "table: 0x195ac8",
+        "Color": "table: 0x195b50"
+      }
+    },
+    {
+      "id": "inst_183",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x196390",
+        "WaitForChild": "function: 0x196480",
+        "GetChildren": "function: 0x1964a8",
+        "GetDescendants": "function: 0x1964f8",
+        "GetFullName": "function: 0x196548",
+        "IsA": "function: 0x196718",
+        "Destroy": "function: 0x1963e8",
+        "Clone": "function: 0x196438",
+        "_addChild": "function: 0x196768",
+        "Shape": "Block",
+        "Size": {
+          "X": 8,
+          "Y": 0.3,
+          "Z": 8
+        },
+        "Position": {
+          "X": 100,
+          "Y": 0.15,
+          "Z": 480
+        },
+        "Anchored": "true",
+        "Material": "table: 0x196578",
+        "Color": "table: 0x196600"
+      }
+    },
+    {
+      "id": "inst_184",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x196e40",
+        "WaitForChild": "function: 0x196f30",
+        "GetChildren": "function: 0x196f58",
+        "GetDescendants": "function: 0x196fa8",
+        "GetFullName": "function: 0x196ff8",
+        "IsA": "function: 0x1971c8",
+        "Destroy": "function: 0x196e98",
+        "Clone": "function: 0x196ee8",
+        "_addChild": "function: 0x197218",
+        "Shape": "Block",
+        "Size": {
+          "X": 8,
+          "Y": 0.3,
+          "Z": 8
+        },
+        "Position": {
+          "X": 100,
+          "Y": 0.15,
+          "Z": 490
+        },
+        "Anchored": "true",
+        "Material": "table: 0x197028",
+        "Color": "table: 0x1970b0"
+      }
+    },
+    {
+      "id": "inst_185",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x197d80",
+        "WaitForChild": "function: 0x197e98",
+        "GetChildren": "function: 0x197c80",
+        "GetDescendants": "function: 0x197ef0",
+        "GetFullName": "function: 0x197ca0",
+        "IsA": "function: 0x198100",
+        "Destroy": "function: 0x197dd0",
+        "Clone": "function: 0x197e20",
+        "_addChild": "function: 0x198150",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 12,
+          "Z": 2
+        },
+        "Position": {
+          "X": 95,
+          "Y": 6,
+          "Z": 450
+        },
+        "Anchored": "true",
+        "Material": "table: 0x197f60",
+        "Color": "table: 0x197fe8"
+      }
+    },
+    {
+      "id": "inst_186",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x1987e8",
+        "WaitForChild": "function: 0x1988d8",
+        "GetChildren": "function: 0x198900",
+        "GetDescendants": "function: 0x198950",
+        "GetFullName": "function: 0x1989a0",
+        "IsA": "function: 0x198b70",
+        "Destroy": "function: 0x198840",
+        "Clone": "function: 0x198890",
+        "_addChild": "function: 0x198bc0",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 12,
+          "Z": 2
+        },
+        "Position": {
+          "X": 105,
+          "Y": 6,
+          "Z": 450
+        },
+        "Anchored": "true",
+        "Material": "table: 0x1989d0",
+        "Color": "table: 0x198a58"
+      }
+    },
+    {
+      "id": "inst_187",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x199258",
+        "WaitForChild": "function: 0x199348",
+        "GetChildren": "function: 0x199370",
+        "GetDescendants": "function: 0x1993c0",
+        "GetFullName": "function: 0x199410",
+        "IsA": "function: 0x1995e0",
+        "Destroy": "function: 0x1992b0",
+        "Clone": "function: 0x199300",
+        "_addChild": "function: 0x199630",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 12,
+          "Z": 2
+        },
+        "Position": {
+          "X": 95,
+          "Y": 6,
+          "Z": 460
+        },
+        "Anchored": "true",
+        "Material": "table: 0x199440",
+        "Color": "table: 0x1994c8"
+      }
+    },
+    {
+      "id": "inst_188",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x199cc8",
+        "WaitForChild": "function: 0x199db8",
+        "GetChildren": "function: 0x199de0",
+        "GetDescendants": "function: 0x199e30",
+        "GetFullName": "function: 0x199e80",
+        "IsA": "function: 0x19a050",
+        "Destroy": "function: 0x199d20",
+        "Clone": "function: 0x199d70",
+        "_addChild": "function: 0x19a0a0",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 12,
+          "Z": 2
+        },
+        "Position": {
+          "X": 105,
+          "Y": 6,
+          "Z": 460
+        },
+        "Anchored": "true",
+        "Material": "table: 0x199eb0",
+        "Color": "table: 0x199f38"
+      }
+    },
+    {
+      "id": "inst_189",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x19a738",
+        "WaitForChild": "function: 0x19a828",
+        "GetChildren": "function: 0x19a850",
+        "GetDescendants": "function: 0x19a8a0",
+        "GetFullName": "function: 0x19a8f0",
+        "IsA": "function: 0x19aac0",
+        "Destroy": "function: 0x19a790",
+        "Clone": "function: 0x19a7e0",
+        "_addChild": "function: 0x19ab10",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 12,
+          "Z": 2
+        },
+        "Position": {
+          "X": 95,
+          "Y": 6,
+          "Z": 470
+        },
+        "Anchored": "true",
+        "Material": "table: 0x19a920",
+        "Color": "table: 0x19a9a8"
+      }
+    },
+    {
+      "id": "inst_190",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x19b1a8",
+        "WaitForChild": "function: 0x19b298",
+        "GetChildren": "function: 0x19b2c0",
+        "GetDescendants": "function: 0x19b310",
+        "GetFullName": "function: 0x19b360",
+        "IsA": "function: 0x19b530",
+        "Destroy": "function: 0x19b200",
+        "Clone": "function: 0x19b250",
+        "_addChild": "function: 0x19b580",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 12,
+          "Z": 2
+        },
+        "Position": {
+          "X": 105,
+          "Y": 6,
+          "Z": 470
+        },
+        "Anchored": "true",
+        "Material": "table: 0x19b390",
+        "Color": "table: 0x19b418"
+      }
+    },
+    {
+      "id": "inst_191",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x19bc18",
+        "WaitForChild": "function: 0x19bd08",
+        "GetChildren": "function: 0x19bd30",
+        "GetDescendants": "function: 0x19bd80",
+        "GetFullName": "function: 0x19bdd0",
+        "IsA": "function: 0x19bfa0",
+        "Destroy": "function: 0x19bc70",
+        "Clone": "function: 0x19bcc0",
+        "_addChild": "function: 0x19bff0",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 12,
+          "Z": 2
+        },
+        "Position": {
+          "X": 95,
+          "Y": 6,
+          "Z": 480
+        },
+        "Anchored": "true",
+        "Material": "table: 0x19be00",
+        "Color": "table: 0x19be88"
+      }
+    },
+    {
+      "id": "inst_192",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x19c688",
+        "WaitForChild": "function: 0x19c778",
+        "GetChildren": "function: 0x19c7a0",
+        "GetDescendants": "function: 0x19c7f0",
+        "GetFullName": "function: 0x19c840",
+        "IsA": "function: 0x19ca10",
+        "Destroy": "function: 0x19c6e0",
+        "Clone": "function: 0x19c730",
+        "_addChild": "function: 0x19ca60",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 12,
+          "Z": 2
+        },
+        "Position": {
+          "X": 105,
+          "Y": 6,
+          "Z": 480
+        },
+        "Anchored": "true",
+        "Material": "table: 0x19c870",
+        "Color": "table: 0x19c8f8"
+      }
+    },
+    {
+      "id": "inst_193",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x19d0f8",
+        "WaitForChild": "function: 0x19d1e8",
+        "GetChildren": "function: 0x19d210",
+        "GetDescendants": "function: 0x19d260",
+        "GetFullName": "function: 0x19d2b0",
+        "IsA": "function: 0x19d480",
+        "Destroy": "function: 0x19d150",
+        "Clone": "function: 0x19d1a0",
+        "_addChild": "function: 0x19d4d0",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 12,
+          "Z": 2
+        },
+        "Position": {
+          "X": 95,
+          "Y": 6,
+          "Z": 490
+        },
+        "Anchored": "true",
+        "Material": "table: 0x19d2e0",
+        "Color": "table: 0x19d368"
+      }
+    },
+    {
+      "id": "inst_194",
+      "className": "Part",
+      "name": "Part",
+      "properties": {
+        "FindFirstChild": "function: 0x131558",
+        "WaitForChild": "function: 0x12cff8",
+        "GetChildren": "function: 0x158968",
+        "GetDescendants": "function: 0x139f78",
+        "GetFullName": "function: 0x16a998",
+        "IsA": "function: 0x13a5a0",
+        "Destroy": "function: 0x133fe0",
+        "Clone": "function: 0x154b00",
+        "_addChild": "function: 0x141400",
+        "Shape": "Block",
+        "Size": {
+          "X": 2,
+          "Y": 12,
+          "Z": 2
+        },
+        "Position": {
+          "X": 105,
+          "Y": 6,
+          "Z": 490
+        },
+        "Anchored": "true",
+        "Material": "table: 0x151140",
+        "Color": "table: 0x157178"
+      }
+    }
+  ],
+  "scripts": {}
+}

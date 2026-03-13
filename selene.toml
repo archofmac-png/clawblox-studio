@@ -1,0 +1,3 @@
+std = "roblox"
+# Roblox Luau globals — use the roblox standard library
+# selene will know about game, workspace, Players, script, etc.

@@ -1,0 +1,56 @@
+appId: com.clawblox.studio
+productName: ClawBlox Studio
+directories:
+  buildResources: build
+  output: dist-electron
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+  - 'dist/**/*'
+  - 'out/**/*'
+extraResources:
+  - from: '.'
+    to: server
+    filter:
+      - 'src/**'
+      - 'clawblox-projects/**'
+      - 'package.json'
+      - '!node_modules/**'
+      - '!deploy-output/**'
+      - '!.git/**'
+asarUnpack:
+  - resources/**
+win:
+  executableName: ClawBloxStudio
+  target:
+    - nsis
+nsis:
+  artifactName: ${name}-${version}-setup.${ext}
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
+  createDesktopShortcut: always
+mac:
+  entitlementsInherit: build/entitlements.mac.plist
+  extendInfo:
+    - NSCameraUsageDescription: Application requests access to the device's camera.
+    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
+    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
+    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+  notarize: false
+  target:
+    - dmg
+dmg:
+  artifactName: ${name}-${version}.${ext}
+linux:
+  target:
+    - AppImage
+    - deb
+  maintainer: ClawBlox Studio
+  category: Development
+appImage:
+  artifactName: ${name}-${version}.${ext}
+npmRebuild: false
+publish: null
