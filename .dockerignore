@@ -1,0 +1,10 @@
+node_modules/
+electron/
+src/renderer*/
+src/main-zuki/
+src/preload-zuki/
+*.test.*
+.git/
+dist/
+release/
+deploy-output/

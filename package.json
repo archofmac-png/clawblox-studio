@@ -10,6 +10,7 @@
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
     "build": "electron-vite build",
+    "build:api": "tsc --project tsconfig.api.json && tsc --project tsconfig.cli.json",
     "postinstall": "electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
@@ -20,6 +21,9 @@
     "package:linux": "electron-vite build && electron-builder --linux --config",
     "api": "npx tsx src/api/server.ts",
     "api:dev": "npx tsx watch src/api/server.ts"
+  },
+  "bin": {
+    "clawblox": "./dist/cli/clawblox.js"
   },
   "dependencies": {
     "@babylonjs/core": "^8.54.3",
@@ -35,6 +39,7 @@
     "ace-builds": "^1.43.4",
     "archiver": "^7.0.1",
     "cannon-es": "^0.20.0",
+    "commander": "^14.0.3",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "fengari": "^0.1.5",

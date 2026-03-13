@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  clawblox:
+    build: .
+    ports:
+      - "3001:3001"
+      - "3002:3002"
+    volumes:
+      - ./clawblox-projects:/app/clawblox-projects
+    environment:
+      - MAX_SESSIONS=64
+      - NODE_ENV=production
+    restart: unless-stopped

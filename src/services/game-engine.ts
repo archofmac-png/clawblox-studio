@@ -1252,7 +1252,7 @@ export class GameEngine {
         { x: fx, y: fy, z: fz },
         { x: tx, y: ty, z: tz }
       );
-      return result.path;
+      return result.path as unknown as Array<Record<string, number>>;
     });
 
     this.engine.global.set('_cb_moveagent', (

@@ -33,8 +33,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3001;
+const PORT = Number(process.env.PORT ?? 3001);
 const WS_PORT = 3002;
+const MAX_SESSIONS = Number(process.env.MAX_SESSIONS ?? 64);
+const DETERMINISTIC_DEFAULT = process.env.DETERMINISTIC_DEFAULT === 'true';
+const SERVER_START_TIME = Date.now();
+// Detect headless mode: running as plain Node (not inside Electron renderer)
+const IS_HEADLESS = typeof process.versions?.electron === 'undefined';
 
 // WebSocket server for live output
 const wss = new WebSocketServer({ port: WS_PORT });
@@ -166,9 +171,21 @@ if (!fs.existsSync(PROJECTS_DIR)) {
   fs.mkdirSync(PROJECTS_DIR, { recursive: true });
 }
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+// Health check — Wave G enhanced
+app.get('/api/health', (_req, res) => {
+  const activeSessions = sessionManager.listSessions().length;
+  res.json({
+    status: 'ok',
+    version: '1.1.0',
+    uptime_s: Math.floor((Date.now() - SERVER_START_TIME) / 1000),
+    sessions: {
+      active: activeSessions,
+      max: MAX_SESSIONS,
+    },
+    mode: IS_HEADLESS ? 'headless' : 'electron',
+    deterministic_default: DETERMINISTIC_DEFAULT,
+    timestamp: new Date().toISOString(),
+  });
 });
 
 // Wave D: OpenAPI spec endpoints
@@ -741,7 +758,7 @@ app.get('/api/projects/:id/git/status', async (req, res) => {
     
     for (const [filepath, head, workdir, stage] of status) {
       if (head !== workdir || head !== stage) {
-        files[filepath] = git.StatusMatrix[head << 3 | workdir << 1 | stage];
+        files[filepath] = (git as any).StatusMatrix?.[head << 3 | workdir << 1 | stage] ?? 'modified';
       }
     }
     
@@ -850,10 +867,10 @@ app.post('/api/workspace/part', (req, res) => {
     res.json({ 
       success: true, 
       part: {
-        Name: part.Name,
-        ClassName: part.ClassName,
-        Position: part.Position,
-        Size: part.Size,
+        Name: (part as any).Name,
+        ClassName: (part as any).ClassName,
+        Position: (part as any).Position,
+        Size: (part as any).Size,
       }
     });
   } catch (err: any) {
@@ -865,7 +882,7 @@ app.post('/api/workspace/part', (req, res) => {
 app.get('/api/game/debug', (req, res) => {
   try {
     const gameObj = gameEngine.getGame();
-    res.json(gameObj.toJSON());
+    res.json((gameObj as any).toJSON?.() ?? gameObj);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -2673,6 +2690,53 @@ app.post('/api/messaging/bridge', async (req, res) => {
 // End Wave C
 // ============================================================
 
-app.listen(PORT, () => {
-  console.log(`ClawBlox API running on http://localhost:${PORT}`);
+const httpServer = app.listen(PORT, () => {
+  if (IS_HEADLESS) {
+    const activeSessions = sessionManager.listSessions().length;
+    const sessionStr = `${activeSessions}/${MAX_SESSIONS}`;
+    console.log('╔══════════════════════════════════════╗');
+    console.log('║  ClawBlox Studio v1.1 — Headless    ║');
+    console.log(`║  API: http://localhost:${PORT}          ║`);
+    console.log(`║  WS:  ws://localhost:${WS_PORT}          ║`);
+    console.log(`║  Sessions: ${sessionStr.padEnd(26)}║`);
+    console.log('╚══════════════════════════════════════╝');
+  } else {
+    console.log(`ClawBlox API running on http://localhost:${PORT}`);
+  }
 });
+
+// ─── Graceful Shutdown (Wave G) ───────────────────────────────────────────────
+
+function gracefulShutdown(signal: string): void {
+  console.log(`\n[server] ${signal} received — Shutting down cleanly...`);
+
+  // 1. Destroy all sessions
+  try {
+    const destroyed = sessionManager.destroyAllSessions();
+    console.log(`[server] Destroyed ${destroyed} session(s)`);
+  } catch (e) {
+    console.error('[server] Error destroying sessions:', (e as Error).message);
+  }
+
+  // 2. Close WebSocket server
+  wss.close((err) => {
+    if (err) console.error('[server] WS close error:', err.message);
+    else console.log('[server] WebSocket server closed');
+
+    // 3. Close HTTP server
+    httpServer.close((err2) => {
+      if (err2) console.error('[server] HTTP close error:', err2.message);
+      else console.log('[server] HTTP server closed');
+      process.exit(0);
+    });
+
+    // Force exit after 5s if something hangs
+    setTimeout(() => {
+      console.error('[server] Force exit after timeout');
+      process.exit(1);
+    }, 5000).unref();
+  });
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));

@@ -369,6 +369,67 @@ npm install clawblox-ts
 
 ---
 
+## Docker & CLI (Wave G)
+
+### Docker
+
+Run ClawBlox Studio in headless API-only mode with Docker:
+
+```bash
+# Build the image
+docker build -t clawblox-studio .
+
+# Run the API server (ports 3001 HTTP, 3002 WebSocket)
+docker run -p 3001:3001 -p 3002:3002 clawblox-studio
+
+# Run with docker-compose (recommended)
+docker-compose up
+```
+
+The Docker image runs only the headless Express API — no Electron, no display required. Projects are mounted via volume so they persist across container restarts.
+
+### CLI
+
+Install globally and control the server from your terminal:
+
+```bash
+npm install -g .
+
+# Start the headless API server
+clawblox run --sessions=64 --port=3001
+
+# Check server status
+clawblox status
+
+# Execute a Lua script
+clawblox execute my-script.lua
+clawblox execute my-script.lua --deterministic --seed=42
+clawblox -e "print('hello from Lua')"
+
+# Run tests
+clawblox test tests/my-test.clawtest.lua
+clawblox test tests/ --batch --parallel
+clawblox test tests/ --batch --output=json
+
+# Manage sessions
+clawblox session list
+clawblox session create --label=agent-1 --deterministic --seed=42
+clawblox session destroy <session-id>
+```
+
+CLI options (global):
+
+| Option | Default | Description |
+|---|---|---|
+| `--host` | `localhost` | API host |
+| `--port` | `3001` | API port |
+| `--headless` | false | Force headless mode |
+| `--sessions` | `64` | Max concurrent sessions |
+| `--seed` | — | RNG seed |
+| `--deterministic` | false | Deterministic mode |
+
+---
+
 ## License
 
 MIT — use it, fork it, build on it.
