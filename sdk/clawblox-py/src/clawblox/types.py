@@ -377,3 +377,142 @@ class PhysicsStepResponse:
     """Physics step response."""
     ok: bool
     dt: float
+
+
+# ── Wave F: Test Framework v2 types ──────────────────────────────────────────
+
+@dataclass
+class TestResultV2:
+    """Single test result (v2)."""
+    suite: str
+    test: str
+    passed: bool
+    duration_ms: int
+    error: str | None = None
+    rewards: list[float] = field(default_factory=list)
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "TestResultV2":
+        return cls(
+            suite=data.get("suite", ""),
+            test=data.get("test", ""),
+            passed=data.get("passed", False),
+            duration_ms=data.get("duration_ms", 0),
+            error=data.get("error"),
+            rewards=data.get("rewards", []),
+        )
+
+
+@dataclass
+class TestRunV2Response:
+    """Test run v2 response (backward compat + new fields)."""
+    passed: int
+    failed: int
+    success: bool
+    skipped: int
+    duration_ms: int
+    results_v2: list[TestResultV2]
+    rewards_total: float
+    trajectory_frames: int
+    file: str | None = None
+    results: list[dict] | None = None
+    duration: int | None = None
+    seed: int | None = None
+    deterministic: bool | None = None
+    error: str | None = None
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "TestRunV2Response":
+        return cls(
+            passed=data.get("passed", 0),
+            failed=data.get("failed", 0),
+            success=data.get("success", False),
+            skipped=data.get("skipped", 0),
+            duration_ms=data.get("duration_ms", 0),
+            results_v2=[TestResultV2.from_dict(r) for r in data.get("results_v2", [])],
+            rewards_total=data.get("rewards_total", 0.0),
+            trajectory_frames=data.get("trajectory_frames", 0),
+            file=data.get("file"),
+            results=data.get("results"),
+            duration=data.get("duration"),
+            seed=data.get("seed"),
+            deterministic=data.get("deterministic"),
+            error=data.get("error"),
+        )
+
+
+@dataclass
+class BatchTestEntry:
+    """A single test entry for batch runs."""
+    code: str
+    label: str = ""
+
+
+@dataclass
+class BatchTestResult:
+    """Result of a single test in a batch run."""
+    label: str
+    passed: bool
+    duration_ms: int
+    rewards: list[float]
+    trajectory: str
+    results_v2: list[TestResultV2]
+    error: str | None = None
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "BatchTestResult":
+        return cls(
+            label=data.get("label", ""),
+            passed=data.get("passed", False),
+            duration_ms=data.get("duration_ms", 0),
+            rewards=data.get("rewards", []),
+            trajectory=data.get("trajectory", ""),
+            results_v2=[TestResultV2.from_dict(r) for r in data.get("results_v2", [])],
+            error=data.get("error"),
+        )
+
+
+@dataclass
+class TestRunBatchResponse:
+    """Response from POST /api/test/run_batch."""
+    batch_id: str
+    total: int
+    passed: int
+    failed: int
+    duration_ms: int
+    deterministic: bool
+    seed: int
+    results: list[BatchTestResult]
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "TestRunBatchResponse":
+        return cls(
+            batch_id=data.get("batch_id", ""),
+            total=data.get("total", 0),
+            passed=data.get("passed", 0),
+            failed=data.get("failed", 0),
+            duration_ms=data.get("duration_ms", 0),
+            deterministic=data.get("deterministic", False),
+            seed=data.get("seed", 0),
+            results=[BatchTestResult.from_dict(r) for r in data.get("results", [])],
+        )
+
+
+@dataclass
+class TestCoverageResponse:
+    """Response from GET /api/test/coverage."""
+    total_files: int
+    tested_files: int
+    coverage_pct: float
+    untested: list[str]
+    covered: list[str]
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "TestCoverageResponse":
+        return cls(
+            total_files=data.get("total_files", 0),
+            tested_files=data.get("tested_files", 0),
+            coverage_pct=data.get("coverage_pct", 0.0),
+            untested=data.get("untested", []),
+            covered=data.get("covered", []),
+        )

@@ -14,6 +14,8 @@ from .exceptions import (
     ClawBloxWebSocketError,
 )
 from .types import (
+    BatchTestEntry,
+    BatchTestResult,
     BridgeMessageResponse,
     ExecuteResult,
     GameStartResponse,
@@ -32,7 +34,10 @@ from .types import (
     SessionStateResponse,
     SessionSummary,
     SphereCastResponse,
+    TestCoverageResponse,
+    TestRunBatchResponse,
     TestRunResponse,
+    TestRunV2Response,
     TrajectoryFrame,
     Vector3,
 )
@@ -389,15 +394,15 @@ class ClawBloxClient:
         )
 
     # Test endpoints
-    def test_run(self, code: str | None = None, file_path: str | None = None) -> TestRunResponse:
-        """Run test.
+    def test_run(self, code: str | None = None, file_path: str | None = None) -> TestRunV2Response:
+        """Run test (Wave F v2 response).
 
         Args:
             code: Test code
             file_path: Path to test file
 
         Returns:
-            TestRunResponse
+            TestRunV2Response (backward compat + new v2 fields)
         """
         json_data: dict = {}
         if code is not None:
@@ -405,12 +410,52 @@ class ClawBloxClient:
         if file_path is not None:
             json_data["filePath"] = file_path
         data = self._post("/api/test/run", json=json_data)
-        return TestRunResponse(
-            tests=data.get("tests"),
-            passed=data.get("passed"),
-            failed=data.get("failed"),
-            error=data.get("error"),
-        )
+        return TestRunV2Response.from_dict(data)
+
+    def test_run_batch(
+        self,
+        tests: list[dict | BatchTestEntry],
+        deterministic: bool = False,
+        seed: int | None = None,
+        parallel: bool = False,
+    ) -> TestRunBatchResponse:
+        """Run multiple tests in a batch (Wave F).
+
+        Args:
+            tests: List of {code, label} dicts or BatchTestEntry objects
+            deterministic: Run in deterministic mode
+            seed: Random seed
+            parallel: Run tests in parallel (each in isolated session)
+
+        Returns:
+            TestRunBatchResponse
+        """
+        serialized = []
+        for t in tests:
+            if isinstance(t, BatchTestEntry):
+                serialized.append({"code": t.code, "label": t.label})
+            else:
+                serialized.append(t)
+
+        json_data: dict = {
+            "tests": serialized,
+            "deterministic": deterministic,
+            "parallel": parallel,
+        }
+        if seed is not None:
+            json_data["seed"] = seed
+
+        data = self._post("/api/test/run_batch", json=json_data)
+        return TestRunBatchResponse.from_dict(data)
+
+    def test_coverage(self) -> TestCoverageResponse:
+        """Get Lua file coverage report (Wave F).
+
+        Returns:
+            TestCoverageResponse with total_files, tested_files, coverage_pct, untested
+        """
+        data = self._get("/api/test/coverage")
+        return TestCoverageResponse.from_dict(data)
 
     # Physics endpoints
     def spherecast(

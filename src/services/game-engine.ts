@@ -49,6 +49,19 @@ export function broadcastStructuredEvent(event: WsTypedEvent): void {
 }
 
 // -------------------------------------------------------------------
+// Wave F: Coverage tracking — files require()-ed during test runs
+export const _coveredFiles: Set<string> = new Set();
+
+/** Reset coverage tracking (called on POST /api/game/start). */
+export function resetCoverage(): void {
+  _coveredFiles.clear();
+}
+
+/** Record a file as covered (called from Lua require() shim). */
+export function recordCoveredFile(filename: string): void {
+  _coveredFiles.add(filename);
+}
+
 // Wave B: Trajectory recorder
 // -------------------------------------------------------------------
 const TRAJECTORY_MAX_FRAMES = 10_000;
@@ -812,6 +825,15 @@ assert = function(v, msg) if not v then error(msg or "assertion failed") end ret
 pcall  = pcall
 xpcall = xpcall
 
+-- Wave F: require() tracking shim
+local _origRequire = require
+require = function(modname)
+  if _cb_require_track then
+    pcall(_cb_require_track, tostring(modname))
+  end
+  return _origRequire(modname)
+end
+
 -- Wave 4: workspace:SphereCast and :FindPartsInRadius shims
 -- These call JS physics world callbacks
 function Workspace:SphereCast(origin, radius, direction, distance)
@@ -1190,6 +1212,11 @@ export class GameEngine {
       recordTrajectoryConsole(level, msg);
     });
 
+    // Wave F: require() tracking callback
+    this.engine.global.set('_cb_require_track', (filename: string) => {
+      recordCoveredFile(filename);
+    });
+
     // Wave 4: Physics callbacks
     this.engine.global.set('_cb_spherecast', (
       ox: number, oy: number, oz: number,
@@ -1309,6 +1336,8 @@ export class GameEngine {
     resetPhysicsTick();
     // Wave B: Clear trajectory on every start
     clearTrajectory();
+    // Wave F: Reset coverage on game start
+    resetCoverage();
     // Wave B: Lock physics to fixed timestep in deterministic mode
     physicsWorld.setDeterministicMode(this._deterministic);
     await this.initLua();

@@ -15,7 +15,10 @@ import {
   ReplayRequest, ReplayResponse, SessionCreateRequest, SessionCreateResponse,
   SessionInfo, SessionStateResponse, SessionExecuteResponse,
   SessionResetResponse, SessionMessage, BridgeMessageRequest, BridgeMessageResponse,
-  ClawBloxClientOptions
+  ClawBloxClientOptions,
+  // Wave F
+  BatchTestEntry, BatchTestOptions, TestRunBatchResponse, TestCoverageResponse,
+  TestRunV2Response,
 } from './types';
 
 /**
@@ -132,12 +135,25 @@ export class ClawBloxClient {
   }
 
   // Tests
-  async testRun(request: TestRunRequest): Promise<TestRunResponse> {
-    return this.request<TestRunResponse>('POST', '/api/test/run', request);
+  async testRun(request: TestRunRequest): Promise<TestRunV2Response> {
+    return this.request<TestRunV2Response>('POST', '/api/test/run', request);
   }
 
   async testFiles(): Promise<TestFilesResponse> {
     return this.request<TestFilesResponse>('GET', '/api/test/files');
+  }
+
+  // Wave F: Batch test runner
+  async testRunBatch(tests: BatchTestEntry[], options?: BatchTestOptions): Promise<TestRunBatchResponse> {
+    return this.request<TestRunBatchResponse>('POST', '/api/test/run_batch', {
+      tests,
+      ...options,
+    });
+  }
+
+  // Wave F: Coverage report
+  async testCoverage(): Promise<TestCoverageResponse> {
+    return this.request<TestCoverageResponse>('GET', '/api/test/coverage');
   }
 
   // Physics

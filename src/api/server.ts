@@ -8,8 +8,8 @@ import archiver from 'archiver';
 import { WebSocketServer, WebSocket } from 'ws';
 
 // Import game engine
-import { gameEngine, setBroadcastFunction, broadcastStructuredEvent, incrementPhysicsTick, getTrajectory, type TrajectoryFrame } from '../services/game-engine';
-import { runTestFile } from '../services/test-runner.js';
+import { gameEngine, setBroadcastFunction, broadcastStructuredEvent, incrementPhysicsTick, getTrajectory, resetCoverage, _coveredFiles, type TrajectoryFrame } from '../services/game-engine';
+import { runTestFile, type TestSuiteV2 } from '../services/test-runner.js';
 
 // Wave A: Structured observability
 import { buildObserveState, extractGuiTree } from '../services/observability.js';
@@ -767,6 +767,8 @@ app.post('/api/game/start', async (req, res) => {
     const seed = seedParam !== undefined ? Number(seedParam) : undefined;
 
     const state = await gameEngine.start({ deterministic, seed });
+    // Wave F: Reset coverage tracking on game start
+    resetCoverage();
     res.json({ 
       success: true, 
       status: state.status,
@@ -1037,6 +1039,7 @@ app.post('/api/game/simulate-player', async (req, res) => {
  * Run a .clawtest.lua test file by path or inline code.
  * Body: { filePath?: string, code?: string }
  * Wave B: ?deterministic=true&seed=N seeds Lua RNG before tests run.
+ * Wave F: Returns v2 structured output (backward compatible).
  */
 app.post('/api/test/run', async (req, res) => {
   const { filePath, code } = req.body;
@@ -1066,8 +1069,27 @@ app.post('/api/test/run', async (req, res) => {
     }
 
     const suite = await runTestFile(resolvedPath, luaCode);
-    const resp: any = suite;
-    if (deterministic) { resp.deterministic = true; resp.seed = seedUsed; }
+
+    // Wave F: Build v2 response (backward compat — keep all original fields)
+    const resp: Record<string, unknown> = {
+      // Legacy fields
+      file: suite.file,
+      results: suite.results,
+      passed: suite.passed,
+      failed: suite.failed,
+      duration: suite.duration,
+      // v2 fields
+      success: suite.success,
+      skipped: suite.skipped,
+      duration_ms: suite.duration_ms,
+      results_v2: suite.results_v2,
+      rewards_total: suite.rewards_total,
+      trajectory_frames: suite.trajectory_frames,
+    };
+    if (deterministic) {
+      resp.deterministic = true;
+      resp.seed = seedUsed;
+    }
     res.json(resp);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -1094,6 +1116,200 @@ app.get('/api/test/files', (req, res) => {
   };
   for (const dir of searchDirs) walk(dir);
   res.json({ files });
+});
+
+// ============================================================================
+// Wave F: Test Batch + Coverage endpoints
+// ============================================================================
+
+/**
+ * POST /api/test/run_batch
+ * Run multiple Lua test cases, sequentially or in parallel.
+ * Body: { tests: [{code, label}], deterministic?, seed?, parallel? }
+ */
+app.post('/api/test/run_batch', async (req, res) => {
+  const { tests, deterministic = false, seed, parallel = false } = req.body ?? {};
+
+  if (!Array.isArray(tests) || tests.length === 0) {
+    return res.status(400).json({ error: 'tests array required' });
+  }
+
+  const { randomUUID } = await import('crypto');
+  const batchId = randomUUID();
+  const batchStart = Date.now();
+  const seedUsed: number = seed !== undefined ? Number(seed) : Math.floor(Math.random() * 2 ** 31);
+
+  interface BatchResult {
+    label: string;
+    passed: boolean;
+    duration_ms: number;
+    rewards: number[];
+    trajectory: string;
+    results_v2: TestSuiteV2['results_v2'];
+    error?: string;
+  }
+
+  async function runSingle(entry: { code?: string; label?: string }): Promise<BatchResult> {
+    const label = entry.label || 'test';
+    let luaCode = entry.code || '';
+    if (!luaCode) {
+      return { label, passed: false, duration_ms: 0, rewards: [], trajectory: '', results_v2: [], error: 'No code provided' };
+    }
+    if (deterministic) {
+      luaCode = `math.randomseed(${seedUsed})\n` + luaCode;
+    }
+
+    let suite: TestSuiteV2;
+    if (parallel) {
+      // Each test gets its own isolated session via session manager
+      const sessionResult = sessionManager.createSession({ deterministic, seed: seedUsed });
+      if ('error' in sessionResult) {
+        return { label, passed: false, duration_ms: 0, rewards: [], trajectory: '', results_v2: [], error: sessionResult.error };
+      }
+      const session = sessionResult;
+      try {
+        await sessionManager.ensureInit(session);
+        // runTestFile creates its own isolated GameEngine/Lua VM per call
+        // (parallel isolation is achieved via independent GameEngine instances)
+        suite = await runTestFile(label, luaCode);
+      } finally {
+        sessionManager.destroySession(session.id);
+      }
+    } else {
+      suite = await runTestFile(label, luaCode);
+    }
+
+    const allRewards = suite.results_v2.flatMap(r => r.rewards);
+    const testPassed = suite.failed === 0;
+
+    // Build trajectory JSONL if deterministic
+    let trajectory = '';
+    if (deterministic) {
+      const frames = getTrajectory();
+      trajectory = frames.map(f => JSON.stringify(f)).join('\n');
+    }
+
+    return {
+      label,
+      passed: testPassed,
+      duration_ms: suite.duration_ms,
+      rewards: allRewards,
+      trajectory,
+      results_v2: suite.results_v2,
+    };
+  }
+
+  try {
+    let results: BatchResult[];
+    if (parallel) {
+      results = await Promise.all(tests.map((t: { code?: string; label?: string }) => runSingle(t)));
+    } else {
+      results = [];
+      for (const t of tests) {
+        results.push(await runSingle(t));
+      }
+    }
+
+    const totalPassed = results.filter(r => r.passed).length;
+    const totalFailed = results.length - totalPassed;
+
+    res.json({
+      batch_id: batchId,
+      total: results.length,
+      passed: totalPassed,
+      failed: totalFailed,
+      duration_ms: Date.now() - batchStart,
+      deterministic,
+      seed: seedUsed,
+      results,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * GET /api/test/coverage
+ * Return Lua/Luau file coverage stats for the current project.
+ */
+app.get('/api/test/coverage', (req, res) => {
+  // Walk .lua/.luau files from the clawblox-projects directory and the loaded project
+  const searchDirs = [
+    path.join(__dirname, '../../clawblox-projects'),
+    path.join(__dirname, '../../src'),
+  ];
+
+  const allLuaFiles: string[] = [];
+  const walk = (dir: string) => {
+    if (!fs.existsSync(dir)) return;
+    for (const f of fs.readdirSync(dir)) {
+      const full = path.join(dir, f);
+      try {
+        const stat = fs.statSync(full);
+        if (stat.isDirectory()) {
+          // Skip node_modules and out dirs
+          if (f === 'node_modules' || f === 'out' || f === 'build') continue;
+          walk(full);
+        } else if (f.endsWith('.lua') || f.endsWith('.luau')) {
+          allLuaFiles.push(full);
+        }
+      } catch (_) {}
+    }
+  };
+  for (const dir of searchDirs) walk(dir);
+
+  // Also check test files for references to source files
+  const testDirs = [
+    path.join(__dirname, '../../tests'),
+    path.join(__dirname, '../../clawblox-projects'),
+  ];
+  const testFileContents: string[] = [];
+  const walkTests = (dir: string) => {
+    if (!fs.existsSync(dir)) return;
+    for (const f of fs.readdirSync(dir)) {
+      const full = path.join(dir, f);
+      try {
+        const stat = fs.statSync(full);
+        if (stat.isDirectory()) walkTests(full);
+        else if (f.endsWith('.clawtest.lua')) {
+          testFileContents.push(fs.readFileSync(full, 'utf-8'));
+        }
+      } catch (_) {}
+    }
+  };
+  for (const dir of testDirs) walkTests(dir);
+
+  const testedFiles = new Set<string>();
+  const untested: string[] = [];
+
+  for (const luaFile of allLuaFiles) {
+    const basename = path.basename(luaFile);
+    const nameNoExt = basename.replace(/\.(lua|luau)$/, '');
+
+    // "Tested" = was require()-ed during a test run OR referenced by name in a test file
+    const wasRequired = _coveredFiles.has(basename) || _coveredFiles.has(nameNoExt) || _coveredFiles.has(luaFile);
+    const referencedInTest = testFileContents.some(content =>
+      content.includes(basename) || content.includes(nameNoExt)
+    );
+
+    if (wasRequired || referencedInTest) {
+      testedFiles.add(luaFile);
+    } else {
+      untested.push(luaFile);
+    }
+  }
+
+  const totalFiles = allLuaFiles.length;
+  const testedCount = testedFiles.size;
+  const coveragePct = totalFiles > 0 ? Math.round((testedCount / totalFiles) * 10000) / 100 : 100;
+
+  res.json({
+    total_files: totalFiles,
+    tested_files: testedCount,
+    coverage_pct: coveragePct,
+    untested,
+    covered: Array.from(testedFiles),
+  });
 });
 
 // ============================================================================

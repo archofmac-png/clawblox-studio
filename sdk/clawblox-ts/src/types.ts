@@ -366,3 +366,72 @@ export interface ClawBloxClientOptions {
   baseUrl?: string;
   timeout?: number;
 }
+
+// ── Wave F: Test Framework v2 ─────────────────────────────────────────────
+
+export interface TestResultV2 {
+  suite: string;
+  test: string;
+  passed: boolean;
+  duration_ms: number;
+  error: string | null;
+  rewards: number[];
+}
+
+export interface TestRunV2Response {
+  // Backward compat fields
+  file?: string;
+  results?: Array<{ name: string; passed: boolean; error?: string; duration: number }>;
+  passed: number;
+  failed: number;
+  duration?: number;
+  // v2 fields
+  success: boolean;
+  skipped: number;
+  duration_ms: number;
+  seed?: number;
+  deterministic?: boolean;
+  results_v2: TestResultV2[];
+  rewards_total: number;
+  trajectory_frames: number;
+}
+
+export interface BatchTestEntry {
+  code: string;
+  label?: string;
+}
+
+export interface BatchTestOptions {
+  deterministic?: boolean;
+  seed?: number;
+  parallel?: boolean;
+}
+
+export interface BatchTestResult {
+  label: string;
+  passed: boolean;
+  duration_ms: number;
+  rewards: number[];
+  trajectory: string;
+  results_v2: TestResultV2[];
+  error?: string;
+}
+
+export interface TestRunBatchResponse {
+  batch_id: string;
+  total: number;
+  passed: number;
+  failed: number;
+  duration_ms: number;
+  deterministic: boolean;
+  seed: number;
+  results: BatchTestResult[];
+}
+
+export interface TestCoverageResponse {
+  total_files: number;
+  tested_files: number;
+  coverage_pct: number;
+  untested: string[];
+  covered: string[];
+}
