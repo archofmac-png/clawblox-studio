@@ -213,18 +213,19 @@ char.Parent = workspace
         # For World 2 climbing, adjust directions for the Z-axis layout
         moves = {
             # forward/back move along Z axis (toward/away from goal at Z=60)
-            "forward": "workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, workspace.Character.Velocity.Y, -10)",
-            "back": "workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, workspace.Character.Velocity.Y, 10)",
+            "forward": "workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, workspace.Character.Velocity.Y, -10)\nRunService:Step(0.033)",
+            "back": "workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, workspace.Character.Velocity.Y, 10)\nRunService:Step(0.033)",
             # Jump: apply upward velocity impulse only if near ground
             "jump": """
 local pos = workspace.Character.Position
 if pos.Y < 4 then
     workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, 12, workspace.Character.Velocity.Z)
 end
+RunService:Step(0.033)
 """,
             # Left/right move along X axis
-            "left": "workspace.Character.Velocity = Vector3.new(-10, workspace.Character.Velocity.Y, workspace.Character.Velocity.Z)",
-            "right": "workspace.Character.Velocity = Vector3.new(10, workspace.Character.Velocity.Y, workspace.Character.Velocity.Z)",
+            "left": "workspace.Character.Velocity = Vector3.new(-10, workspace.Character.Velocity.Y, workspace.Character.Velocity.Z)\nRunService:Step(0.033)",
+            "right": "workspace.Character.Velocity = Vector3.new(10, workspace.Character.Velocity.Y, workspace.Character.Velocity.Z)\nRunService:Step(0.033)",
         }
         def _step():
             return self.agent.step(moves.get(action, moves["forward"]))

@@ -148,14 +148,15 @@ character.Parent = workspace
         """Execute action using Velocity API - the primary movement method for RL agents"""
         moves = {
             # Velocity-based movement: preserve Y velocity (gravity), set X/Z
-            "move_forward": "workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, workspace.Character.Velocity.Y, 10)",
-            "move_back": "workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, workspace.Character.Velocity.Y, -10)",
+            "move_forward": "workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, workspace.Character.Velocity.Y, 10)\nRunService:Step(0.033)",
+            "move_back": "workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, workspace.Character.Velocity.Y, -10)\nRunService:Step(0.033)",
             # Jump: apply upward velocity impulse only if near ground (Y < 2)
             "jump": """
 local pos = workspace.Character.Position
 if pos.Y < 2 then
     workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, 15, workspace.Character.Velocity.Z)
 end
+RunService:Step(0.033)
 """,
             # Attack: no movement (reward-only action)
             "attack": "workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, workspace.Character.Velocity.Y, workspace.Character.Velocity.Z)",
