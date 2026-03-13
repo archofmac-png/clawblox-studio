@@ -49,6 +49,86 @@ export function broadcastStructuredEvent(event: WsTypedEvent): void {
 }
 
 // -------------------------------------------------------------------
+// Wave B: Trajectory recorder
+// -------------------------------------------------------------------
+const TRAJECTORY_MAX_FRAMES = 10_000;
+
+export interface SerializedBody {
+  id: string;
+  name: string;
+  position: [number, number, number];
+  velocity: [number, number, number];
+  angularVelocity: [number, number, number];
+  mass: number;
+}
+
+export interface TrajectoryFrame {
+  tick: number;
+  timestamp: number;
+  seed: number;
+  actions: string[];
+  physicsState: { bodies: SerializedBody[] };
+  instanceChanges: Array<{ id: string; property: string; oldValue: unknown; newValue: unknown }>;
+  consoleOutput: Array<{ level: string; message: string }>;
+}
+
+// Ring buffer for trajectory frames
+let _trajectory: TrajectoryFrame[] = [];
+let _currentFrameActions: string[] = [];
+let _currentFrameChanges: Array<{ id: string; property: string; oldValue: unknown; newValue: unknown }> = [];
+let _currentFrameConsole: Array<{ level: string; message: string }> = [];
+
+/** Clear all trajectory frames (called on game start). */
+export function clearTrajectory(): void {
+  _trajectory = [];
+  _currentFrameActions = [];
+  _currentFrameChanges = [];
+  _currentFrameConsole = [];
+}
+
+/** Get all recorded trajectory frames. */
+export function getTrajectory(): TrajectoryFrame[] {
+  return _trajectory;
+}
+
+/** Record a Lua action (code executed) for the current tick. */
+export function recordTrajectoryAction(code: string): void {
+  _currentFrameActions.push(code);
+}
+
+/** Record an instance property change for the current tick. */
+export function recordTrajectoryChange(id: string, property: string, oldValue: unknown, newValue: unknown): void {
+  _currentFrameChanges.push({ id, property, oldValue, newValue });
+}
+
+/** Record console output for the current tick. */
+export function recordTrajectoryConsole(level: string, message: string): void {
+  _currentFrameConsole.push({ level, message });
+}
+
+/** Commit the current in-progress frame to the trajectory buffer. */
+export function commitTrajectoryFrame(tick: number, seed: number, physicsState: TrajectoryFrame['physicsState']): void {
+  const frame: TrajectoryFrame = {
+    tick,
+    timestamp: Date.now(),
+    seed,
+    actions: [..._currentFrameActions],
+    physicsState,
+    instanceChanges: [..._currentFrameChanges],
+    consoleOutput: [..._currentFrameConsole],
+  };
+  // Push and cap at max frames (drop oldest)
+  _trajectory.push(frame);
+  if (_trajectory.length > TRAJECTORY_MAX_FRAMES) {
+    _trajectory.shift();
+  }
+  // Reset current-frame buffers
+  _currentFrameActions = [];
+  _currentFrameChanges = [];
+  _currentFrameConsole = [];
+}
+
+// -------------------------------------------------------------------
 // Wave A: Global physics tick counter (monotonically increasing)
 // -------------------------------------------------------------------
 let _physicsTick = 0;
@@ -898,6 +978,21 @@ export class GameEngine {
   /** Timestamp (ms) when the current game session started. */
   private startedAt = 0;
 
+  // ── Wave B: Deterministic mode ────────────────────────────────────────
+  /** Whether deterministic mode is active. */
+  private _deterministic = false;
+
+  /** Get deterministic mode flag. */
+  isDeterministic(): boolean { return this._deterministic; }
+
+  /** Set deterministic mode + seed. */
+  setDeterministicMode(enabled: boolean, seed?: number): void {
+    this._deterministic = enabled;
+    if (enabled) {
+      this.seed = seed ?? Math.floor(Math.random() * 2 ** 31);
+    }
+  }
+
   // DataStore snapshot for observability
   private _dataStoreSnapshot: Record<string, Record<string, unknown>> = {};
 
@@ -995,6 +1090,10 @@ export class GameEngine {
           oldValue,
           newValue: storedValue,
         });
+        // Wave B: Record instance change for trajectory
+        if (typeof storedValue !== 'function') {
+          recordTrajectoryChange(id, key, oldValue, storedValue);
+        }
       }
       // Wave 4: Sync Part position/size changes to physics world
       const inst = this.registry.get(id);
@@ -1087,6 +1186,8 @@ export class GameEngine {
         traceback: null,
         tick: getPhysicsTick(),
       });
+      // Wave B: Record for trajectory
+      recordTrajectoryConsole(level, msg);
     });
 
     // Wave 4: Physics callbacks
@@ -1185,7 +1286,7 @@ export class GameEngine {
     } catch (_) { return []; }
   }
 
-  async start(): Promise<GameState> {
+  async start(opts?: { deterministic?: boolean; seed?: number }): Promise<GameState & { seed: number; deterministic: boolean }> {
     if (this.engine) {
       try { this.engine.global.close(); } catch (_) {}
       this.engine = null;
@@ -1197,17 +1298,32 @@ export class GameEngine {
     liveState.reset();
     broadcastEvent({ event: 'game_reset' });
     // Wave A: Generate determinism seed and record start timestamp
-    this.seed = Math.floor(Math.random() * 2 ** 31);
+    this._deterministic = opts?.deterministic ?? false;
+    if (this._deterministic) {
+      this.seed = opts?.seed ?? Math.floor(Math.random() * 2 ** 31);
+    } else {
+      this.seed = Math.floor(Math.random() * 2 ** 31);
+    }
     this.startedAt = Date.now();
     this._dataStoreSnapshot = {};
     resetPhysicsTick();
+    // Wave B: Clear trajectory on every start
+    clearTrajectory();
+    // Wave B: Lock physics to fixed timestep in deterministic mode
+    physicsWorld.setDeterministicMode(this._deterministic);
     await this.initLua();
+    // Wave B: Seed Lua RNG when deterministic
+    if (this._deterministic) {
+      try {
+        await this.engine!.doString(`math.randomseed(${this.seed})`);
+      } catch (_) {}
+    }
     this.status = 'running';
     this.startTime = Date.now();
     this.loadedProject = undefined;
     this.scriptCount = 0;
     this.chatLog = [];
-    return this.getState();
+    return { ...this.getState(), seed: this.seed, deterministic: this._deterministic };
   }
 
   stop(): GameState {
@@ -1216,8 +1332,18 @@ export class GameEngine {
     return this.getState();
   }
 
-  async execute(code: string): Promise<ScriptResult> {
+  async execute(code: string, opts?: { deterministic?: boolean; seed?: number }): Promise<ScriptResult & { seed?: number; deterministic?: boolean }> {
     await this.initLua();
+    // Wave B: Handle per-execute deterministic mode (overrides game-level setting)
+    const execDeterministic = opts?.deterministic ?? this._deterministic;
+    const execSeed = opts?.seed ?? this.seed;
+    if (execDeterministic) {
+      try {
+        await this.engine!.doString(`math.randomseed(${execSeed})`);
+      } catch (_) {}
+    }
+    // Wave B: Record this action for trajectory
+    recordTrajectoryAction(code);
     try {
       // Wrap user script in table.pack() to capture ALL return values
       const wrappedCode = `
@@ -1262,7 +1388,12 @@ return __out
         returns.push(result);
       }
 
-      return { success: true, returns, output };
+      // Wave B: Commit trajectory frame after each execute
+      const physBodies = physicsWorld.getSerializedBodies();
+      commitTrajectoryFrame(getPhysicsTick(), execSeed, { bodies: physBodies });
+      const resultPayload: ScriptResult & { seed?: number; deterministic?: boolean } = { success: true, returns, output };
+      if (execDeterministic) { resultPayload.seed = execSeed; resultPayload.deterministic = true; }
+      return resultPayload;
     } catch (err: any) {
       const output = await this.flushOutput();
       return { success: false, error: err.message, output };
@@ -1378,7 +1509,7 @@ return __out
         timestamp: Date.now(),
         tick: getPhysicsTick(),
         seed: this.seed,
-        deterministic: false,
+        deterministic: this._deterministic,
       },
     };
   }

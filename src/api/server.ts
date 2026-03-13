@@ -8,7 +8,7 @@ import archiver from 'archiver';
 import { WebSocketServer, WebSocket } from 'ws';
 
 // Import game engine
-import { gameEngine, setBroadcastFunction, broadcastStructuredEvent, incrementPhysicsTick } from '../services/game-engine';
+import { gameEngine, setBroadcastFunction, broadcastStructuredEvent, incrementPhysicsTick, getTrajectory, type TrajectoryFrame } from '../services/game-engine';
 import { runTestFile } from '../services/test-runner.js';
 
 // Wave A: Structured observability
@@ -702,11 +702,19 @@ app.get('/api/projects/:id/git/status', async (req, res) => {
 // Start game simulation
 app.post('/api/game/start', async (req, res) => {
   try {
-    const state = await gameEngine.start();
+    // Wave B: Deterministic mode support (?deterministic=true&seed=12345 or body)
+    const detParam = (req.query.deterministic ?? req.body?.deterministic);
+    const deterministic = detParam === 'true' || detParam === true;
+    const seedParam = req.query.seed ?? req.body?.seed;
+    const seed = seedParam !== undefined ? Number(seedParam) : undefined;
+
+    const state = await gameEngine.start({ deterministic, seed });
     res.json({ 
       success: true, 
       status: state.status,
-      message: 'Game simulation started'
+      message: 'Game simulation started',
+      seed: state.seed,
+      deterministic: state.deterministic,
     });
   } catch (err: any) {
     res.status(400).json({ success: false, error: err.message });
@@ -745,7 +753,14 @@ app.post('/api/game/execute', async (req, res) => {
   }
   
   try {
-    const result = await gameEngine.execute(script);
+    // Wave B: Deterministic mode support
+    const detParam = (req.query.deterministic ?? req.body?.deterministic);
+    const deterministic = detParam === 'true' || detParam === true;
+    const seedParam = req.query.seed ?? req.body?.seed;
+    const seed = seedParam !== undefined ? Number(seedParam) : undefined;
+    const opts = (deterministic || seed !== undefined) ? { deterministic, seed } : undefined;
+
+    const result = await gameEngine.execute(script, opts);
     res.json(result);
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
@@ -963,6 +978,7 @@ app.post('/api/game/simulate-player', async (req, res) => {
  * POST /api/test/run
  * Run a .clawtest.lua test file by path or inline code.
  * Body: { filePath?: string, code?: string }
+ * Wave B: ?deterministic=true&seed=N seeds Lua RNG before tests run.
  */
 app.post('/api/test/run', async (req, res) => {
   const { filePath, code } = req.body;
@@ -980,8 +996,21 @@ app.post('/api/test/run', async (req, res) => {
   if (!luaCode) return res.status(400).json({ error: 'Provide filePath or code' });
 
   try {
+    // Wave B: Deterministic mode — seed RNG before running tests
+    const detParam = (req.query.deterministic ?? req.body?.deterministic);
+    const deterministic = detParam === 'true' || detParam === true;
+    const seedParam = req.query.seed ?? req.body?.seed;
+    let seedUsed: number | undefined;
+    if (deterministic) {
+      seedUsed = seedParam !== undefined ? Number(seedParam) : Math.floor(Math.random() * 2 ** 31);
+      // Inject math.randomseed before the test code
+      luaCode = `math.randomseed(${seedUsed})\n` + luaCode;
+    }
+
     const suite = await runTestFile(resolvedPath, luaCode);
-    res.json(suite);
+    const resp: any = suite;
+    if (deterministic) { resp.deterministic = true; resp.seed = seedUsed; }
+    res.json(resp);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -2057,6 +2086,96 @@ app.get('/api/observe/gui-json', (req, res) => {
 
 // ============================================================
 // End Wave A
+// ============================================================
+
+// ============================================================
+// Wave B: Simulation Endpoints
+// ============================================================
+
+/**
+ * GET /api/simulation/export_trajectory
+ * Returns JSONL (one JSON object per line) of all recorded frames since game start.
+ * Frame shape: { tick, timestamp, seed, actions, physicsState, instanceChanges, consoleOutput }
+ */
+app.get('/api/simulation/export_trajectory', (req, res) => {
+  try {
+    const frames = getTrajectory();
+    // JSONL: one JSON object per line
+    const jsonl = frames.map(f => JSON.stringify(f)).join('\n');
+    res.setHeader('Content-Type', 'application/x-ndjson');
+    res.send(jsonl || '');
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/simulation/replay
+ * Accepts a trajectory JSONL (array of frames or raw JSONL string).
+ * Replays each frame's Lua actions with the same seed and fixed timestep.
+ * Returns { replayed: N, finalState: <observe/state output> }
+ *
+ * Body: { frames: TrajectoryFrame[] } OR raw JSONL text (Content-Type: application/x-ndjson)
+ */
+app.post('/api/simulation/replay', async (req, res) => {
+  try {
+    let frames: TrajectoryFrame[] = [];
+
+    // Accept both JSON body { frames: [...] } and raw JSONL
+    const ct = req.headers['content-type'] ?? '';
+    if (ct.includes('ndjson') || ct.includes('x-ndjson') || ct.includes('text/plain')) {
+      // Raw JSONL
+      const raw = req.body as string;
+      const lines = (typeof raw === 'string' ? raw : JSON.stringify(raw)).split('\n').filter(l => l.trim());
+      frames = lines.map(l => JSON.parse(l) as TrajectoryFrame);
+    } else if (Array.isArray(req.body)) {
+      frames = req.body as TrajectoryFrame[];
+    } else if (req.body && Array.isArray(req.body.frames)) {
+      frames = req.body.frames as TrajectoryFrame[];
+    } else {
+      return res.status(400).json({ error: 'Provide frames as JSON array or JSONL body. Body: { frames: [...] } or raw JSONL.' });
+    }
+
+    if (frames.length === 0) {
+      return res.status(400).json({ error: 'No frames provided' });
+    }
+
+    // Use seed from first frame (or fallback)
+    const replaySeed = frames[0]?.seed ?? Math.floor(Math.random() * 2 ** 31);
+
+    // Start a fresh deterministic game session
+    await gameEngine.start({ deterministic: true, seed: replaySeed });
+
+    let replayed = 0;
+    for (const frame of frames) {
+      const frameSeed = frame.seed ?? replaySeed;
+      for (const action of (frame.actions ?? [])) {
+        if (action && typeof action === 'string' && action.trim().length > 0) {
+          await gameEngine.execute(action, { deterministic: true, seed: frameSeed });
+        }
+      }
+      replayed++;
+    }
+
+    // Build final state
+    const raw = gameEngine.getObserveStateRaw();
+    const { buildObserveState } = await import('../services/observability.js');
+    const finalState = buildObserveState(
+      raw.instances,
+      raw.physicsBodies,
+      raw.dataStore,
+      raw.players,
+      raw.metadata,
+    );
+
+    res.json({ replayed, seed: replaySeed, finalState });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============================================================
+// End Wave B
 // ============================================================
 
 app.listen(PORT, () => {

@@ -41,6 +41,17 @@ export class PhysicsWorld {
   /** Map from instance id → InstanceRecord reference */
   private instances: Map<string, InstanceRecord> = new Map();
 
+  // Wave B: Deterministic fixed timestep mode
+  private _deterministic = false;
+  private readonly FIXED_DT = 1 / 60;
+
+  /** Enable or disable deterministic fixed-timestep mode. */
+  setDeterministicMode(enabled: boolean): void {
+    this._deterministic = enabled;
+  }
+
+  isDeterministic(): boolean { return this._deterministic; }
+
   constructor() {
     this.world = new CANNON.World({
       gravity: new CANNON.Vec3(0, -196.2, 0), // Roblox uses ~196.2 studs/s²
@@ -218,9 +229,11 @@ export class PhysicsWorld {
 
   /**
    * Advance the physics simulation by dt seconds.
+   * In deterministic mode, always uses the fixed 1/60s timestep.
    */
   step(dt: number = 1 / 60): void {
-    this.world.step(dt);
+    const effectiveDt = this._deterministic ? this.FIXED_DT : dt;
+    this.world.step(effectiveDt);
   }
 
   /**
