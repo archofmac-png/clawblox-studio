@@ -213,23 +213,36 @@ char.Parent = workspace
     
     def move(self, action: str):
         """Execute action with retry and session recovery - using Velocity API"""
-        # Velocity-based movement - preserve Y velocity (gravity), set X/Z
-        # Same approach as World 1 which was confirmed working
-        moves = {
-            # forward/back move along Z axis - but goal is also at Z=60 so mostly vertical
-            # Preserve Y velocity for gravity!
-            # All actions: apply movement then step physics inline (HTTP physics/step has session sync issues)
-            "forward": "workspace.Character.AssemblyLinearVelocity = Vector3.new(workspace.Character.AssemblyLinearVelocity.X, workspace.Character.AssemblyLinearVelocity.Y, -10); _cb_physics_step(0.05)",
-            "back": "workspace.Character.AssemblyLinearVelocity = Vector3.new(workspace.Character.AssemblyLinearVelocity.X, workspace.Character.AssemblyLinearVelocity.Y, 10); _cb_physics_step(0.05)",
-            # Jump: ApplyImpulse then step physics immediately
-            "jump": "workspace.Character:ApplyImpulse(Vector3.new(0, 520, 0)); _cb_physics_step(0.05)",
-            # Lateral movement: AssemblyLinearVelocity preserves Y
-            "left": "workspace.Character.AssemblyLinearVelocity = Vector3.new(-10, workspace.Character.AssemblyLinearVelocity.Y, workspace.Character.AssemblyLinearVelocity.Z); _cb_physics_step(0.05)",
-            "right": "workspace.Character.AssemblyLinearVelocity = Vector3.new(10, workspace.Character.AssemblyLinearVelocity.Y, workspace.Character.AssemblyLinearVelocity.Z); _cb_physics_step(0.05)",
+        # Each action is two separate step() calls: set velocity/impulse, then step physics.
+        # Combining them in one Lua string (semicolon-joined) doesn't work — impulse is
+        # applied before the physics body's velocity state is fully synced.
+        move_scripts = {
+            "forward": (
+                "workspace.Character.AssemblyLinearVelocity = Vector3.new(workspace.Character.AssemblyLinearVelocity.X, workspace.Character.AssemblyLinearVelocity.Y, -10)",
+                "_cb_physics_step(0.05)",
+            ),
+            "back": (
+                "workspace.Character.AssemblyLinearVelocity = Vector3.new(workspace.Character.AssemblyLinearVelocity.X, workspace.Character.AssemblyLinearVelocity.Y, 10)",
+                "_cb_physics_step(0.05)",
+            ),
+            "jump": (
+                "workspace.Character:ApplyImpulse(Vector3.new(0, 520, 0))",
+                "_cb_physics_step(0.05)",
+            ),
+            "left": (
+                "workspace.Character.AssemblyLinearVelocity = Vector3.new(-10, workspace.Character.AssemblyLinearVelocity.Y, workspace.Character.AssemblyLinearVelocity.Z)",
+                "_cb_physics_step(0.05)",
+            ),
+            "right": (
+                "workspace.Character.AssemblyLinearVelocity = Vector3.new(10, workspace.Character.AssemblyLinearVelocity.Y, workspace.Character.AssemblyLinearVelocity.Z)",
+                "_cb_physics_step(0.05)",
+            ),
         }
+        scripts = move_scripts.get(action, move_scripts["forward"])
         def _step():
-            # physics is stepped inline in each Lua action string
-            result = self.agent.step(moves.get(action, moves["forward"]))
+            # Two separate calls: apply, then step physics
+            self.agent.step(scripts[0])
+            result = self.agent.step(scripts[1])
             return result
         try:
             with_retry(_step)
