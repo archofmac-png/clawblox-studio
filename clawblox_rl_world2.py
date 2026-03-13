@@ -46,9 +46,9 @@ REWARD_STEP = -0.1
 
 # World 2 Layout: Vertical climbing challenge
 # Goal at top platform (inst_47 at Y=15.5, Z=60)
-GOAL_POSITION = {"X": 0, "Y": 15.5, "Z": 60}
-GOAL_THRESHOLD = 8.0  # Distance to consider goal reached
-SPAWN_POSITION = {"X": 0, "Y": 4, "Z": 60}  # Start in air (Y=4 so bottom is at Y=2, above ground at Y=0.5)
+GOAL_POSITION = {"X": 0, "Y": 20, "Z": 60}
+GOAL_THRESHOLD = 5.0  # Distance to consider goal reached
+SPAWN_POSITION = {"X": 0, "Y": 2, "Z": 60}  # Start above ground (Y=0.25 + char half-height)
 
 
 @dataclass
@@ -117,47 +117,47 @@ ground.Anchored = true
 ground.BrickColor = BrickColor.new("Dark stone gray")
 ground.Parent = workspace
 
--- Platform 1 - Y=3
+-- Platform 1 - Y=4, offset X=-5 (staircase left)
 local p1 = Instance.new("Part")
 p1.Name = "Platform1"
-p1.Size = Vector3.new(10, 0.5, 10)
-p1.Position = Vector3.new(0, 3, 60)
+p1.Size = Vector3.new(8, 0.5, 8)
+p1.Position = Vector3.new(-5, 4, 60)
 p1.Anchored = true
 p1.BrickColor = BrickColor.new("Stone gray")
 p1.Parent = workspace
 
--- Platform 2 - Y=6
+-- Platform 2 - Y=8, offset X=5 (staircase right)
 local p2 = Instance.new("Part")
 p2.Name = "Platform2"
 p2.Size = Vector3.new(8, 0.5, 8)
-p2.Position = Vector3.new(0, 6, 60)
+p2.Position = Vector3.new(5, 8, 60)
 p2.Anchored = true
 p2.BrickColor = BrickColor.new("Dark green")
 p2.Parent = workspace
 
--- Platform 3 - Y=9
+-- Platform 3 - Y=12, offset X=-5 (staircase left)
 local p3 = Instance.new("Part")
 p3.Name = "Platform3"
-p3.Size = Vector3.new(6, 0.5, 6)
-p3.Position = Vector3.new(0, 9, 60)
+p3.Size = Vector3.new(8, 0.5, 8)
+p3.Position = Vector3.new(-5, 12, 60)
 p3.Anchored = true
 p3.BrickColor = BrickColor.new("Cyan")
 p3.Parent = workspace
 
--- Platform 4 - Y=12
+-- Platform 4 - Y=16, center
 local p4 = Instance.new("Part")
 p4.Name = "Platform4"
-p4.Size = Vector3.new(4, 0.5, 4)
-p4.Position = Vector3.new(0, 12, 60)
+p4.Size = Vector3.new(8, 0.5, 8)
+p4.Position = Vector3.new(0, 16, 60)
 p4.Anchored = true
 p4.BrickColor = BrickColor.new("Magenta")
 p4.Parent = workspace
 
--- Goal Platform - Y=15.5
+-- Goal Platform - Y=20
 local goal = Instance.new("Part")
 goal.Name = "GoalPlatform"
-goal.Size = Vector3.new(30, 1, 20)
-goal.Position = Vector3.new(0, 15.5, 60)
+goal.Size = Vector3.new(12, 1, 12)
+goal.Position = Vector3.new(0, 20, 60)
 goal.Anchored = true
 goal.BrickColor = BrickColor.new("Bright yellow")
 goal.Parent = workspace
@@ -166,7 +166,7 @@ goal.Parent = workspace
 local goalPart = Instance.new("Part")
 goalPart.Name = "Goal"
 goalPart.Size = Vector3.new(3, 3, 3)
-goalPart.Position = Vector3.new(0, 17.5, 60)
+goalPart.Position = Vector3.new(0, 22, 60)
 goalPart.Anchored = true
 goalPart.BrickColor = BrickColor.new("Bright red")
 goalPart.Parent = workspace
@@ -175,7 +175,7 @@ goalPart.Parent = workspace
 local char = Instance.new("Part")
 char.Name = "Character"
 char.Size = Vector3.new(2, 4, 1)
-char.Position = Vector3.new(0, 4, 60)
+char.Position = Vector3.new(0, 2, 60)
 char.Anchored = false
 char.Parent = workspace
 """
@@ -220,12 +220,9 @@ char.Parent = workspace
             # Preserve Y velocity for gravity!
             "forward": "workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, workspace.Character.Velocity.Y, -10)",
             "back": "workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, workspace.Character.Velocity.Y, 10)",
-            # Jump: apply upward velocity impulse only if near ground (same as World 1)
+            # Jump: apply upward velocity impulse — allow from any platform height
             "jump": """
-local pos = workspace.Character.Position
-if pos.Y < 3 then
-    workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, 15, workspace.Character.Velocity.Z)
-end
+workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, 20, workspace.Character.Velocity.Z)
 """,
             # Left/right move along X axis - preserve Y velocity
             "left": "workspace.Character.Velocity = Vector3.new(-10, workspace.Character.Velocity.Y, workspace.Character.Velocity.Z)",
@@ -322,12 +319,16 @@ end
                 current_y = pos.get("Y", 0)
                 
                 if current_y < GOAL_POSITION["Y"] - 2:
-                    # Still climbing - favor jump
-                    act = "jump" if random.random() < 0.4 else "forward"
-                elif current_z > GOAL_POSITION["Z"]:
-                    act = "back"
-                elif current_z < GOAL_POSITION["Z"]:
-                    act = "forward"
+                    # Still climbing — favor jump + lateral movement (staircase is X-offset)
+                    r = random.random()
+                    if r < 0.4:
+                        act = "jump"
+                    elif r < 0.6:
+                        act = "left"
+                    elif r < 0.8:
+                        act = "right"
+                    else:
+                        act = random.choice(["forward", "back"])
                 else:
                     act = "jump"
             
