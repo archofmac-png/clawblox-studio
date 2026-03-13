@@ -2619,6 +2619,28 @@ app.post('/api/session/:id/reset', async (req, res) => {
 });
 
 /**
+ * POST /api/session/:id/physics/reset-part
+ * Teleport a specific Part to a position and zero its velocity.
+ * Body: { instance_id: string, x: number, y: number, z: number }
+ * Used by RL agents for clean episode resets without losing physics registration.
+ */
+app.post('/api/session/:id/physics/reset-part', async (req, res) => {
+  const session = sessionManager.getSession(req.params.id);
+  if (!session) return res.status(404).json({ error: 'Session not found' });
+
+  const { instance_id, x = 0, y = 0, z = 0 } = req.body ?? {};
+  if (!instance_id) return res.status(400).json({ error: 'instance_id is required' });
+
+  try {
+    await sessionManager.ensureInit(session);
+    session.engine.resetPart(instance_id, { x: Number(x), y: Number(y), z: Number(z) });
+    res.json({ ok: true, instance_id, position: { x, y, z } });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
  * POST /api/session/:id/start
  * Marks this session as running and (re)initializes the engine.
  */

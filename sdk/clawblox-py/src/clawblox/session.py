@@ -138,6 +138,21 @@ class ClawBloxSession:
         """
         return self.client.physics_step(self.session_id, dt)
 
+    def reset_part(self, instance_id: str, x: float = 0, y: float = 0, z: float = 0) -> dict:
+        """Teleport a Part to a position and zero its velocity (clean episode reset).
+
+        Args:
+            instance_id: The instance id (e.g. 'inst_43') from the state
+            x, y, z: Target position
+
+        Returns:
+            dict with ok, instance_id, position
+        """
+        return self.client._post(
+            f'/api/session/{self.session_id}/physics/reset-part',
+            {'instance_id': instance_id, 'x': x, 'y': y, 'z': z}
+        )
+
     def on(self, event_type: str, handler: Callable) -> None:
         """Subscribe to WebSocket events for this session.
 

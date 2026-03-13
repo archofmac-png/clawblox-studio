@@ -48,7 +48,7 @@ REWARD_STEP = -0.1
 # Goal at top platform (inst_47 at Y=15.5, Z=60)
 GOAL_POSITION = {"X": 0, "Y": 15.5, "Z": 60}
 GOAL_THRESHOLD = 8.0  # Distance to consider goal reached
-SPAWN_POSITION = {"X": 0, "Y": 2, "Z": 60}  # Start at base
+SPAWN_POSITION = {"X": 0, "Y": 4, "Z": 60}  # Start in air (Y=4 so bottom is at Y=2, above ground at Y=0.5)
 
 
 @dataclass
@@ -175,7 +175,7 @@ goalPart.Parent = workspace
 local char = Instance.new("Part")
 char.Name = "Character"
 char.Size = Vector3.new(2, 4, 1)
-char.Position = Vector3.new(0, 2, 60)
+char.Position = Vector3.new(0, 4, 60)
 char.Anchored = false
 char.Parent = workspace
 """
@@ -201,31 +201,30 @@ char.Parent = workspace
             name = inst.get('Name', '')
             if name in ['Character', 'Part']:
                 props = inst.get('properties', {})
-                pos_str = props.get('Position', '')
-                if isinstance(pos_str, str) and 'Vector3' in pos_str:
-                    match = re.search(r'Vector3\(([-\d.]+),([-\d.]+),([-\d.]+)\)', pos_str)
+                pos = props.get('Position')
+                # Position can be a dict {'X': ..., 'Y': ..., 'Z': ...} or a string
+                if isinstance(pos, dict):
+                    return {'X': float(pos.get('X', 0)), 'Y': float(pos.get('Y', 0)), 'Z': float(pos.get('Z', 0))}
+                elif isinstance(pos, str) and 'Vector3' in pos:
+                    match = re.search(r'Vector3\(([-\d.]+),([-\d.]+),([-\d.]+)\)', pos)
                     if match:
                         return {'X': float(match.group(1)), 'Y': float(match.group(2)), 'Z': float(match.group(3))}
         return None
     
     def move(self, action: str):
         """Execute action with retry and session recovery - using Velocity API"""
-        # Velocity-based movement: preserve Y velocity (gravity), set X/Z
+        # Velocity-based movement - use explicit values instead of trying to preserve
+        # because Velocity property isn't stored in state (can't read back)
         # For World 2 climbing, adjust directions for the Z-axis layout
         moves = {
             # forward/back move along Z axis (toward/away from goal at Z=60)
-            "forward": "workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, workspace.Character.Velocity.Y, -10)",
-            "back": "workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, workspace.Character.Velocity.Y, 10)",
-            # Jump: apply upward velocity impulse only if near ground
-            "jump": """
-local pos = workspace.Character.Position
-if pos.Y < 4 then
-    workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, 12, workspace.Character.Velocity.Z)
-end
-""",
+            "forward": "workspace.Character.Velocity = Vector3.new(0, 0, -15)",
+            "back": "workspace.Character.Velocity = Vector3.new(0, 0, 15)",
+            # Jump: apply upward velocity - always apply, let physics handle air control
+            "jump": "workspace.Character.Velocity = Vector3.new(0, 15, 0)",
             # Left/right move along X axis
-            "left": "workspace.Character.Velocity = Vector3.new(-10, workspace.Character.Velocity.Y, workspace.Character.Velocity.Z)",
-            "right": "workspace.Character.Velocity = Vector3.new(10, workspace.Character.Velocity.Y, workspace.Character.Velocity.Z)",
+            "left": "workspace.Character.Velocity = Vector3.new(-15, 0, 0)",
+            "right": "workspace.Character.Velocity = Vector3.new(15, 0, 0)",
         }
         def _step():
             result = self.agent.step(moves.get(action, moves["forward"]))
@@ -246,7 +245,7 @@ end
     def reset_agent(self):
         """Reset to spawn"""
         def _reset():
-            return self.agent.step("workspace.Character.Position = Vector3.new(0, 2, 60)")
+            return self.agent.step("workspace.Character.Position = Vector3.new(0, 4, 60)")
         try:
             with_retry(_reset)
         except:

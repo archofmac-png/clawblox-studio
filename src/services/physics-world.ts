@@ -99,8 +99,33 @@ export class PhysicsWorld {
     // Set body type for cannon-es
     body.type = isAnchored ? CANNON.Body.STATIC : CANNON.Body.DYNAMIC;
 
+    // For dynamic bodies: disable sleep and damping so velocity is always applied
+    if (!isAnchored) {
+      body.allowSleep = false;
+      body.linearDamping = 0;
+      body.angularDamping = 0;
+    }
+
     this.world.addBody(body);
     this.bodies.set(instance.id, body);
+  }
+
+  /**
+   * Teleport a Part AND zero its velocity (for episode resets).
+   * Use this instead of syncPartPosition when you want a clean spawn.
+   */
+  resetPart(id: string, pos: Vector3): void {
+    const body = this.bodies.get(id);
+    if (!body) return;
+    body.position.set(pos.x, pos.y, pos.z);
+    body.velocity.set(0, 0, 0);
+    body.angularVelocity.set(0, 0, 0);
+    body.wakeUp();
+    // Sync back to registry
+    const instance = this.instances.get(id);
+    if (instance) {
+      instance.properties['Position'] = { X: pos.x, Y: pos.y, Z: pos.z };
+    }
   }
 
   /**
@@ -128,12 +153,10 @@ export class PhysicsWorld {
     const pos = this.extractVector3(instance.properties['Position']);
     if (pos) {
       body.position.set(pos.x, pos.y, pos.z);
-      // For non-anchored (dynamic) parts, zero velocity to implement teleport behavior.
-      // This matches Roblox Studio where setting Position on a non-anchored part teleports it.
-      if (body.type === CANNON.Body.DYNAMIC) {
-        body.velocity.set(0, 0, 0);
-        body.angularVelocity.set(0, 0, 0);
-      }
+      // Only zero velocity if this is an explicit teleport (position manually set)
+      // AND the body was previously sleeping / at rest. We do NOT zero velocity here
+      // because RL agents set Position for resets and rely on Velocity being set right after.
+      // Instead just wake the body so CANNON processes it next step.
       body.wakeUp();
     }
 

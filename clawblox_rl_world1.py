@@ -69,7 +69,7 @@ class ClawBloxRLTrainer:
         
         self.agent = ClawBloxAgent(self.client, seed=seed, deterministic=True)
         self.agent.reset()
-                self.spawn_world()
+        self.spawn_world()
         
         self.episode_results: List[EpisodeResult] = []
         self.peak_ram = 0

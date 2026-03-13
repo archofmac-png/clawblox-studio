@@ -619,6 +619,11 @@ return __out
     this.physics.syncAllPositions();
   }
 
+  /** Teleport a Part to pos and zero its velocity (clean episode reset). */
+  resetPart(instanceId: string, pos: { x: number; y: number; z: number }): void {
+    this.physics.resetPart(instanceId, pos);
+  }
+
   /** Deliver a cross-session message — sets a global then calls receive */
   async deliverMessageWithData(event: string, data: unknown): Promise<void> {
     if (!this.luaEngine) return;
