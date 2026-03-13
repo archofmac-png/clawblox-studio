@@ -199,6 +199,26 @@ export class PhysicsWorld {
   }
 
   /**
+   * Apply an impulse to a body (Roblox ApplyImpulse shim).
+   * Equivalent to adding to velocity: dv = impulse / mass.
+   */
+  applyImpulse(id: string, impulse: Vector3): void {
+    const body = this.bodies.get(id);
+    if (!body || body.type !== CANNON.Body.DYNAMIC) return;
+    // CANNON applyImpulse(impulse, worldPoint) — use body center
+    body.applyImpulse(new CANNON.Vec3(impulse.x, impulse.y, impulse.z), new CANNON.Vec3(0, 0, 0));
+    body.wakeUp();
+  }
+
+  /**
+   * Get the mass of a body (Roblox GetMass shim).
+   */
+  getMass(id: string): number {
+    const body = this.bodies.get(id);
+    return body ? body.mass : 0;
+  }
+
+  /**
    * Get position of a body for reading back to Lua.
    * Returns the CANNON body's live position (post-physics), not the registry snapshot.
    */

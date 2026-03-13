@@ -218,15 +218,13 @@ char.Parent = workspace
         moves = {
             # forward/back move along Z axis - but goal is also at Z=60 so mostly vertical
             # Preserve Y velocity for gravity!
-            "forward": "workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, workspace.Character.Velocity.Y, -10)",
-            "back": "workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, workspace.Character.Velocity.Y, 10)",
-            # Jump: apply upward velocity impulse — allow from any platform height
-            "jump": """
-workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, 20, workspace.Character.Velocity.Z)
-""",
-            # Left/right move along X axis - preserve Y velocity
-            "left": "workspace.Character.Velocity = Vector3.new(-10, workspace.Character.Velocity.Y, workspace.Character.Velocity.Z)",
-            "right": "workspace.Character.Velocity = Vector3.new(10, workspace.Character.Velocity.Y, workspace.Character.Velocity.Z)",
+            "forward": "workspace.Character.AssemblyLinearVelocity = Vector3.new(workspace.Character.AssemblyLinearVelocity.X, workspace.Character.AssemblyLinearVelocity.Y, -10)",
+            "back": "workspace.Character.AssemblyLinearVelocity = Vector3.new(workspace.Character.AssemblyLinearVelocity.X, workspace.Character.AssemblyLinearVelocity.Y, 10)",
+            # Jump: ApplyImpulse (Roblox-style, mass-aware) — does not overwrite Y velocity
+            "jump": "workspace.Character:ApplyImpulse(Vector3.new(0, 520, 0))",
+            # Lateral movement: AssemblyLinearVelocity preserves Y (Roblox API)
+            "left": "workspace.Character.AssemblyLinearVelocity = Vector3.new(-10, workspace.Character.AssemblyLinearVelocity.Y, workspace.Character.AssemblyLinearVelocity.Z)",
+            "right": "workspace.Character.AssemblyLinearVelocity = Vector3.new(10, workspace.Character.AssemblyLinearVelocity.Y, workspace.Character.AssemblyLinearVelocity.Z)",
         }
         def _step():
             result = self.agent.step(moves.get(action, moves["forward"]))
@@ -371,7 +369,7 @@ workspace.Character.Velocity = Vector3.new(workspace.Character.Velocity.X, 20, w
             
             # Print progress
             marker = "✓" if result.goal_reached else " "
-            print(f"Ep {ep+1:2d}: steps={result.steps:3d}, reward={result.goal_reached:6.2f}, goal={marker}")
+            print(f"Ep {ep+1:2d}: steps={result.steps:3d}, reward={result.total_reward:6.2f}, goal={marker}")
             
             # Periodic GC
             if ep % 10 == 0:

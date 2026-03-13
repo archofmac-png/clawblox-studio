@@ -554,11 +554,16 @@ local function newInstance(className, name)
   local _props = { Name = instName, ClassName = className }
   setmetatable(inst, {
     __newindex = function(t, k, v)
-      -- Don't store Position/Size/CFrame in Lua table - fetch from registry instead
+      -- Don't store Position/Size/CFrame/Velocity in Lua table - fetch from registry instead
       if k == "Position" or k == "Size" or k == "CFrame" then
         -- Pass Vector3/CFrame tables directly (not stringified) for physics sync
         _cb_setprop(id, k, v)
         return -- Don't rawset - let __index fetch from registry
+      end
+      -- AssemblyLinearVelocity is a Roblox alias for Velocity
+      if k == "AssemblyLinearVelocity" then
+        _cb_setprop(id, "Velocity", v)
+        return
       end
       rawset(t, k, v)
       if k == "Name" then
@@ -601,7 +606,7 @@ local function newInstance(className, name)
       if k == "Position" then
         local pos = _cb_getprop(id, "Position")
         if pos then return Vector3.new(pos.X or pos.x or 0, pos.Y or pos.y or 0, pos.Z or pos.z or 0) end
-      elseif k == "Velocity" then
+      elseif k == "Velocity" or k == "AssemblyLinearVelocity" then
         local vel = _cb_getprop(id, "Velocity")
         if vel then return Vector3.new(vel.X or vel.x or 0, vel.Y or vel.y or 0, vel.Z or vel.z or 0) end
       end
@@ -642,6 +647,16 @@ local function newInstance(className, name)
 
   function inst:IsA(cn)
     return self.ClassName == cn
+  end
+
+  -- Roblox BasePart:ApplyImpulse(Vector3) shim
+  function inst:ApplyImpulse(impulse)
+    _cb_impulse(id, impulse.X or impulse.x or 0, impulse.Y or impulse.y or 0, impulse.Z or impulse.z or 0)
+  end
+
+  -- Roblox BasePart:GetMass() shim
+  function inst:GetMass()
+    return _cb_getmass(id)
   end
 
   function inst:Destroy()
@@ -1438,6 +1453,16 @@ export class GameEngine {
       }
       
       return inst.properties[key] ?? null;
+    });
+
+    // ApplyImpulse shim — Roblox BasePart:ApplyImpulse(Vector3)
+    this.engine.global.set('_cb_impulse', (id: string, ix: number, iy: number, iz: number) => {
+      physicsWorld.applyImpulse(id, { x: ix, y: iy, z: iz });
+    });
+
+    // GetMass shim — Roblox BasePart:GetMass()
+    this.engine.global.set('_cb_getmass', (id: string): number => {
+      return physicsWorld.getMass(id);
     });
 
     this.engine.global.set('_cb_out', (type: string, msg: string) => {
