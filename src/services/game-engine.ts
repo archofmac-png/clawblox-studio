@@ -12,6 +12,9 @@ import { physicsWorld } from './physics-world.js';
 import { networkBridge } from './network-bridge.js';
 import { pathfindingService } from './pathfinding.js';
 
+// Wave A: Structured observability
+import type { WsTypedEvent, SerializedPhysicsBody } from './observability.js';
+
 // -------------------------------------------------------------------
 // WebSocket broadcast hook
 // -------------------------------------------------------------------
@@ -29,6 +32,47 @@ function broadcast(type: string, message: string) {
 // -------------------------------------------------------------------
 function broadcastEvent(payload: Record<string, unknown>) {
   if (_wsBroadcast) _wsBroadcast('game_event', JSON.stringify(payload));
+}
+
+// -------------------------------------------------------------------
+// Wave A: Structured typed event broadcasting
+// -------------------------------------------------------------------
+
+/**
+ * Emit a structured WebSocket event (Wave A Observability Layer).
+ * Uses type 'structured_event' so clients can distinguish from legacy messages.
+ */
+export function broadcastStructuredEvent(event: WsTypedEvent): void {
+  if (_wsBroadcast) {
+    _wsBroadcast('structured_event', JSON.stringify(event));
+  }
+}
+
+// -------------------------------------------------------------------
+// Wave A: Global physics tick counter (monotonically increasing)
+// -------------------------------------------------------------------
+let _physicsTick = 0;
+
+/**
+ * Increment and return the physics tick counter.
+ * Called by the physics step hook.
+ */
+export function incrementPhysicsTick(): number {
+  return ++_physicsTick;
+}
+
+/**
+ * Get the current physics tick value without incrementing.
+ */
+export function getPhysicsTick(): number {
+  return _physicsTick;
+}
+
+/**
+ * Reset the physics tick counter (called on game restart).
+ */
+export function resetPhysicsTick(): void {
+  _physicsTick = 0;
 }
 
 // Track live player/enemy state for snapshot endpoint
@@ -848,6 +892,25 @@ export class GameEngine {
   private scriptCount = 0;
   private chatLog: Array<{ player: string; message: string; timestamp: number }> = [];
 
+  // ── Wave A: Determinism metadata ──────────────────────────────────────
+  /** Random seed generated when the game starts. Used for Wave B determinism. */
+  private seed = 0;
+  /** Timestamp (ms) when the current game session started. */
+  private startedAt = 0;
+
+  // DataStore snapshot for observability
+  private _dataStoreSnapshot: Record<string, Record<string, unknown>> = {};
+
+  /**
+   * Get the current game seed.
+   */
+  getSeed(): number { return this.seed; }
+
+  /**
+   * Get the timestamp when the current session started.
+   */
+  getStartedAt(): number { return this.startedAt; }
+
   private async initLua(): Promise<void> {
     if (this.engine) return;
     this.factory = new LuaFactory();
@@ -867,6 +930,16 @@ export class GameEngine {
         const defaultShape = className === 'WedgePart' ? 'Wedge' : 'Block';
         broadcastEvent({ event: 'part_created', id, name, className, shape: defaultShape, position: { x: 0, y: 0, z: 0 }, size: { x: 4, y: 1, z: 4 }, rotation: { rx: 0, ry: 0, rz: 0 }, color: '#c0c0c0' });
       }
+      // Wave A: Emit structured instance:created event
+      const inst = this.registry.get(id);
+      broadcastStructuredEvent({
+        event: 'instance:created',
+        id,
+        className,
+        name,
+        parentId: inst?.parentId ?? null,
+        properties: {},
+      });
       return id;
     });
     this.engine.global.set('_cb_setparent', (id: string, parentId: string | null) => {
@@ -909,7 +982,20 @@ export class GameEngine {
           // Keep storedValue as-is
         }
       }
+      // Wave A: Capture old value before writing, then emit instance:changed
+      const existingInst = this.registry.get(id);
+      const oldValue = existingInst ? (existingInst.properties[key] ?? null) : null;
       this.registry.setProperty(id, key, storedValue);
+      // Emit structured change event (skip internal/function values)
+      if (typeof storedValue !== 'function') {
+        broadcastStructuredEvent({
+          event: 'instance:changed',
+          id,
+          property: key,
+          oldValue,
+          newValue: storedValue,
+        });
+      }
       // Wave 4: Sync Part position/size changes to physics world
       const inst = this.registry.get(id);
       if (inst && (inst.ClassName === 'Part' || inst.ClassName === 'BasePart')) {
@@ -992,6 +1078,15 @@ export class GameEngine {
     });
     this.engine.global.set('_cb_out', (type: string, msg: string) => {
       broadcast(type, msg);
+      // Wave A: Also emit structured console event
+      const level = (type === 'warn' || type === 'error') ? type : 'print';
+      broadcastStructuredEvent({
+        event: 'console:structured',
+        level: level as 'print' | 'warn' | 'error',
+        message: msg,
+        traceback: null,
+        tick: getPhysicsTick(),
+      });
     });
 
     // Wave 4: Physics callbacks
@@ -1101,6 +1196,11 @@ export class GameEngine {
     // Wave 5: Reset live rendering state and notify frontend
     liveState.reset();
     broadcastEvent({ event: 'game_reset' });
+    // Wave A: Generate determinism seed and record start timestamp
+    this.seed = Math.floor(Math.random() * 2 ** 31);
+    this.startedAt = Date.now();
+    this._dataStoreSnapshot = {};
+    resetPhysicsTick();
     await this.initLua();
     this.status = 'running';
     this.startTime = Date.now();
@@ -1235,6 +1335,52 @@ return __out
     this.scriptCount = allScripts.length;
     this.loadedProject = projectPath;
     return { loaded: allScripts, errors };
+  }
+
+  // ── Wave A: Observability ─────────────────────────────────────────────
+
+  /**
+   * Return all DataStore key-value pairs currently held in memory.
+   * The DataStore shim in Lua stores data in `_datastores` table.
+   * We approximate this by returning the snapshot we maintain.
+   */
+  getDataStoreSnapshot(): Record<string, Record<string, unknown>> {
+    return this._dataStoreSnapshot;
+  }
+
+  /**
+   * Build and return the full observability state payload.
+   * Used by GET /api/observe/state and periodic WS push.
+   * Note: Returns a plain object; caller imports and uses observability helpers directly.
+   */
+  getObserveStateRaw(): {
+    instances: ReturnType<InstanceRegistry['getAll']>;
+    physicsBodies: ReturnType<typeof physicsWorld.getSerializedBodies>;
+    dataStore: Record<string, Record<string, unknown>>;
+    players: Array<{ name: string; userId: number; health: number; position: [number, number, number] }>;
+    metadata: { timestamp: number; tick: number; seed: number; deterministic: boolean };
+  } {
+    const instances = this.registry.getAll();
+    const physicsBodies = physicsWorld.getSerializedBodies();
+    const players = Array.from(liveState.players.values()).map(p => ({
+      name: p.name,
+      userId: 0,
+      health: p.health,
+      position: [p.position.x, p.position.y, p.position.z] as [number, number, number],
+    }));
+
+    return {
+      instances,
+      physicsBodies,
+      dataStore: this._dataStoreSnapshot,
+      players,
+      metadata: {
+        timestamp: Date.now(),
+        tick: getPhysicsTick(),
+        seed: this.seed,
+        deterministic: false,
+      },
+    };
   }
 
   // Wave 5: Full scene snapshot for /api/game/state/snapshot

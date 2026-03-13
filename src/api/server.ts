@@ -8,8 +8,11 @@ import archiver from 'archiver';
 import { WebSocketServer, WebSocket } from 'ws';
 
 // Import game engine
-import { gameEngine, setBroadcastFunction } from '../services/game-engine';
+import { gameEngine, setBroadcastFunction, broadcastStructuredEvent, incrementPhysicsTick } from '../services/game-engine';
 import { runTestFile } from '../services/test-runner.js';
+
+// Wave A: Structured observability
+import { buildObserveState, extractGuiTree } from '../services/observability.js';
 
 // Wave 4 imports
 import { physicsWorld } from '../services/physics-world.js';
@@ -71,6 +74,46 @@ try { setBroadcastFunction(broadcastOutput); console.log('[WS] Broadcast functio
 
 // Wire NetworkBridge broadcast
 networkBridge.setBroadcast(broadcastOutput);
+
+// ── Wave A: Observe state push timer (500ms) ─────────────────────────────
+/**
+ * Broadcast the full observe:state payload over WebSocket every 500ms
+ * while a game session is running.
+ */
+function broadcastObserveState(): void {
+  try {
+    const raw = gameEngine.getObserveStateRaw();
+    const state = buildObserveState(
+      raw.instances,
+      raw.physicsBodies,
+      raw.dataStore,
+      raw.players,
+      raw.metadata,
+    );
+    broadcastStructuredEvent({ event: 'observe:state', data: state });
+  } catch (e) {
+    // Don't crash the server on serialization errors
+    console.error('[observe] push error:', (e as Error).message);
+  }
+}
+
+// Physics tick broadcast — emitted by the observe loop alongside physics bodies
+setInterval(() => {
+  try {
+    const tick = incrementPhysicsTick();
+    const bodies = physicsWorld.getSerializedBodies();
+    broadcastStructuredEvent({
+      event: 'physics:tick',
+      tick,
+      timestamp: Date.now(),
+      bodies,
+    });
+    // Also push full state every 500ms
+    broadcastObserveState();
+  } catch (_) {
+    // Silently ignore during shutdown
+  }
+}, 500);
 
 // Wire PathfindingService agent movement broadcast
 pathfindingService.setAgentBroadcast((agentName, position, done) => {
@@ -1901,6 +1944,119 @@ app.get('/api/import/rbxlx/preview', async (req, res) => {
 
 // ============================================================
 // End Wave 6
+// ============================================================
+
+// ============================================================
+// Wave A: Structured Observability Layer
+// ============================================================
+
+/**
+ * GET /api/observe/state
+ * Returns the complete workspace state as schema-validated JSON.
+ *
+ * Response shape:
+ * {
+ *   metadata: { timestamp, tick, seed, deterministic }
+ *   instances: SerializedInstance[]
+ *   physics: SerializedPhysicsBody[]
+ *   dataStore: Record<string, Record<string, unknown>>
+ *   players: { name, userId, health, position }[]
+ * }
+ */
+app.get('/api/observe/state', (req, res) => {
+  try {
+    const raw = gameEngine.getObserveStateRaw();
+    const state = buildObserveState(
+      raw.instances,
+      raw.physicsBodies,
+      raw.dataStore,
+      raw.players,
+      raw.metadata,
+    );
+    res.json(state);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * GET /api/observe/screenshot
+ * Returns a snapshot of the current 3D scene.
+ *
+ * In headless mode (no Electron display), returns a full state-json payload.
+ * In Electron mode (if mainWindow is available), captures the page as PNG.
+ *
+ * Response shape (headless):
+ * { format: "state-json", data: <observe state>, note: string }
+ *
+ * Response shape (Electron):
+ * { format: "png", data: "base64..." }
+ */
+app.get('/api/observe/screenshot', async (req, res) => {
+  try {
+    // Attempt Electron capturePage if running inside Electron
+    let electronCapture: string | null = null;
+    try {
+      // Dynamic import — only present when running inside Electron main process
+      const electron = await import('electron');
+      const { BrowserWindow } = electron;
+      if (BrowserWindow) {
+        const windows = BrowserWindow.getAllWindows();
+        const mainWindow = windows.find(w => !w.isDestroyed()) ?? null;
+        if (mainWindow) {
+          const nativeImage = await mainWindow.webContents.capturePage();
+          electronCapture = nativeImage.toPNG().toString('base64');
+        }
+      }
+    } catch {
+      // Not in Electron — headless mode
+    }
+
+    if (electronCapture) {
+      return res.json({ format: 'png', data: electronCapture });
+    }
+
+    // Headless: return full state-json
+    const raw = gameEngine.getObserveStateRaw();
+    const state = buildObserveState(
+      raw.instances,
+      raw.physicsBodies,
+      raw.dataStore,
+      raw.players,
+      raw.metadata,
+    );
+    return res.json({
+      format: 'state-json',
+      data: state,
+      note: 'headless: use /api/observe/state for full scene data. GUI screenshot requires Electron display.',
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * GET /api/observe/gui-json
+ * Returns the current ScreenGui hierarchy as JSON.
+ *
+ * Walks the instance tree for GUI-relevant classes and returns them
+ * as a flat array with id, className, name, parentId, and properties.
+ *
+ * Response shape:
+ * { count: number, gui: SerializedInstance[] }
+ */
+app.get('/api/observe/gui-json', (req, res) => {
+  try {
+    const allInstances = gameEngine.getAllInstances();
+    const guiInstances = extractGuiTree(allInstances);
+    res.json({ count: guiInstances.length, gui: guiInstances });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ============================================================
+// End Wave A
 // ============================================================
 
 app.listen(PORT, () => {

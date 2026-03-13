@@ -255,6 +255,40 @@ export class PhysicsWorld {
   }
 
   /**
+   * Wave A: Return all physics bodies serialized for the observability layer.
+   * Includes position, velocity, angularVelocity, and mass.
+   */
+  getSerializedBodies(): Array<{
+    id: string;
+    name: string;
+    position: [number, number, number];
+    velocity: [number, number, number];
+    angularVelocity: [number, number, number];
+    mass: number;
+  }> {
+    const result: Array<{
+      id: string;
+      name: string;
+      position: [number, number, number];
+      velocity: [number, number, number];
+      angularVelocity: [number, number, number];
+      mass: number;
+    }> = [];
+    for (const [id, body] of this.bodies) {
+      const instance = this.instances.get(id);
+      result.push({
+        id,
+        name: instance?.Name ?? id,
+        position: [body.position.x, body.position.y, body.position.z],
+        velocity: [body.velocity.x, body.velocity.y, body.velocity.z],
+        angularVelocity: [body.angularVelocity.x, body.angularVelocity.y, body.angularVelocity.z],
+        mass: body.mass,
+      });
+    }
+    return result;
+  }
+
+  /**
    * Reset the physics world: remove all bodies.
    * Called when the game engine is restarted.
    */
