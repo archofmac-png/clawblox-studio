@@ -93,7 +93,8 @@ class ClawBloxRLTrainer:
         
         self.agent = ClawBloxAgent(self.client, seed=seed, deterministic=True)
         self.agent.reset()
-        self.spawn_world()
+        # spawn_world() is called at the start of train() — do not call it here
+        # to avoid double-spawning, which leaves stale physics bodies in the world.
         
         self.episode_results: List[EpisodeResult] = []
         self.last_y = SPAWN_POSITION["Y"]  # Track for upward progress reward
@@ -247,9 +248,10 @@ Character.Parent = workspace
         }
         scripts = move_scripts.get(action, move_scripts["forward"])
         def _step():
-            # Two separate calls: apply impulse/velocity, then run 10 physics sub-steps
-            self.agent.step(scripts[0])
-            result = self.agent.step(scripts[1])
+            # COMBINE impulse + physics in SINGLE execute to avoid Lua state corruption
+            # (separate calls cause WASM crash after ~5 physics steps)
+            combined = scripts[0] + "\n" + scripts[1]
+            result = self.agent.step(combined)
             return result
         try:
             with_retry(_step)
@@ -263,19 +265,25 @@ Character.Parent = workspace
                 with_retry(_step)
         
     def reset_agent(self):
-        """Reset to spawn using reset_part (preserves velocity properly)"""
-        # Find the Character instance
+        """Reset Character to spawn position using reset_part."""
         try:
-            result = self.agent.step("return Character")
-            if result and result.state:
-                for inst in result.state.instances:
-                    if inst.get('Name') == 'Character':
-                        instance_id = inst.get('instance_id')
-                        if instance_id:
-                            self.agent.session.reset_part(instance_id, 0, 4, 60)
-                            break
-        except:
-            pass  # Best effort
+            if self.agent.session is None:
+                return
+            state = self.agent.observe()
+            for inst in state.instances:
+                # SDK returns raw dicts — access via .get(), not attribute
+                name = inst.get('Name') if isinstance(inst, dict) else getattr(inst, 'Name', None)
+                inst_id = inst.get('id') if isinstance(inst, dict) else getattr(inst, 'id', None)
+                if name == 'Character' and inst_id:
+                    self.agent.session.reset_part(
+                        inst_id,
+                        SPAWN_POSITION['X'],
+                        SPAWN_POSITION['Y'],
+                        SPAWN_POSITION['Z'],
+                    )
+                    break
+        except Exception as e:
+            print(f"  reset_agent failed: {e}")
         self.last_y = SPAWN_POSITION["Y"]
         
     def dist_to_goal(self, pos: Dict) -> float:

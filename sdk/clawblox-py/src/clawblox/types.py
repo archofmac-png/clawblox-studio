@@ -48,7 +48,7 @@ class GameStopResponse:
 class ExecuteResult:
     """Execute Lua code result."""
     success: bool
-    output: str | None = None
+    output: list[str] | None = None
     error: str | None = None
     execution_time_ms: float | None = None
 
@@ -293,7 +293,7 @@ class SessionExecuteResponse:
     """Session execute response."""
     session_id: str
     success: bool
-    output: str | None = None
+    output: list[str] | None = None
     error: str | None = None
     execution_time_ms: float | None = None
 

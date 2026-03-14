@@ -9,7 +9,7 @@ import { LuaFactory, LuaEngine } from 'wasmoon';
 import { randomUUID } from 'crypto';
 
 // Wave 4: Physics world + Network bridge
-import { physicsWorld } from './physics-world.js';
+import { PhysicsWorld } from './physics-world.js';
 import { networkBridge } from './network-bridge.js';
 import { pathfindingService } from './pathfinding.js';
 
@@ -1216,6 +1216,8 @@ export class GameEngine {
   private engine: LuaEngine | null = null;
   private factory: LuaFactory | null = null;
   private registry = new InstanceRegistry();
+  // Each GameEngine gets its own PhysicsWorld so sessions don't share/corrupt each other's bodies
+  private physicsWorld = new PhysicsWorld();
   private status: 'stopped' | 'running' | 'paused' = 'stopped';
   private startTime?: number;
   private loadedProject?: string;
@@ -1267,7 +1269,7 @@ export class GameEngine {
       // Wave 4: Register Parts in physics world
       if (className === 'Part' || className === 'BasePart' || className === 'MeshPart' || className === 'SpecialMesh' || className === 'WedgePart') {
         const inst = this.registry.get(id);
-        if (inst) physicsWorld.registerPart(inst);
+        if (inst) this.physicsWorld.registerPart(inst);
       }
       // Wave 5: Emit part_created when a Part is instantiated
       // (position/size will be emitted via part_moved/part_created update when Parent is set)
@@ -1292,7 +1294,7 @@ export class GameEngine {
       // Bug fix (Orion 2026-03-14): remove CANNON body when instance is detached/destroyed
       // Without this, old bodies accumulate across episode resets causing collision chaos
       if (parentId === null) {
-        this.physicsWorld.removePart(id);
+        this.this.physicsWorld.removePart(id);
       }
     });
     this.engine.global.set('_cb_setprop', (id: string, key: string, value: any) => {
@@ -1354,22 +1356,22 @@ export class GameEngine {
       const inst = this.registry.get(id);
       if (inst && (inst.ClassName === 'Part' || inst.ClassName === 'BasePart')) {
         if (key === 'Position' || key === 'Size' || key === 'CFrame') {
-          physicsWorld.syncPartPosition(inst);
+          this.physicsWorld.syncPartPosition(inst);
         }
         // Handle Velocity property - set directly on cannon-es body (RL agent movement API)
         if (key === 'Velocity' && storedValue && typeof storedValue === 'object') {
           const vx = Number(storedValue['X'] ?? storedValue['x'] ?? 0);
           const vy = Number(storedValue['Y'] ?? storedValue['y'] ?? 0);
           const vz = Number(storedValue['Z'] ?? storedValue['z'] ?? 0);
-          physicsWorld.setVelocity(id, { x: vx, y: vy, z: vz });
+          this.physicsWorld.setVelocity(id, { x: vx, y: vy, z: vz });
         }
         // Handle Anchored property change - need to re-register body with correct type
         if (key === 'Anchored') {
-          physicsWorld.removePart(id);
-          physicsWorld.registerPart(inst);
+          this.physicsWorld.removePart(id);
+          this.physicsWorld.registerPart(inst);
         }
         // Auto-register if not yet in physics world (e.g. class was set after creation)
-        physicsWorld.registerPart(inst);
+        this.physicsWorld.registerPart(inst);
       }
       // Wave 4: Register obstacles for pathfinding (Parts with CanCollide=true)
       if (inst && key === 'CanCollide' && (value === 'true' || value === true)) {
@@ -1450,7 +1452,7 @@ export class GameEngine {
       
       // Special case: Velocity is stored on cannon-es body, not in registry
       if (key === 'Velocity') {
-        const vel = physicsWorld.getVelocity(id);
+        const vel = this.physicsWorld.getVelocity(id);
         if (vel) {
           return { X: vel.x, Y: vel.y, Z: vel.z };
         }
@@ -1462,12 +1464,12 @@ export class GameEngine {
 
     // ApplyImpulse shim — Roblox BasePart:ApplyImpulse(Vector3)
     this.engine.global.set('_cb_impulse', (id: string, ix: number, iy: number, iz: number) => {
-      physicsWorld.applyImpulse(id, { x: ix, y: iy, z: iz });
+      this.physicsWorld.applyImpulse(id, { x: ix, y: iy, z: iz });
     });
 
     // GetMass shim — Roblox BasePart:GetMass()
     this.engine.global.set('_cb_getmass', (id: string): number => {
-      return physicsWorld.getMass(id);
+      return this.physicsWorld.getMass(id);
     });
 
     this.engine.global.set('_cb_out', (type: string, msg: string) => {
@@ -1496,7 +1498,7 @@ export class GameEngine {
       dx: number, dy: number, dz: number,
       radius: number, distance: number
     ): Array<Record<string, unknown>> => {
-      const hits = physicsWorld.sphereCast(
+      const hits = this.physicsWorld.sphereCast(
         { x: ox, y: oy, z: oz },
         { x: dx, y: dy, z: dz },
         radius,
@@ -1512,7 +1514,7 @@ export class GameEngine {
       cx: number, cy: number, cz: number,
       radius: number
     ): Array<Record<string, unknown>> => {
-      const hits = physicsWorld.findPartsInRadius({ x: cx, y: cy, z: cz }, radius);
+      const hits = this.physicsWorld.findPartsInRadius({ x: cx, y: cy, z: cz }, radius);
       return hits.map(h => ({ Name: h.Name, ClassName: h.ClassName }));
     });
 
@@ -1545,8 +1547,8 @@ export class GameEngine {
     // Wave 4: Physics step callback — advances simulation and syncs positions back
     this.engine.global.set('_cb_physics_step', (dt: number) => {
       try {
-        physicsWorld.step(dt);
-        physicsWorld.syncAllPositions();
+        this.physicsWorld.step(dt);
+        this.physicsWorld.syncAllPositions();
       } catch (e) {
         console.error('[Physics] Error in step:', e);
       }
@@ -1603,7 +1605,7 @@ export class GameEngine {
     }
     this.registry.reset();
     // Wave 4: Reset physics world when game restarts
-    physicsWorld.reset();
+    this.physicsWorld.reset();
     // Wave 5: Reset live rendering state and notify frontend
     liveState.reset();
     broadcastEvent({ event: 'game_reset' });
@@ -1622,7 +1624,7 @@ export class GameEngine {
     // Wave F: Reset coverage on game start
     resetCoverage();
     // Wave B: Lock physics to fixed timestep in deterministic mode
-    physicsWorld.setDeterministicMode(this._deterministic);
+    this.physicsWorld.setDeterministicMode(this._deterministic);
     await this.initLua();
     // Wave B: Seed Lua RNG when deterministic
     if (this._deterministic) {
@@ -1701,7 +1703,7 @@ return __out
       }
 
       // Wave B: Commit trajectory frame after each execute
-      const physBodies = physicsWorld.getSerializedBodies();
+      const physBodies = this.physicsWorld.getSerializedBodies();
       commitTrajectoryFrame(getPhysicsTick(), execSeed, { bodies: physBodies });
       const resultPayload: ScriptResult & { seed?: number; deterministic?: boolean } = { success: true, returns, output };
       if (execDeterministic) { resultPayload.seed = execSeed; resultPayload.deterministic = true; }
@@ -1798,13 +1800,13 @@ return __out
    */
   getObserveStateRaw(): {
     instances: ReturnType<InstanceRegistry['getAll']>;
-    physicsBodies: ReturnType<typeof physicsWorld.getSerializedBodies>;
+    physicsBodies: ReturnType<typeof this.physicsWorld.getSerializedBodies>;
     dataStore: Record<string, Record<string, unknown>>;
     players: Array<{ name: string; userId: number; health: number; position: [number, number, number] }>;
     metadata: { timestamp: number; tick: number; seed: number; deterministic: boolean };
   } {
     const instances = this.registry.getAll();
-    const physicsBodies = physicsWorld.getSerializedBodies();
+    const physicsBodies = this.physicsWorld.getSerializedBodies();
     const players = Array.from(liveState.players.values()).map(p => ({
       name: p.name,
       userId: 0,

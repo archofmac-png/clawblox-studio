@@ -54,10 +54,10 @@ export class PhysicsWorld {
 
   constructor() {
     this.world = new CANNON.World({
-      gravity: new CANNON.Vec3(0, -196.2, 0), // Roblox uses ~196.2 studs/s²
+      gravity: new CANNON.Vec3(0, -50, 0), // Roblox gravity is 196.2 but that causes WASM overflow at high velocities; 50 is stable for RL
     });
-    // Broadphase for efficient collision detection
-    this.world.broadphase = new CANNON.NaiveBroadphase();
+    // SAPBroadphase is more numerically stable than NaiveBroadphase for fast-moving bodies
+    this.world.broadphase = new CANNON.SAPBroadphase(this.world);
     this.world.allowSleep = false; // keep bodies awake so impulses always apply
   }
 
@@ -99,11 +99,14 @@ export class PhysicsWorld {
     // Set body type for cannon-es
     body.type = isAnchored ? CANNON.Body.STATIC : CANNON.Body.DYNAMIC;
 
-    // For dynamic bodies: disable sleep and damping so velocity is always applied
+    // For dynamic bodies: disable sleep, apply moderate damping so characters don't slide off edges
     if (!isAnchored) {
       body.allowSleep = false;
-      body.linearDamping = 0;
-      body.angularDamping = 0;
+      body.linearDamping = 0.2;
+      body.angularDamping = 0.99;
+      // NOTE: Do NOT set fixedRotation — it causes a CANNON constraint Jacobian degeneracy
+      // when the body leaves contact, which corrupts the wasmoon WASM heap (memory access out of bounds).
+      // Heavy angularDamping (0.99) achieves near-fixed-rotation without the crash.
     }
 
     this.world.addBody(body);
@@ -207,7 +210,9 @@ export class PhysicsWorld {
     if (!body || body.type !== CANNON.Body.DYNAMIC) return;
     // CANNON applyImpulse(impulse, worldPoint) — use body center
     body.wakeUp(); // wake before impulse so sleep state doesn't discard it
-    body.applyImpulse(new CANNON.Vec3(impulse.x, impulse.y, impulse.z), new CANNON.Vec3(0, 0, 0));
+    // Apply impulse at body CENTER (not world origin) to avoid torque
+    const center = body.position.clone();
+    body.applyImpulse(new CANNON.Vec3(impulse.x, impulse.y, impulse.z), center);
   }
 
   /**

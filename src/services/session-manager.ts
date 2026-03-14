@@ -543,6 +543,11 @@ export class SessionEngine {
 
     this.luaEngine.global.set('_cb_setparent', (id: string, parentId: string | null) => {
       this.registry.setParent(id, parentId);
+      // When an instance is detached (Parent = nil), remove it from physics.
+      // This mirrors Roblox: only instances in Workspace have active physics bodies.
+      if (parentId === null) {
+        this.physics.removePart(id);
+      }
     });
 
     this.luaEngine.global.set('_cb_setprop', (id: string, key: string, value: unknown) => {
