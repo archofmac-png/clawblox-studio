@@ -1289,6 +1289,11 @@ export class GameEngine {
     });
     this.engine.global.set('_cb_setparent', (id: string, parentId: string | null) => {
       this.registry.setParent(id, parentId);
+      // Bug fix (Orion 2026-03-14): remove CANNON body when instance is detached/destroyed
+      // Without this, old bodies accumulate across episode resets causing collision chaos
+      if (parentId === null) {
+        this.physicsWorld.removePart(id);
+      }
     });
     this.engine.global.set('_cb_setprop', (id: string, key: string, value: any) => {
       // Wave 4: For Vector3 properties coming from Lua (wasmoon proxy tables),
